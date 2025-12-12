@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './Login.css';
 import '../../index.css';
 import api from '../../api/axios';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 function Login({ onForgot, onLogin }) {
     const [user, setUser] = useState('');
@@ -77,23 +78,25 @@ function Login({ onForgot, onLogin }) {
                                 autoComplete="current-password"
                                 style={{ paddingRight: '1rem' }}
                             />
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 style={{
                                     position: 'absolute',
-                                    right: '-2rem',
+                                    right: '10px',
                                     top: '50%',
                                     transform: 'translateY(-50%)',
                                     background: 'none',
                                     border: 'none',
                                     cursor: 'pointer',
                                     fontSize: '1.2rem',
-                                    color: '#666'
+                                    color: '#666',
+                                    display: 'flex',
+                                    alignItems: 'center'
                                 }}
                                 title={showPassword ? "Ocultar contraseña" : "Ver contraseña"}
                             >
-                                {showPassword ? '🙈' : '👁️'}
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </button>
                         </div>
                     </div>

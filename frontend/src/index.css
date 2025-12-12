@@ -1,11 +1,119 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f9fafb;
-  color: #111827;
+  background: linear-gradient(135deg, #AD1A1C 0%, #8B1517 100%);
+  color: #1a202c;
   min-height: 100vh;
   text-rendering: optimizeLegibility;
+}
+
+/* Global Icon Styles */
+svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+}
+
+button svg {
+  font-size: 1.2em;
+}
+
+.top-actions .icon-btn svg {
+  width: 20px;
+  height: 20px;
+  color: inherit;
+}
+
+.sidebar svg {
+  color: inherit;
+}
+
+/* Modern Card Styles */
+.card {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(173, 26, 28, 0.15);
+  border: 1px solid rgba(252, 232, 33, 0.2);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 12px 48px rgba(173, 26, 28, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Modern Button Styles */
+button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(173, 26, 28, 0.2);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Smooth Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Modern Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #AD1A1C 0%, #FCE821 100%);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #FCE821 0%, #AD1A1C 100%);
+}
+
+/* Form Elements */
+input,
+select,
+textarea {
+  transition: all 0.3s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(173, 26, 28, 0.15);
+  border-color: #AD1A1C;
 }

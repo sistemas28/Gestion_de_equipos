@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import './ImpresorasPage.css';
+import { FaTimes } from 'react-icons/fa';
 
 function ImpresorasPage() {
     const [impresoras, setImpresoras] = useState([]);
@@ -99,9 +100,9 @@ function ImpresorasPage() {
     };
 
     const filteredImpresoras = impresoras.filter(imp =>
-        (imp.area?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (imp.modelo?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (imp.direccion_IP?.toLowerCase().includes(searchTerm.toLowerCase()))
+        (String(imp.area || '').toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (String(imp.modelo || '').toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (String(imp.direccion_IP || '').toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     return (
@@ -163,7 +164,7 @@ function ImpresorasPage() {
                         <form onSubmit={handleSubmit}>
                             <div className="details-header">
                                 <h3>{editingId ? 'Editar Impresora' : 'Agregar Nueva Impresora'}</h3>
-                                <button type="button" className="close-details-btn" onClick={handleCloseModal}>×</button>
+                                <button type="button" className="close-details-btn" onClick={handleCloseModal}><FaTimes /></button>
                             </div>
                             <div className="details-grid">
                                 <label>Área <input name="area" value={formData.area} onChange={handleChange} required /></label>

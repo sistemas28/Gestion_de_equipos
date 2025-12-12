@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './SettingsModal.css'; // Usaremos un CSS compartido para los modales
+import { FaUser, FaTimes } from 'react-icons/fa';
 
 function UserSettingsModal({ user, onClose }) {
     const [nombre, setNombre] = useState(user?.nombre || '');
@@ -14,7 +15,7 @@ function UserSettingsModal({ user, onClose }) {
 
         // Aquí iría la lógica para llamar a la API y guardar los cambios
         console.log('Guardando perfil de usuario:', { nombre, correo });
-        
+
         setSuccess('¡Perfil actualizado con éxito! (Simulación)');
         // setTimeout(onClose, 2000); // Opcional: cerrar después de un tiempo
     };
@@ -23,8 +24,8 @@ function UserSettingsModal({ user, onClose }) {
         <div className="settings-modal" onClick={onClose}>
             <div className="settings-panel card" onClick={(e) => e.stopPropagation()}>
                 <div className="settings-header">
-                    <h3><span className="icon">👤</span>Ajustes de Usuario</h3>
-                    {/* <button className="close-modal-btn" onClick={onClose}>×</button> */}
+                    <h3><span className="icon"><FaUser /></span>Ajustes de Usuario</h3>
+                    <button className="close-modal-btn" onClick={onClose}><FaTimes /></button>
                 </div>
                 <form onSubmit={handleSubmit} className="settings-form">
                     {error && <div className="form-message error">{error}</div>}

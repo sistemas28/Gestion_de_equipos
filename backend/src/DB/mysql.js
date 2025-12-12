@@ -10,11 +10,11 @@ const dbconfig = {
 
 let conexion;
 
-function conMysql(){
+function conMysql() {
     conexion = mysql.createConnection(dbconfig);
 
     conexion.connect((err) => {
-        if(err){
+        if (err) {
             console.log('[db err]', err);
             setTimeout(conMysql, 200);
         } else {
@@ -24,50 +24,51 @@ function conMysql(){
 
     conexion.on('error', err => {
         console.log('[DB err]', err);
-        if(err.code === 'PROTOCOL_CONNECTION_LOST'){
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
             conMysql();
-        }else{
+        } else {
             throw err;
         }
     })
 }
 conMysql();
 
-function todos(tabla){
-    return new Promise( (resolve, reject) => {
+function todos(tabla) {
+    return new Promise((resolve, reject) => {
         conexion.query(`SELECT * FROM ${tabla}`, (error, result) => {
             return error ? reject(error) : resolve(result);
         })
     });
 }
 
-function uno(tabla, id){
-    return new Promise( (resolve, reject) => {
+function uno(tabla, id) {
+    return new Promise((resolve, reject) => {
         conexion.query(`SELECT * FROM ${tabla} WHERE id =${id}`, (error, result) => {
             return error ? reject(error) : resolve(result);
         })
     });
 }
 
-function agregar(tabla, data){
+function agregar(tabla, data) {
     // Se modifica la consulta para que sea un INSERT simple.
-    return new Promise( (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         conexion.query(`INSERT INTO ${tabla} SET ?`, data, (error, result) => {
             return error ? reject(error) : resolve(result);
         })
     });
 }
 
-function eliminar(tabla, id){
-    return new Promise( (resolve, reject) => {
-        conexion.query(`DELETE FROM ${tabla} WHERE id = ?`, id, (error, result) => {
+
+function eliminar(tabla, id) {
+    return new Promise((resolve, reject) => {
+        conexion.query(`DELETE FROM ${tabla} WHERE id = ?`, [id], (error, result) => {
             return error ? reject(error) : resolve(result);
         })
     });
 }
 
-function query(tabla, consulta){
-    return new Promise( (resolve, reject) => {
+function query(tabla, consulta) {
+    return new Promise((resolve, reject) => {
         const keys = Object.keys(consulta);
         const values = Object.values(consulta);
         const whereClause = keys.map(key => `${key} = ?`).join(' AND ');
@@ -85,6 +86,15 @@ function actualizar(tabla, id, data) {
     });
 }
 
+// Método para ejecutar consultas SQL directas (raw queries)
+function rawQuery(sql, params = []) {
+    return new Promise((resolve, reject) => {
+        conexion.query(sql, params, (error, result) => {
+            return error ? reject(error) : resolve(result);
+        });
+    });
+}
+
 module.exports = {
     todos,
     uno,
@@ -92,5 +102,6 @@ module.exports = {
     eliminar,
     query,
     actualizar,
+    rawQuery,
     conexion,
 }

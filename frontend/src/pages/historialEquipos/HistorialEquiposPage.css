@@ -1,0 +1,47 @@
+/* Historial Equipos Page Styles */
+
+.historial-equipos-page {
+    padding: 24px;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.historial-container {
+    padding: 32px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(173, 26, 28, 0.1);
+    border: 1px solid rgba(252, 232, 33, 0.2);
+}
+
+.loading-message,
+.error-message {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.loading-message {
+    color: #6c757d;
+}
+
+.error-message {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 12px;
+    margin-bottom: 20px;
+}

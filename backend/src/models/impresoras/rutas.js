@@ -1,16 +1,20 @@
+
 const express = require('express');
 
 const respuesta = require('../../red/respuestas')
+
 const controlador = require('./index');
 
 
 const router = express.Router();
 
+
 router.get('/', todos);
 router.get ('/:id', uno);
 router.post('/', agregar);
-router.put('/', modificar);
-router.delete('/', eliminar);
+router.put('/:id', modificar);
+router.delete('/:id', eliminar);
+
 
 
 async function todos (req, res, next){
@@ -19,7 +23,7 @@ async function todos (req, res, next){
         respuesta.succes(req, res, items, 200);
     }
     catch(err){
-        next(error);
+        next(err);
     }
 };
 
@@ -42,9 +46,10 @@ async function agregar(req, res, next) {
     }
 };
 
+
 async function modificar(req, res, next) {
     try{
-        const items = await controlador.modificar(req.body);
+        const items = await controlador.modificar(req.body, req.params.id);
         const mensaje = 'item modificado satisfactoriamente';
         respuesta.succes(req, res, mensaje, 200);
     }catch(err){
@@ -54,7 +59,7 @@ async function modificar(req, res, next) {
 
 async function eliminar(req, res, next) {
     try{
-        const items = await controlador.eliminar(req.body);
+        const items = await controlador.eliminar(req.params.id);
         respuesta.succes(req, res, 'item eliminado satisfactoriamente', 200);
     }catch(err){
         next(err);

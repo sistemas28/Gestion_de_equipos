@@ -58,8 +58,7 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
     ];
 
     const marcas = [
-        'Dell', 'HP', 'Lenovo', 'Apple', 'Asus', 'Acer', 'Cisco', 
-        'Ubiquiti', 'Microsoft', 'Samsung', 'LG', 'Logitech'
+        'Dell', 'HP', 'Lenovo', 'Apple', 'Asus', 'Acer', 'Samsung', 'LG'
     ];
 
     // Ordenar las listas alfabéticamente para facilitar la búsqueda
@@ -266,22 +265,22 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
                             </thead>
                             <tbody>
                                 {equipos
-                                .filter(equipo => 
-                                    (equipo.usuario?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                                    (equipo.codigo?.toLowerCase().includes(searchTerm.toLowerCase()))
-                                ).map(equipo => (
-                                    <tr key={equipo.id}>
-                                        <td>{equipo.usuario}</td>
-                                        <td>{equipo.area}</td>
-                                        <td>{equipo.tipo}</td>
-                                        <td>{equipo.marca}</td>
-                                        <td>{equipo.codigo || 'N/A'}</td>
-                                        <td className="actions-cell">
-                                            <button className="action-btn-sm edit" onClick={() => handleEdit(equipo)}>Editar</button>
-                                            <button className="action-btn-sm delete" onClick={() => handleDelete(equipo.id)}>Eliminar</button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                    .filter(equipo =>
+                                        (String(equipo.usuario || '').toLowerCase().includes(searchTerm.toLowerCase())) ||
+                                        (String(equipo.codigo || '').toLowerCase().includes(searchTerm.toLowerCase()))
+                                    ).map(equipo => (
+                                        <tr key={equipo.id}>
+                                            <td>{equipo.usuario}</td>
+                                            <td>{equipo.area}</td>
+                                            <td>{equipo.tipo}</td>
+                                            <td>{equipo.marca}</td>
+                                            <td>{equipo.codigo || 'N/A'}</td>
+                                            <td className="actions-cell">
+                                                <button className="action-btn-sm edit" onClick={() => handleEdit(equipo)}>Editar</button>
+                                                <button className="action-btn-sm delete" onClick={() => handleDelete(equipo.id)}>Eliminar</button>
+                                            </td>
+                                        </tr>
+                                    ))}
                             </tbody>
                         </table>
                     </div>

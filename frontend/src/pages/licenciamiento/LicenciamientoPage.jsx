@@ -2,9 +2,12 @@ import React, { useEffect, useState } from "react";
 import './licenciamientoPage.css';
 import api from '../../api/axios';
 import moment from 'moment'; // Importar moment para manejar fechas si es necesario
+import { FaTimes } from 'react-icons/fa';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+
+import { generateReport } from '../../utils/reportGenerator';
 
 import logo from '../../assets/LOGO_INSTITUCIONAL.jpg';
 function LicenciamientoPage() {
@@ -130,7 +133,7 @@ function LicenciamientoPage() {
                 setEditFormData(prev => ({ ...prev, usuario: '', area: '', tipo: '' }));
             }
         } else
-        setEditFormData(prev => ({ ...prev, [name]: value }));
+            setEditFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleNewFormChange = (e) => {
@@ -215,48 +218,37 @@ function LicenciamientoPage() {
     const handleDownloadPdf = () => {
         if (!detailedData) return;
 
-        const doc = new jsPDF();
-        const margin = 14;
+        const sections = [
+            {
+                type: 'info',
+                title: 'INFORMACIÓN DEL EQUIPO',
+                data: [
+                    { label: 'USUARIO', value: detailedData.usuario || 'N/A' },
+                    { label: 'ÁREA', value: detailedData.area || 'N/A' },
+                    { label: 'TIPO', value: detailedData.tipo || 'N/A' },
+                    { label: 'CÓDIGO', value: detailedData.id || 'N/A' }, // Using ID as code if not present
+                ]
+            },
+            {
+                type: 'info',
+                title: 'DETALLES DEL LICENCIAMIENTO',
+                data: [
+                    { label: 'SISTEMA OPERATIVO', value: detailedData.sistema_operativo || 'N/A' },
+                    { label: 'SOFTWARE OFICINA', value: detailedData.software_de_oficina || 'N/A' },
+                    { label: 'OTRO SOFTWARE', value: detailedData.otro_software || 'N/A' },
+                    { label: 'DESCRIPCIÓN', value: detailedData.descripcion || 'Sin descripción.' }
+                ]
+            }
+        ];
 
-        // Encabezado
-        doc.addImage(logo, 'JPEG', margin, 10, 40, 20);
-        doc.setFontSize(20);
-        doc.text('Reporte de Licenciamiento', doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
-        doc.setFontSize(10);
-        doc.text(`Código: FT-LICE-001`, doc.internal.pageSize.getWidth() - margin, 15, { align: 'right' });
-        doc.text(`Versión: 1.0`, doc.internal.pageSize.getWidth() - margin, 20, { align: 'right' });
-        doc.text(`Fecha: ${moment().format('DD/MM/YYYY')}`, doc.internal.pageSize.getWidth() - margin, 25, { align: 'right' });
-
-        // Información del Equipo
-        autoTable(doc, {
-            startY: 40,
-            head: [['Información del Equipo']],
-            body: [
-                [{ content: `Usuario: ${detailedData.usuario || 'N/A'}` }],
-                [`Área: ${detailedData.area || 'N/A'}`],
-                [`Tipo de Equipo: ${detailedData.tipo || 'N/A'}`],
-                [`Código de Inventario: ${detailedData.id || 'N/A'}`],
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133] },
-        });
-
-        // Detalles del Licenciamiento
-        autoTable(doc, {
-            startY: doc.lastAutoTable.finalY + 10,
-            head: [['Detalles del Licenciamiento']],
-            body: [
-                [{ content: 'Descripción:', styles: { fontStyle: 'bold' } }],
-                [detailedData.descripcion || 'Sin descripción.'],
-                [{ content: `Sistema Operativo: ${detailedData.sistema_operativo || 'N/A'}` }],
-                [{ content: `Software de Oficina: ${detailedData.software_de_oficina || 'N/A'}` }],
-                [{ content: `Otro Software: ${detailedData.otro_software || 'N/A'}` }],
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133] },
-        });
-
-        doc.save(`Reporte_Licenciamiento_${detailedData.id}.pdf`);
+        generateReport(
+            'PROCESO DE GESTIÓN DE INFORMÁTICA',
+            'REPORTE DE LICENCIAMIENTO',
+            'FT-LICE-001',
+            '1.0',
+            sections,
+            `Reporte_Licenciamiento_${detailedData.id}.pdf`
+        );
     };
 
     return (
@@ -303,18 +295,18 @@ function LicenciamientoPage() {
                         </thead>
                         <tbody>
                             {licenciamientoData
-                            .filter(item =>
-                                (item.id.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
-                                (item.usuario?.toLowerCase().includes(searchTerm.toLowerCase()))
-                            ).map((item) => (
-                                <tr key={item.id} onClick={() => handleRowClick(item)} className={selectedItem?.id === item.id ? 'selected' : ''}>
-                                    <td>{item.id}</td>
-                                    <td>{item.usuario}</td>
-                                    <td>{item.area}</td>
-                                    <td>{item.tipo}</td>
-                                    <td>{item.descripcion}</td>
-                                </tr>
-                            ))}
+                                .filter(item =>
+                                    (item.id.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
+                                    (String(item.usuario || '').toLowerCase().includes(searchTerm.toLowerCase()))
+                                ).map((item) => (
+                                    <tr key={item.id} onClick={() => handleRowClick(item)} className={selectedItem?.id === item.id ? 'selected' : ''}>
+                                        <td>{item.id}</td>
+                                        <td>{item.usuario}</td>
+                                        <td>{item.area}</td>
+                                        <td>{item.tipo}</td>
+                                        <td>{item.descripcion}</td>
+                                    </tr>
+                                ))}
                         </tbody>
                     </table>
                 </div>
@@ -323,7 +315,7 @@ function LicenciamientoPage() {
             {(selectedItem || isAdding) && (
                 <div className="details-modal" onClick={(e) => { if (e.target === e.currentTarget) { setSelectedItem(null); setIsAdding(false); } }}>
                     <div className="details-panel card" onClick={(e) => e.stopPropagation()}> {/* Eliminar el botón de cerrar */}
-                        <button className="close-details-btn" onClick={() => setSelectedItem(null)}>×</button>
+                        <button className="close-details-btn" onClick={() => setSelectedItem(null)}><FaTimes /></button>
                         {loadingDetails ? (
                             <div className="loading-message">Cargando detalles...</div>
                         ) : detailedData ? (
@@ -359,7 +351,7 @@ function LicenciamientoPage() {
                                                         </option>
                                                     ))}
                                                 </select>
-                                            </label><hr/>
+                                            </label><hr />
                                             <label>Usuario <input name="usuario" value={editFormData.usuario || ''} onChange={handleFormChange} placeholder="Usuario del equipo" /></label>
                                             <label>Área <input name="area" value={editFormData.area || ''} onChange={handleFormChange} placeholder="Área del equipo" /></label>
                                             <label>Tipo <input name="tipo" value={editFormData.tipo || ''} onChange={handleFormChange} placeholder="Tipo de equipo" /></label>
@@ -406,7 +398,7 @@ function LicenciamientoPage() {
                                                 ))}
                                             </select>
                                         </label>
-                                        <hr className="full-width"/>
+                                        <hr className="full-width" />
                                         <label>Usuario <input name="usuario" value={newLicenciamientoData.usuario} readOnly placeholder="Se autocompleta" /></label>
                                         <label>Área <input name="area" value={newLicenciamientoData.area} readOnly placeholder="Se autocompleta" /></label>
                                         <label>Tipo <input name="tipo" value={newLicenciamientoData.tipo} readOnly placeholder="Se autocompleta" /></label>

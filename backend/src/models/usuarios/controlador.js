@@ -30,7 +30,8 @@ module.exports = function (dbInyectada) {
             id: body.id,
             nombre: body.nombre,
             correo: body.correo,
-            // No guardamos la contraseña en la tabla de usuarios
+            role: body.role || 'user',
+            activo: body.activo !== undefined ? body.activo : 1,
         }
 
         const respuesta = await db.agregar(TABLA, usuario);
@@ -79,8 +80,8 @@ module.exports = function (dbInyectada) {
     }
 
     async function eliminar(id) {
-        await db.eliminar(TABLA, { id: id });
-        await db.eliminar('auth', { id: id });
+        await db.eliminar(TABLA, id);
+        await db.eliminar('auth', id);
         return { message: 'Usuario eliminado correctamente' };
     }
 

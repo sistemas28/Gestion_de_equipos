@@ -4,13 +4,15 @@ import api from '../../api/axios';
 import moment from 'moment';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { FaTimes } from 'react-icons/fa';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { generateReport } from '../../utils/reportGenerator';
 import logo from '../../assets/LOGO_INSTITUCIONAL.jpg';
 
 // Configuración para el calendario en español
-moment.locale('es', {
+moment.updateLocale('es', {
     months: 'Enero_Febrero_Marzo_Abril_Mayo_Junio_Julio_Agosto_Septiembre_Octubre_Noviembre_Diciembre'.split('_'),
     weekdays: 'Domingo_Lunes_Martes_Miércoles_Jueves_Viernes_Sábado'.split('_'),
     week: {
@@ -151,35 +153,29 @@ function CopiasPage() {
     const handleDownloadPdf = () => {
         if (!detailedData) return;
 
-        const doc = new jsPDF();
-        const margin = 14;
+        const sections = [
+            {
+                type: 'info',
+                title: 'DETALLES DEL RESPALDO',
+                data: [
+                    { label: 'CÓDIGO INVENTARIO', value: detailedData.id || 'N/A' },
+                    { label: 'USUARIO', value: detailedData.usuario || 'N/A' },
+                    { label: 'ÁREA', value: detailedData.area || 'N/A' },
+                    { label: 'TIPO', value: detailedData.tipo || 'N/A' },
+                    { label: 'MARCA', value: detailedData.marca || 'N/A' },
+                    { label: 'FECHA COPIA', value: formatDate(detailedData.fecha) }
+                ]
+            }
+        ];
 
-        // Encabezado
-        doc.addImage(logo, 'JPEG', margin, 10, 40, 20);
-        doc.setFontSize(20);
-        doc.text('Reporte de Copia de Seguridad', doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
-        doc.setFontSize(10);
-        doc.text(`Código: FT-COPIA-001`, doc.internal.pageSize.getWidth() - margin, 15, { align: 'right' });
-        doc.text(`Versión: 1.0`, doc.internal.pageSize.getWidth() - margin, 20, { align: 'right' });
-        doc.text(`Fecha: ${moment().format('DD/MM/YYYY')}`, doc.internal.pageSize.getWidth() - margin, 25, { align: 'right' });
-
-        // Información del Equipo y Copia
-        autoTable(doc, {
-            startY: 40,
-            head: [['Detalles del Respaldo']],
-            body: [
-                [{ content: `Código de Inventario: ${detailedData.id || 'N/A'}` }],
-                [`Usuario Asignado: ${detailedData.usuario || 'N/A'}`],
-                [`Área: ${detailedData.area || 'N/A'}`],
-                [`Tipo de Equipo: ${detailedData.tipo || 'N/A'}`],
-                [`Marca: ${detailedData.marca || 'N/A'}`],
-                [{ content: `Fecha de la Copia: ${formatDate(detailedData.fecha)}`, styles: { fontStyle: 'bold' } }],
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: [39, 174, 96] }, // Un color verde para diferenciar
-        });
-
-        doc.save(`Reporte_Copia_Seguridad_${detailedData.id}.pdf`);
+        generateReport(
+            'PROCESO DE GESTIÓN DE INFORMÁTICA',
+            'REPORTE DE COPIA DE SEGURIDAD',
+            'FT-COPIA-001',
+            '1.0',
+            sections,
+            `Reporte_Copia_Seguridad_${detailedData.id}.pdf`
+        );
     };
 
     return (
@@ -227,19 +223,19 @@ function CopiasPage() {
                         </thead>
                         <tbody>
                             {copiasData
-                            .filter(item =>
-                                (item.id.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
-                                (item.usuario?.toLowerCase().includes(searchTerm.toLowerCase()))
-                            ).map((item) => (
-                                <tr key={item.id} onClick={() => handleRowClick(item)} className={selectedItem?.id === item.id ? 'selected' : ''}>
-                                    <td>{item.id}</td>
-                                    <td>{item.usuario || 'N/A'}</td>
-                                    <td>{item.area}</td>
-                                    <td>{item.tipo}</td>
-                                    <td>{item.marca}</td>
-                                    <td>{formatDate(item.fecha)}</td>
-                                </tr>
-                            ))}
+                                .filter(item =>
+                                    (item.id.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
+                                    (String(item.usuario || '').toLowerCase().includes(searchTerm.toLowerCase()))
+                                ).map((item) => (
+                                    <tr key={item.id} onClick={() => handleRowClick(item)} className={selectedItem?.id === item.id ? 'selected' : ''}>
+                                        <td>{item.id}</td>
+                                        <td>{item.usuario || 'N/A'}</td>
+                                        <td>{item.area}</td>
+                                        <td>{item.tipo}</td>
+                                        <td>{item.marca}</td>
+                                        <td>{formatDate(item.fecha)}</td>
+                                    </tr>
+                                ))}
                         </tbody>
                     </table>
                 </div>
@@ -248,7 +244,7 @@ function CopiasPage() {
             {(selectedItem || isAdding) && (
                 <div className="details-modal" onClick={(e) => { if (e.target === e.currentTarget) { setSelectedItem(null); setIsAdding(false); } }}>
                     <div className="details-panel card" onClick={(e) => e.stopPropagation()}> {/* Eliminar el botón de cerrar */}
-                        <button className="close-details-btn" onClick={() => setSelectedItem(null)}>×</button>
+                        <button className="close-details-btn" onClick={() => setSelectedItem(null)}><FaTimes /></button>
                         {detailedData ? (
                             <>
                                 <div className="details-header">
@@ -277,7 +273,7 @@ function CopiasPage() {
                                                 date={calendarDate}
                                                 onNavigate={(date) => setCalendarDate(date)}
                                                 views={['month']}
-                                                messages={{next: "Siguiente", previous: "Anterior", today: "Hoy", month: "Mes"}}
+                                                messages={{ next: "Siguiente", previous: "Anterior", today: "Hoy", month: "Mes" }}
                                             />
                                         </div>
                                     </div>
@@ -307,7 +303,7 @@ function CopiasPage() {
                                                 ))}
                                             </select>
                                         </label>
-                                        <hr className="full-width"/>
+                                        <hr className="full-width" />
                                         <label>Usuario <input name="usuario" value={newCopiaData.usuario} readOnly placeholder="Se autocompleta" /></label>
                                         <label>Área <input name="area" value={newCopiaData.area} readOnly placeholder="Se autocompleta" /></label>
                                         <label>Tipo <input name="tipo" value={newCopiaData.tipo} readOnly placeholder="Se autocompleta" /></label>

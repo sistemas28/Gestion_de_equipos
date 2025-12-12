@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './SettingsModal.css';
+import { FaCog, FaTimes } from 'react-icons/fa';
 
 function AppSettingsModal({ onClose }) {
     const [language, setLanguage] = useState('es');
@@ -20,8 +21,8 @@ function AppSettingsModal({ onClose }) {
         <div className="settings-modal" onClick={onClose}>
             <div className="settings-panel card" onClick={(e) => e.stopPropagation()}>
                 <div className="settings-header">
-                    <h3><span className="icon">⚙️</span>Ajustes de la Aplicación</h3>
-                    {/* <button className="close-modal-btn" onClick={onClose}>×</button> */}
+                    <h3><span className="icon"><FaCog /></span>Ajustes de la Aplicación</h3>
+                    <button className="close-modal-btn" onClick={onClose}><FaTimes /></button>
                 </div>
                 <div className="settings-form">
                     <div className="setting-item">

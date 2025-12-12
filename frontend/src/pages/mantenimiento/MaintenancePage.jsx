@@ -6,11 +6,13 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { FaTimes } from 'react-icons/fa';
 
 import logo from '../../assets/LOGO_INSTITUCIONAL.jpg';
+import { generateReport } from '../../utils/reportGenerator';
 
 // Configuración para el calendario en español
-moment.locale('es', {
+moment.updateLocale('es', {
     months: 'Enero_Febrero_Marzo_Abril_Mayo_Junio_Julio_Agosto_Septiembre_Octubre_Noviembre_Diciembre'.split('_'),
     weekdays: 'Domingo_Lunes_Martes_Miércoles_Jueves_Viernes_Sábado'.split('_'),
     week: {
@@ -182,41 +184,41 @@ function MaintenancePage() {
         }
     };
 
-const handleSaveNew = async (e) => {
-    e.preventDefault();
-    if (!selectedEquipoId) {
-        setError("Por favor, selecciona un equipo para asociar el mantenimiento.");
-        return;
-    }
-    // Buscamos el equipo completo para obtener su código de inventario
-    const selectedEquipo = equipos.find(eq => eq.id === parseInt(selectedEquipoId, 10));
-    if (!selectedEquipo || !selectedEquipo.codigo) {
-        setError("El equipo seleccionado no tiene un código de inventario válido. No se puede crear el mantenimiento.");
-        return;
-    }
+    const handleSaveNew = async (e) => {
+        e.preventDefault();
+        if (!selectedEquipoId) {
+            setError("Por favor, selecciona un equipo para asociar el mantenimiento.");
+            return;
+        }
+        // Buscamos el equipo completo para obtener su código de inventario
+        const selectedEquipo = equipos.find(eq => eq.id === parseInt(selectedEquipoId, 10));
+        if (!selectedEquipo || !selectedEquipo.codigo) {
+            setError("El equipo seleccionado no tiene un código de inventario válido. No se puede crear el mantenimiento.");
+            return;
+        }
 
-    try {
-        // Creamos el objeto a enviar con los datos del formulario.
-        const dataToSend = { ...newMaintenanceData };
+        try {
+            // Creamos el objeto a enviar con los datos del formulario.
+            const dataToSend = { ...newMaintenanceData };
 
-        // Asignamos la clave foránea que relaciona con el equipo.
-        dataToSend.equipo_id = parseInt(selectedEquipoId, 10);
+            // Asignamos la clave foránea que relaciona con el equipo.
+            dataToSend.equipo_id = parseInt(selectedEquipoId, 10);
 
-        // IMPORTANTE: Enviamos el código del equipo en un campo separado.
-        // El backend debe estar preparado para recibir y guardar "codigo_equipo".
-        // El campo "id" del mantenimiento se asignará igual al id del equipo.
-        dataToSend.codigo_equipo = selectedEquipo.codigo;
-        dataToSend.id = selectedEquipo.codigo;
+            // IMPORTANTE: Enviamos el código del equipo en un campo separado.
+            // El backend debe estar preparado para recibir y guardar "codigo_equipo".
+            // El campo "id" del mantenimiento se asignará igual al id del equipo.
+            dataToSend.codigo_equipo = selectedEquipo.codigo;
+            dataToSend.id = selectedEquipo.codigo;
 
-        await api.post('/mantenimiento', dataToSend);
-        setIsAdding(false);
-        setNewMaintenanceData(null);
-        await fetchMaintenanceData();
-    } catch (err) {
-        console.error("Error creating new maintenance:", err);
-        setError("Error al crear el nuevo mantenimiento.");
-    }
-};
+            await api.post('/mantenimiento', dataToSend);
+            setIsAdding(false);
+            setNewMaintenanceData(null);
+            await fetchMaintenanceData();
+        } catch (err) {
+            console.error("Error creating new maintenance:", err);
+            setError("Error al crear el nuevo mantenimiento.");
+        }
+    };
 
     const handleDelete = async () => {
         if (window.confirm(`¿Estás seguro de que quieres eliminar el mantenimiento #${detailedData.id}?`)) {
@@ -284,6 +286,8 @@ const handleSaveNew = async (e) => {
         return moment(dateString).format('LL');
     };
 
+
+
     const handleDownloadPdf = async () => {
         if (!detailedData) return;
 
@@ -297,101 +301,74 @@ const handleSaveNew = async (e) => {
                 console.error("Error al obtener el historial de mantenimiento:", err);
             }
         }
-        const doc = new jsPDF();
-        const margin = 14;
 
-        // Encabezado
-        doc.addImage(logo, 'JPEG', margin, 10, 40, 20);
-        doc.setFontSize(20);
-        doc.text('Reporte de Mantenimiento', doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
-        doc.setFontSize(10);
-        doc.text(`Código: FT-MANT-001`, doc.internal.pageSize.getWidth() - margin, 15, { align: 'right' });
-        doc.text(`Versión: 1.0`, doc.internal.pageSize.getWidth() - margin, 20, { align: 'right' });
-        doc.text(`Fecha: ${moment().format('DD/MM/YYYY')}`, doc.internal.pageSize.getWidth() - margin, 25, { align: 'right' });
+        const sections = [
+            {
+                type: 'info',
+                title: 'INFORMACIÓN DEL EQUIPO',
+                data: [
+                    { label: 'USUARIO', value: detailedData.usuario || 'N/A' },
+                    { label: 'ÁREA', value: detailedData.area || 'N/A' },
+                    { label: 'TIPO', value: detailedData.tipo || 'N/A' },
+                    { label: 'MARCA', value: detailedData.marca || 'N/A' },
+                    // Assuming code is available in detailedData or we can use ID as fallback
+                    { label: 'CÓDIGO', value: detailedData.codigo || detailedData.id || 'N/A' },
+                    { label: '', value: '' } // Padding
+                ]
+            },
+            {
+                type: 'info',
+                title: 'DETALLES DEL MANTENIMIENTO',
+                data: [
+                    { label: 'ACTIVIDADES', value: detailedData.actividades_realizadas || 'Sin actividades.' },
+                    { label: 'OBSERVACIONES', value: detailedData.observaciones || 'Sin observaciones.' }
+                ]
+            },
+            {
+                type: 'info',
+                title: 'FECHAS',
+                data: [
+                    { label: 'ELABORACIÓN', value: formatDate(detailedData.fecha_de_elaboracion) },
+                    { label: 'EJECUCIÓN', value: formatDate(detailedData.fecha_de_ejecucion) },
+                    { label: 'ÚLTIMO MANT.', value: formatDate(detailedData.fecha_ultimo_mantenimiento) },
+                    { label: 'PRÓXIMO MANT.', value: formatDate(detailedData.fecha_actual_de_mantenimiento) }
+                ]
+            }
+        ];
 
-        // Información del Equipo
-        autoTable(doc, {
-            startY: 40,
-            head: [['Información del Equipo']],
-            body: [
-                [{ content: `Usuario: ${detailedData.usuario || 'N/A'}`, styles: { fontStyle: 'bold' } }],
-                [`Área: ${detailedData.area || 'N/A'}`],
-                [`Tipo de Equipo: ${detailedData.tipo || 'N/A'}`],
-                [`Marca: ${detailedData.marca || 'N/A'}`],
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133] },
-        });
+        // Add Signatures
+        const signatures = [];
+        if (detailedData.firmas_tecnico) signatures.push({ role: 'TÉCNICO', name: '', signature: detailedData.firmas_tecnico });
+        if (detailedData.firmas_aprobo) signatures.push({ role: 'APROBÓ', name: '', signature: detailedData.firmas_aprobo });
+        if (detailedData.firmas_reviso) signatures.push({ role: 'REVISÓ', name: '', signature: detailedData.firmas_reviso });
 
-        // Detalles del Mantenimiento
-        autoTable(doc, {
-            startY: doc.lastAutoTable.finalY + 10,
-            head: [['Detalles del Mantenimiento']],
-            body: [
-                [{ content: 'Actividades Realizadas:', styles: { fontStyle: 'bold' } }],
-                [detailedData.actividades_realizadas || 'Sin actividades registradas.'],
-                [{ content: 'Observaciones:', styles: { fontStyle: 'bold' } }],
-                [detailedData.observaciones || 'Sin observaciones.'],
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133] },
-        });
-
-        // Fechas Clave
-        autoTable(doc, {
-            startY: doc.lastAutoTable.finalY + 10,
-            head: [['Fechas Clave']],
-            body: [
-                [`Fecha de Elaboración: ${formatDate(detailedData.fecha_de_elaboracion)}`],
-                [`Fecha de Ejecución: ${formatDate(detailedData.fecha_de_ejecucion)}`],
-                [`Fecha Último Mantenimiento: ${formatDate(detailedData.fecha_ultimo_mantenimiento)}`],
-                [`Fecha Próximo Mantenimiento: ${formatDate(detailedData.fecha_actual_de_mantenimiento)}`],
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: [22, 160, 133] },
-        });
-
-        // Tabla de Historial de Mantenimientos
-        if (historial.length > 0) {
-            const historialBody = historial.map(item => [
-                formatDate(item.fecha_de_ejecucion),
-                item.actividades_realizadas
-            ]);
-
-            autoTable(doc, {
-                startY: doc.lastAutoTable.finalY + 10,
-                head: [['Fecha de Ejecución', 'Actividades Realizadas']],
-                body: historialBody,
-                theme: 'striped',
-                headStyles: { fillColor: [44, 62, 80] },
+        if (signatures.length > 0) {
+            sections.push({
+                type: 'signatures',
+                data: signatures
             });
         }
 
-        // Firmas
-        const finalY = doc.lastAutoTable.finalY + 15;
-        const firmaTecnico = detailedData.firmas_tecnico;
-        const firmaAprobo = detailedData.firmas_aprobo;
-        const firmaReviso = detailedData.firmas_reviso;
+        // Add History Table if exists
+        if (historial.length > 0) {
+            sections.push({
+                type: 'table',
+                headers: ['Fecha de Ejecución', 'Actividades Realizadas'],
+                body: historial.map(item => [
+                    formatDate(item.fecha_de_ejecucion),
+                    item.actividades_realizadas
+                ])
+            });
+        }
 
-        const addSignature = (signature, title, y) => {
-            if (signature) {
-                doc.setFontSize(10);
-                doc.text(title, margin, y);
-                if (signature.startsWith('data:image')) {
-                    doc.addImage(signature, 'PNG', margin, y + 3, 60, 20);
-                } else {
-                    doc.setFont('helvetica', 'italic');
-                    doc.setFontSize(12);
-                    doc.text(signature, margin, y + 10);
-                }
-            }
-        };
-
-        addSignature(firmaTecnico, 'Firma del Técnico:', finalY);
-        addSignature(firmaAprobo, 'Firma de Aprobación:', finalY + 30);
-        addSignature(firmaReviso, 'Firma de Revisión:', finalY + 60);
-
-        doc.save(`mantenimiento_${detailedData.usuario}.pdf`);
+        generateReport(
+            'PROCESO DE GESTIÓN DE INFORMÁTICA',
+            'HOJA DE VIDA DE LOS EQUIPOS',
+            'FT-MANT-001',
+            '1.0',
+            sections,
+            `Mantenimiento_${detailedData.usuario}.pdf`
+        );
     };
 
     const calendarEvents = detailedData ? [
@@ -463,18 +440,18 @@ const handleSaveNew = async (e) => {
                         </thead>
                         <tbody>
                             {maintenanceData
-                            .filter(item =>
-                                (item.id.toString().includes(searchTerm)) ||
-                                (item.usuario?.toLowerCase().includes(searchTerm.toLowerCase()))
-                            ).map((item) => (
-                                <tr key={item.id} onClick={() => handleRowClick(item)} className={selectedItem?.id === item.id ? 'selected' : ''}>
-                                    <td>{item.id}</td>
-                                    <td>{item.usuario}</td>
-                                    <td>{item.area}</td>
-                                    <td>{item.tipo}</td>
-                                    <td>{item.fecha_actual_de_mantenimiento ? new Date(item.fecha_actual_de_mantenimiento).toLocaleDateString() : 'N/A'}</td>
-                                </tr>
-                            ))}
+                                .filter(item =>
+                                    (item.id.toString().includes(searchTerm)) ||
+                                    (item.usuario?.toLowerCase().includes(searchTerm.toLowerCase()))
+                                ).map((item) => (
+                                    <tr key={item.id} onClick={() => handleRowClick(item)} className={selectedItem?.id === item.id ? 'selected' : ''}>
+                                        <td>{item.id}</td>
+                                        <td>{item.usuario}</td>
+                                        <td>{item.area}</td>
+                                        <td>{item.tipo}</td>
+                                        <td>{item.fecha_actual_de_mantenimiento ? new Date(item.fecha_actual_de_mantenimiento).toLocaleDateString() : 'N/A'}</td>
+                                    </tr>
+                                ))}
                         </tbody>
                     </table>
                 </div>
@@ -483,7 +460,7 @@ const handleSaveNew = async (e) => {
             {(selectedItem || isAdding) && (
                 <div className="details-modal" onClick={(e) => { if (e.target === e.currentTarget) { setSelectedItem(null); setIsAdding(false); } }}>
                     <div className="details-panel card" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-details-btn" onClick={() => setSelectedItem(null)}>×</button>
+                        <button className="close-details-btn" onClick={() => setSelectedItem(null)}><FaTimes /></button>
                         {loadingDetails ? (
                             <div className="loading-message">Cargando detalles...</div>
                         ) : detailedData ? (
@@ -578,7 +555,7 @@ const handleSaveNew = async (e) => {
                                                 date={calendarDate}
                                                 onNavigate={(date) => setCalendarDate(date)}
                                                 views={['month']}
-                                                messages={{next: "Siguiente", previous: "Anterior", today: "Hoy", month: "Mes"}}
+                                                messages={{ next: "Siguiente", previous: "Anterior", today: "Hoy", month: "Mes" }}
                                             />
                                         </div>
                                         <div className="signature-container">

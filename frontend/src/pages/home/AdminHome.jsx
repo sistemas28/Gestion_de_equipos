@@ -1,17 +1,43 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../../api/axios';
 import './AdminHome.css';
-import './home.css'; 
+import './home.css';
+import { FaBars, FaBell, FaSignOutAlt, FaUsers, FaTools, FaFileAlt, FaLaptop, FaPlus, FaEye, FaEyeSlash, FaCheck } from 'react-icons/fa';
+
+// Importar componentes móviles
+import useIsMobile from '../../hooks/useIsMobile.js';
+import MobileLayout from '../../components/mobile/MobileLayout.jsx';
 
 // Importar las páginas que se van a renderizar
-import MaintenancePage from '../mantenimiento/maintenancePage';
-import LicenciamientoPage from '../licenciamiento/LicenciamientoPage';
-import CopiasPage from '../copiasDeSeguridad/CopiasPage';
-import ImpresorasPage from '../impresoras/ImpresorasPage';
-import AgregarEquipoPage from './AgregarEquipoPage';
+import MaintenancePage from '../mantenimiento/MaintenancePage.jsx';
+import LicenciamientoPage from '../licenciamiento/LicenciamientoPage.jsx';
+import CopiasPage from '../copiasDeSeguridad/CopiasPage.jsx';
+import ImpresorasPage from '../impresoras/ImpresorasPage.jsx';
+import HistorialEquiposPage from '../historialEquipos/HistorialEquiposPage.jsx';
+import AgregarEquipoPage from './AgregarEquipoPage.jsx';
 
-// El componente AdminHome ahora funcionará como un contenedor principal para todas las vistas de admin.
+// Componente principal que decide qué renderizar
 function AdminHome({ onBack, username }) {
+    const isMobile = useIsMobile();
+
+    if (isMobile) {
+        return (
+            <MobileLayout
+                username={username}
+                onLogout={() => {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('username');
+                    onBack && onBack();
+                }}
+            />
+        );
+    }
+
+    return <DesktopAdminHome onBack={onBack} username={username} />;
+}
+
+// Lógica original de escritorio encapsulada
+function DesktopAdminHome({ onBack, username }) {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -35,7 +61,7 @@ function AdminHome({ onBack, username }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [currentAdminView, setCurrentAdminView] = useState('dashboard'); // 'dashboard', 'userManagement', 'mantenimiento', etc.
     const [showNotifications, setShowNotifications] = useState(false);
-    
+
     // Estados para notificaciones (copiados de Home.jsx)
     const [reminders, setReminders] = useState([]);
     const [loadingReminders, setLoadingReminders] = useState(false);
@@ -57,7 +83,7 @@ function AdminHome({ onBack, username }) {
     };
 
     // Lógica de notificaciones (copiada de Home.jsx)
-    async function fetchReminders(){
+    async function fetchReminders() {
         setLoadingReminders(true);
         try {
             // 1. Obtener recordatorios manuales
@@ -90,17 +116,17 @@ function AdminHome({ onBack, username }) {
         }
     }
 
-    async function handleToggleRealizado(rem){
+    async function handleToggleRealizado(rem) {
         // No se puede marcar como realizado un recordatorio automático de mantenimiento
         if (rem.source === 'mantenimiento') {
             alert('Este recordatorio se gestiona desde la sección de Mantenimiento.');
             return;
         }
-        try{
+        try {
             const newVal = rem.realizado ? 0 : 1;
             await api.patch(`/recordatorios/${rem.id}/realizado`, { realizado: newVal });
             fetchReminders();
-        }catch(err){
+        } catch (err) {
             console.error('Error toggling realizado', err);
         }
     }
@@ -110,7 +136,7 @@ function AdminHome({ onBack, username }) {
         try {
             // Solo marcar los recordatorios manuales no completados
             const uncompletedManualReminders = reminders.filter(r => !r.realizado && !r.source);
-            const promises = uncompletedManualReminders.map(rem => 
+            const promises = uncompletedManualReminders.map(rem =>
                 api.patch(`/recordatorios/${rem.id}/realizado`, { realizado: 1 })
             );
             if (promises.length > 0) await Promise.all(promises);
@@ -165,7 +191,7 @@ function AdminHome({ onBack, username }) {
 
     const handleModalSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Validación simple
         if (!formData.nombre || !formData.usuario || !formData.correo) {
             setError('Nombre, correo y usuario son obligatorios.');
@@ -190,7 +216,7 @@ function AdminHome({ onBack, username }) {
                 response = await api.post('/usuarios', formData);
                 setSuccess(`Usuario "${formData.nombre}" creado con éxito.`);
             }
-            
+
             setIsModalOpen(false);
             fetchUsers(); // Recargar la lista de usuarios
 
@@ -230,13 +256,14 @@ function AdminHome({ onBack, username }) {
         <div className={`home-shell ${sidebarOpen ? 'sidebar-open' : ''}`}>
             <aside className="sidebar">
                 <div className="sidebar-top">
-                    <div className="sidebar-brand">ADMIN<br/>DASHBOARD</div>
+                    <div className="sidebar-brand">ADMIN<br />DASHBOARD</div>
                     <nav className="side-nav">
                         {/* Botones de navegación del Admin */}
                         <button className={currentAdminView === 'dashboard' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('dashboard')}>DASHBOARD ADMIN</button>
                         <button className={currentAdminView === 'userManagement' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('userManagement')}>GESTIÓN USUARIOS</button>
                         {/* Botones de navegación a otras secciones */}
                         <button className={currentAdminView === 'mantenimiento' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('mantenimiento')}>MANTENIMIENTO</button>
+                        <button className={currentAdminView === 'historialEquipos' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('historialEquipos')}>HISTORIAL EQUIPOS</button>
                         <button className={currentAdminView === 'licenciamiento' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('licenciamiento')}>LICENCIAMIENTO</button>
                         <button className={currentAdminView === 'copias' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('copias')}>COPIAS DE SEGURIDAD</button>
                         <button className={currentAdminView === 'impresoras' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('impresoras')}>IMPRESORAS</button>
@@ -249,19 +276,19 @@ function AdminHome({ onBack, username }) {
             <main className="main-area">
                 <header className="topbar">
                     <div className="logo-row">
-                        <button className="hamburger" onClick={() => setSidebarOpen(s => !s)} aria-label="Toggle menu">☰</button>
+                        <button className="hamburger" onClick={() => setSidebarOpen(s => !s)} aria-label="Toggle menu"><FaBars /></button>
                         <div className="logo-pill">AD</div>
-                        <div className="org">ADMIN<br/>DASHBOARD</div>
+                        <div className="org">ADMIN<br />DASHBOARD</div>
                         <div className="topbar-time">{timeStr}</div>
                         <div className="logoNasakiwe"></div> {/* Mantener si es parte del branding */}
                     </div>
                     <div className="top-actions">
                         {/* Puedes añadir botones de ajustes o notificaciones aquí si son relevantes para el admin */}
                         <button className="icon-btn" onClick={() => setShowNotifications(s => !s)}>
-                            🔔
+                            <FaBell />
                             {uncompletedReminders.length > 0 && <span className="notification-badge">{uncompletedReminders.length}</span>}
                         </button>
-                        <button className="icon-btn" title="Cerrar sesión" onClick={handleLogout}>🚪</button>
+                        <button className="icon-btn" title="Cerrar sesión" onClick={handleLogout}><FaSignOutAlt /></button>
                     </div>
                 </header>
 
@@ -271,7 +298,7 @@ function AdminHome({ onBack, username }) {
                         <div className="hero-left card big-card">
                             <div className="hero-content-flex">
                                 <div className="hero-greeting">
-                                    <h2>HOLA,<br/><span className="username">{username || '(USUARIO)'}</span></h2>
+                                    <h2>HOLA,<br /><span className="username">{username || '(USUARIO)'}</span></h2>
                                     <p>Bienvenido al panel de administración. Aquí puedes gestionar los usuarios del sistema.</p>
                                 </div>
                             </div>
@@ -279,16 +306,16 @@ function AdminHome({ onBack, username }) {
                                 <h4>Acciones rápidas</h4>
                                 <div className="quick-actions">
                                     <button className="action-btn" onClick={() => setCurrentAdminView('userManagement')}>
-                                        <span className="icon">👥</span> Gestionar Usuarios
+                                        <span className="icon"><FaUsers /></span> Gestionar Usuarios
                                     </button>
                                     <button className="action-btn" onClick={() => setCurrentAdminView('mantenimiento')}>
-                                        <span className="icon">🛠️</span> Ir a Mantenimiento
+                                        <span className="icon"><FaTools /></span> Ir a Mantenimiento
                                     </button>
                                     <button className="action-btn" onClick={() => setCurrentAdminView('licenciamiento')}>
-                                        <span className="icon">📜</span> Ir a Licenciamiento
+                                        <span className="icon"><FaFileAlt /></span> Ir a Licenciamiento
                                     </button>
                                     <button className="action-btn" onClick={() => setCurrentAdminView('agregarEquipo')}>
-                                        <span className="icon">💻</span> Agregar Equipo
+                                        <span className="icon"><FaLaptop /></span> Agregar Equipo
                                     </button>
                                 </div>
                             </div>
@@ -314,7 +341,7 @@ function AdminHome({ onBack, username }) {
 
                         <div className="toolbar">
                             <button className="btn primary" onClick={openModalForCreate}>
-                                <span className="icon">+</span> Crear Nuevo Usuario
+                                <span className="icon"><FaPlus /></span> Crear Nuevo Usuario
                             </button>
                         </div>
 
@@ -360,147 +387,130 @@ function AdminHome({ onBack, username }) {
 
                 {/* Renderizado condicional de las otras páginas */}
                 {currentAdminView === 'mantenimiento' && <MaintenancePage />}
-                {currentAdminView === 'licenciamiento' && <LicenciamientoPage />} 
-                {currentAdminView === 'copias' && <CopiasPage />} 
+                {currentAdminView === 'historialEquipos' && <HistorialEquiposPage />}
+                {currentAdminView === 'licenciamiento' && <LicenciamientoPage />}
+                {currentAdminView === 'copias' && <CopiasPage />}
                 {currentAdminView === 'impresoras' && <ImpresorasPage />}
+
                 {currentAdminView === 'agregarEquipo' && <AgregarEquipoPage onEquipoAgregado={() => setCurrentAdminView('dashboard')} />}
 
-                {/* Modal para Crear/Editar Usuario (se mantiene fuera del condicional principal para que siempre esté disponible si currentAdminView es 'userManagement') */}
-                {isModalOpen && (
-                    <div className="modal-backdrop">
-                        <div className="modal-content card">
-                            <h2>{editingUser ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</h2>
-                            <form onSubmit={handleModalSubmit}>
-                                {error && <div className="form-message error">{error}</div>}
-                                <div className="form-grid">
-                                    <label>
-                                        Nombre Completo
-                                        <input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} required />
-                                    </label>
-                                    <label>
-                                        Correo Electrónico
-                                        <input type="email" name="correo" value={formData.correo} onChange={handleInputChange} required />
-                                    </label>
-                                    <label>
-                                        Nombre de Usuario
-                                        <input type="text" name="usuario" value={formData.usuario} onChange={handleInputChange} required />
-                                    </label>
-                                    <label>
-                                        Contraseña {editingUser ? '(Dejar en blanco para no cambiar)' : ''}
-                                        <div style={{ position: 'relative' }}>
-                                            <input 
-                                                type={showPassword ? "text" : "password"} 
-                                                name="password" 
-                                                value={formData.password} 
-                                                onChange={handleInputChange} 
-                                                required={!editingUser} 
-                                                style={{ paddingRight: '2.5rem' }}
-                                            />
-                                            <button 
-                                                type="button" 
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                style={{
-                                                    position: 'absolute',
-                                                    right: '0.5rem',
-                                                    top: '50%',
-                                                    transform: 'translateY(-50%)',
-                                                    background: 'none',
-                                                    border: 'none',
-                                                    cursor: 'pointer',
-                                                    fontSize: '1.2rem',
-                                                    color: '#666'
-                                                }}
-                                                title={showPassword ? "Ocultar contraseña" : "Ver contraseña"}
-                                            >
-                                                {showPassword ? '🙈' : '👁️'}
-                                            </button>
-                                        </div>
-                                    </label>
-                                    <label>
-                                        Confirmar Contraseña
-                                        <div style={{ position: 'relative' }}>
-                                            <input 
-                                                type={showConfirmPassword ? "text" : "password"} 
-                                                name="confirmPassword" 
-                                                value={formData.confirmPassword} 
-                                                onChange={handleInputChange} 
-                                                required={!editingUser || formData.password !== ''} 
-                                                style={{ paddingRight: '2.5rem' }}
-                                            />
-                                            <button 
-                                                type="button" 
-                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                style={{
-                                                    position: 'absolute',
-                                                    right: '0.5rem',
-                                                    top: '50%',
-                                                    transform: 'translateY(-50%)',
-                                                    background: 'none',
-                                                    border: 'none',
-                                                    cursor: 'pointer',
-                                                    fontSize: '1.2rem',
-                                                    color: '#666'
-                                                }}
-                                                title={showConfirmPassword ? "Ocultar contraseña" : "Ver contraseña"}
-                                            >
-                                                {showConfirmPassword ? '🙈' : '👁️'}
-                                            </button>
-                                        </div>
-                                    </label>
-                                </div>
-                                <div className="form-actions">
-                                    <button type="submit" className="action-btn save">
-                                        {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
-                                    </button>
-                                    <button type="button" className="action-btn cancel" onClick={() => setIsModalOpen(false)}>
-                                        Cancelar
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
-
-                {/* Modal de Notificaciones para Admin */}
-                {showNotifications && (
-                    <div className="notifications-modal" onClick={() => setShowNotifications(false)}>
-                        <div className="notifications-panel" onClick={(e) => e.stopPropagation()}>
-                            <div className="notifications-header">
-                                <div className="notifications-header-title">
-                                    <span className="icon">🔔</span>
-                                    <h4>Notificaciones</h4>
-                                </div>
-                                <button className="link small" onClick={handleClearAllNotifications}>Limpiar todo</button>
-                            </div>
-                            <div className="notifications-list">
-                                {uncompletedReminders.length > 0 ? (
-                                    uncompletedReminders.map(rem => (
-                                        <div key={rem.id} className="notification-item">
-                                            <div className="notification-content">
-                                                <div className="notification-title">{rem.title}</div>
-                                                <small className="muted">{rem.date ? new Date(rem.date).toLocaleString() : ''}</small>
-                                                {rem.source === 'mantenimiento' && (
-                                                    <small className="notification-source">
-                                                        <span onClick={(e) => {e.stopPropagation(); setShowNotifications(false); setCurrentAdminView('mantenimiento');}}>Ir a Mantenimiento</span>
-                                                    </small>
-                                                )}
-                                            </div>
-                                            <button 
-                                                className="clear-notification-btn" 
-                                                title="Marcar como realizado"
-                                                onClick={(e) => { e.stopPropagation(); handleToggleRealizado(rem); }}
-                                            >✓</button>
-                                        </div>
-                                    ))
-                                ) : <div className="muted" style={{padding: '1rem'}}>No hay notificaciones nuevas.</div>}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
             </main>
-            {/* Backdrop para el sidebar y modales */}
-            {(sidebarOpen || isModalOpen || showNotifications) && <div className="backdrop" onClick={() => { setSidebarOpen(false); setIsModalOpen(false); setShowNotifications(false); }} />}
+
+            {/* Modal para Crear/Editar Usuario */}
+            {isModalOpen && (
+                <div className="modal-backdrop">
+                    <div className="modal-content card">
+                        <h2>{editingUser ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</h2>
+                        <form onSubmit={handleModalSubmit}>
+                            {error && <div className="form-message error">{error}</div>}
+                            <div className="form-grid">
+                                <label>
+                                    Nombre Completo
+                                    <input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} required />
+                                </label>
+                                <label>
+                                    Correo Electrónico
+                                    <input type="email" name="correo" value={formData.correo} onChange={handleInputChange} required />
+                                </label>
+                                <label>
+                                    Nombre de Usuario
+                                    <input type="text" name="usuario" value={formData.usuario} onChange={handleInputChange} required />
+                                </label>
+                                <label>
+                                    Contraseña {editingUser ? '(Dejar en blanco para no cambiar)' : ''}
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            name="password"
+                                            value={formData.password}
+                                            onChange={handleInputChange}
+                                            required={!editingUser}
+                                            style={{ paddingRight: '2.5rem' }}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="password-toggle-btn"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            title={showPassword ? "Ocultar contraseña" : "Ver contraseña"}
+                                        >
+                                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                        </button>
+                                    </div>
+                                </label>
+                                <label>
+                                    Confirmar Contraseña
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            name="confirmPassword"
+                                            value={formData.confirmPassword}
+                                            onChange={handleInputChange}
+                                            required={!editingUser || formData.password !== ''}
+                                            style={{ paddingRight: '2.5rem' }}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="password-toggle-btn"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            title={showConfirmPassword ? "Ocultar contraseña" : "Ver contraseña"}
+                                        >
+                                            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                                        </button>
+                                    </div>
+                                </label>
+                            </div>
+                            <div className="form-actions">
+                                <button type="submit" className="action-btn save">
+                                    {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
+                                </button>
+                                <button type="button" className="action-btn cancel" onClick={() => setIsModalOpen(false)}>
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Notificaciones para Admin */}
+            {showNotifications && (
+                <div className="notifications-modal" onClick={() => setShowNotifications(false)}>
+                    <div className="notifications-panel" onClick={(e) => e.stopPropagation()}>
+                        <div className="notifications-header">
+                            <div className="notifications-header-title">
+                                <span className="icon"><FaBell /></span>
+                                <h4>Notificaciones</h4>
+                            </div>
+                            <button className="link small" onClick={handleClearAllNotifications}>Limpiar todo</button>
+                        </div>
+                        <div className="notifications-list">
+                            {uncompletedReminders.length > 0 ? (
+                                uncompletedReminders.map(rem => (
+                                    <div key={rem.id} className="notification-item">
+                                        <div className="notification-content">
+                                            <div className="notification-title">{rem.title}</div>
+                                            <small className="muted">{rem.date ? new Date(rem.date).toLocaleString() : ''}</small>
+                                            {rem.source === 'mantenimiento' && (
+                                                <small className="notification-source">
+                                                    <span onClick={(e) => { e.stopPropagation(); setShowNotifications(false); setCurrentAdminView('mantenimiento'); }}>Ir a Mantenimiento</span>
+                                                </small>
+                                            )}
+                                        </div>
+                                        <button
+                                            className="clear-notification-btn"
+                                            title="Marcar como realizado"
+                                            onClick={(e) => { e.stopPropagation(); handleToggleRealizado(rem); }}
+                                        ><FaCheck /></button>
+                                    </div>
+                                ))
+                            ) : <div className="muted" style={{ padding: '1rem' }}>No hay notificaciones nuevas.</div>}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Backdrop solo para el sidebar móvil */}
+            {sidebarOpen && <div className="backdrop" onClick={() => setSidebarOpen(false)} />}
         </div>
     );
 }

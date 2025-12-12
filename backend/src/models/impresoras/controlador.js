@@ -3,54 +3,57 @@ module.exports = function (dbInyectada){
 
     let db = dbInyectada;
 
-if(!db){
-    db = require('../../DB/mysql');
-}
-
-function todos(){
-    return db.todos(TABLA);
-}
-
-function agregar(body){
-    const authData = {
-        area: body.area,
-        modelo: body.modelo,
-        direccion_IP: body.direccion_IP,
-        novedad: body.novedad
-    };
-
-    if(body.usuario){
-        authData.usuario = body.usuario
+    if(!db){
+        db = require('../../DB/mysql');
     }
 
-    return db.agregar(TABLA, authData);
-}
-
-function modificar(body){
-    // reutilizamos la misma estructura que en `agregar` para hacer un upsert.
-    const authData = {
-        area: body.area,
-        modelo: body.modelo,
-        direccion_IP: body.direccion_IP,
-        novedad: body.novedad
-    };
-
-    if(body.usuario){
-        authData.usuario = body.usuario
+    function todos(){
+        return db.todos(TABLA);
     }
 
-    return db.agregar(TABLA, authData);
-}
+    function uno(id){
+        return db.uno(TABLA, id);
+    }
 
-function eliminar(id){
-    return db.eliminar(TABLA, id);
-}
+    function agregar(body){
+        const authData = {
+            area: body.area,
+            modelo: body.modelo,
+            direccion_IP: body.direccion_IP,
+            novedad: body.novedad
+        };
 
+        if(body.usuario){
+            authData.usuario = body.usuario;
+        }
 
-return {
-    todos,
-    agregar,
-    modificar,
-    eliminar,
-}
-}
+        return db.agregar(TABLA, authData);
+    }
+
+    function modificar(body, id){
+        const authData = {
+            area: body.area,
+            modelo: body.modelo,
+            direccion_IP: body.direccion_IP,
+            novedad: body.novedad
+        };
+
+        if(body.usuario){
+            authData.usuario = body.usuario;
+        }
+
+        return db.actualizar(TABLA, id, authData);
+    }
+
+    function eliminar(id){
+        return db.eliminar(TABLA, id);
+    }
+
+    return {
+        todos,
+        uno,
+        agregar,
+        modificar,
+        eliminar,
+    };
+};

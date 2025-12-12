@@ -16,7 +16,7 @@ module.exports = function (dbInyectada) {
                 area: equipo.Area,
                 tipo: equipo.tipo,
                 marca: equipo.marca,
-                codigo: equipo.codigo_de_equipo
+                codigo: String(equipo.codigo_de_equipo || '')
             }));
         });
     }
@@ -32,12 +32,12 @@ module.exports = function (dbInyectada) {
                 area: equipo.Area,
                 tipo: equipo.tipo,
                 marca: equipo.marca,
-                codigo: equipo.codigo_de_equipo
+                codigo: String(equipo.codigo_de_equipo || '')
             };
         });
     }
 
-    function agregar(body) {
+    async function agregar(body) {
         // Mapeamos los datos del frontend a los nombres de columna de la BD
         const equipo = {
             nombre_de_usuario_asignado: body.usuario,
@@ -46,10 +46,32 @@ module.exports = function (dbInyectada) {
             marca: body.marca,
             codigo_de_equipo: body.codigo,
         };
-        return db.agregar(TABLA, equipo);
+
+        const resultado = await db.agregar(TABLA, equipo);
+
+        // Crear entrada inicial en el historial
+        if (resultado && resultado.insertId) {
+            const historial = {
+                equipo_id: resultado.insertId,
+                codigo_inventario: String(body.codigo || ''),
+                usuario_anterior: 'Sistema',
+                usuario_nuevo: body.usuario,
+                area_anterior: 'Sin asignar',
+                area_nueva: body.area,
+                motivo_cambio: 'Registro inicial del equipo',
+                observaciones: 'Equipo agregado al sistema'
+            };
+
+            await db.agregar('historial_equipos', historial);
+        }
+
+        return resultado;
     }
 
-    function modificar(id, body) {
+    async function modificar(id, body) {
+        // Primero obtenemos el equipo actual para comparar
+        const equipoActual = await uno(id);
+
         // La función de modificar también necesita mapear los campos
         const equipo = {
             nombre_de_usuario_asignado: body.usuario,
@@ -58,6 +80,24 @@ module.exports = function (dbInyectada) {
             marca: body.marca,
             codigo_de_equipo: body.codigo,
         };
+
+        // Verificar si hubo cambio de usuario o área
+        if (equipoActual && (equipoActual.usuario !== body.usuario || equipoActual.area !== body.area)) {
+            // Registrar en el historial
+            const historial = {
+                equipo_id: id,
+                codigo_inventario: body.codigo || equipoActual.codigo,
+                usuario_anterior: equipoActual.usuario,
+                usuario_nuevo: body.usuario,
+                area_anterior: equipoActual.area,
+                area_nueva: body.area,
+                motivo_cambio: body.motivo_cambio || 'Actualización de equipo',
+                observaciones: body.observaciones || null
+            };
+
+            await db.agregar('historial_equipos', historial);
+        }
+
         return db.actualizar(TABLA, id, equipo);
     }
 

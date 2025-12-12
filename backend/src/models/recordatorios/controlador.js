@@ -1,16 +1,16 @@
 const TABLA = 'recordatorios'
 
-module.exports = function (dbInyectada){
+module.exports = function (dbInyectada) {
     let db = dbInyectada
-    if(!db){
+    if (!db) {
         db = require('../../DB/mysql')
     }
 
-    async function listar(){
+    async function listar() {
         return db.todos(TABLA)
     }
 
-    async function agregar(data){
+    async function agregar(data) {
         const record = {
             id: data.id,
             title: data.title,
@@ -21,20 +21,18 @@ module.exports = function (dbInyectada){
         return db.agregar(TABLA, record)
     }
 
-    async function actualizar(id, data){
-        const record = {
-            id: id,
-        }
+    async function actualizar(id, data) {
+        const record = {}
 
-        if(data.title !== undefined) record.title = data.title
-        if(data.date !== undefined) record.date = data.date
-        if(data.realizado !== undefined) record.realizado = data.realizado
+        if (data.title !== undefined) record.title = data.title
+        if (data.date !== undefined) record.date = data.date
+        if (data.realizado !== undefined) record.realizado = data.realizado
 
-        return db.agregar(TABLA, record)
+        return db.actualizar(TABLA, id, record)
     }
 
-    async function eliminar(id){
-        return db.eliminar(TABLA, { id })
+    async function eliminar(id) {
+        return db.eliminar(TABLA, id)
     }
 
     return {
