@@ -6,7 +6,8 @@ const controlador = require('./index');
 const router = express.Router();
 
 router.get('/', todos);
-router.get('/historial/:equipo_id', historialPorEquipo);
+
+router.get('/historial/:codigoEquipo', historialPorEquipo);
 router.get ('/:id', uno);
 router.post('/', agregar);
 router.put('/:id', modificar);
@@ -41,12 +42,26 @@ async function historialPorEquipo(req, res, next) {
     }
 }
 
+
+
+
+
+
+
+
 async function agregar(req, res, next) {
     try{
+        console.log('=== DEBUG AGREGAR MANTENIMIENTO ===');
+        console.log('req.body:', JSON.stringify(req.body, null, 2));
+        
         const items = await controlador.agregar(req.body);
         const mensaje = 'item agregado satisfactoriamente';
         respuesta.succes(req, res, mensaje, 201);
     }catch(err){
+        console.error('=== ERROR EN AGREGAR ===');
+        console.error('Error details:', err);
+        console.error('Error message:', err.message);
+        console.error('Error stack:', err.stack);
         next(err);
     }
 };

@@ -1,7 +1,30 @@
-/* Historial Equipos Page Styles */
+/* Variables CSS globales - Paleta Institucional */
+:root {
+    --primary-color: #AD1A1C;
+    --primary-hover: #8B1517;
+    --accent-color: #FCE821;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    --bg-color-light: #f8fafc;
+    --bg-color-dark: #1e293b;
+    --card-bg-color: #ffffff;
+    --border-color: #e2e8f0;
+    --text-color-dark: #1e293b;
+    --text-color-light: #64748b;
+    --hover-bg-color: #f1f5f9;
+    --selected-bg-color: rgba(173, 26, 28, 0.1);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
 
 .historial-equipos-page {
     padding: 24px;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    min-height: calc(100vh - 80px);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     animation: fadeIn 0.5s ease;
 }
 
@@ -10,7 +33,6 @@
         opacity: 0;
         transform: translateY(20px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -19,11 +41,152 @@
 
 .historial-container {
     padding: 32px;
-    background: rgba(255, 255, 255, 0.98);
+    background: var(--card-bg-color);
     backdrop-filter: blur(10px);
     border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(173, 26, 28, 0.1);
-    border: 1px solid rgba(252, 232, 33, 0.2);
+    box-shadow: var(--shadow-lg);
+    border: 2px solid rgba(252, 232, 33, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.historial-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color-dark);
+    margin: 0;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: var(--accent-color);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(252, 232, 33, 0.3);
+}
+
+.refresh-btn:hover {
+    background: linear-gradient(135deg, var(--primary-hover), #6B1012);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    color: white;
+}
+
+.refresh-btn:disabled {
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.search-container {
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.search-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 16px 20px 16px 48px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 1rem;
+    background: var(--card-bg-color);
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(173, 26, 28, 0.1);
+    transform: translateY(-1px);
+}
+
+.search-container::before {
+    content: "🔍";
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    opacity: 0.6;
+}
+
+.table-container {
+    background: var(--card-bg-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.historial-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.historial-table th {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: var(--accent-color);
+    font-weight: 600;
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 2px solid var(--primary-hover);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.historial-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--text-color-dark);
+    vertical-align: middle;
+}
+
+.historial-table tbody tr {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.historial-table tbody tr:hover {
+    background: var(--selected-bg-color);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .loading-message,
@@ -32,16 +195,256 @@
     padding: 40px 20px;
     font-size: 16px;
     font-weight: 500;
+    border-radius: 12px;
+    margin: 24px 0;
 }
 
 .loading-message {
-    color: #6c757d;
+    background: linear-gradient(135deg, rgba(173, 26, 28, 0.1), rgba(173, 26, 28, 0.05));
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
 }
 
 .error-message {
-    background: rgba(239, 68, 68, 0.1);
-    color: #dc2626;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 12px;
-    margin-bottom: 20px;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    border: 1px solid #ef4444;
+    font-weight: 600;
 }
+
+/* ===============================================
+   RESPONSIVE DESIGN MEJORADO
+   =============================================== */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 1200px) {
+    .historial-equipos-page {
+        padding: 20px;
+    }
+    
+    .historial-container {
+        padding: 24px;
+    }
+    
+    .page-title {
+        font-size: 1.75rem;
+    }
+    
+    .historial-table {
+        font-size: 0.8rem;
+    }
+    
+    .historial-table th,
+    .historial-table td {
+        padding: 12px 16px;
+    }
+}
+
+/* Tablets pequeñas y móviles grandes */
+@media (max-width: 768px) {
+    .historial-equipos-page {
+        padding: 16px;
+        min-height: calc(100vh - 60px);
+    }
+    
+    .historial-container {
+        padding: 20px;
+        border-radius: 12px;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+        line-height: 1.2;
+    }
+    
+    .refresh-btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+    
+    .search-input {
+        max-width: 100%;
+        padding: 14px 18px 14px 42px;
+        font-size: 0.95rem;
+    }
+    
+    .table-container {
+        border-radius: 8px;
+        overflow-x: auto;
+    }
+    
+    .historial-table {
+        min-width: 600px;
+        font-size: 0.75rem;
+    }
+    
+    .historial-table th,
+    .historial-table td {
+        padding: 8px 12px;
+    }
+    
+    .loading-message,
+    .error-message {
+        padding: 20px 16px;
+        font-size: 14px;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+    .historial-equipos-page {
+        padding: 12px;
+    }
+    
+    .historial-container {
+        padding: 16px;
+        border-radius: 8px;
+    }
+    
+    .page-header {
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+    
+    .page-title {
+        font-size: 1.25rem;
+    }
+    
+    .refresh-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 12px;
+    }
+    
+    .search-input {
+        padding: 12px 16px 12px 40px;
+        font-size: 0.9rem;
+    }
+    
+    .search-container::before {
+        left: 14px;
+        font-size: 1rem;
+    }
+    
+    .historial-table {
+        min-width: 500px;
+        font-size: 0.7rem;
+    }
+    
+    .historial-table th,
+    .historial-table td {
+        padding: 6px 8px;
+    }
+    
+    .historial-table th {
+        font-size: 0.65rem;
+    }
+    
+    .loading-message,
+    .error-message {
+        padding: 16px 12px;
+        font-size: 13px;
+    }
+}
+
+/* Pantallas muy pequeñas */
+@media (max-width: 360px) {
+    .historial-equipos-page {
+        padding: 8px;
+    }
+    
+    .historial-container {
+        padding: 12px;
+        border-radius: 6px;
+    }
+    
+    .page-title {
+        font-size: 1.1rem;
+    }
+    
+    .historial-table {
+        min-width: 450px;
+        font-size: 0.65rem;
+    }
+    
+    .historial-table th,
+    .historial-table td {
+        padding: 4px 6px;
+    }
+    
+    .historial-table th {
+        font-size: 0.6rem;
+    }
+}
+
+/* Mejoras de accesibilidad para dispositivos táctiles */
+@media (max-width: 768px) {
+    .refresh-btn:focus,
+    .search-input:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+}
+
+/* Orientación landscape en móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+    .historial-equipos-page {
+        padding: 12px;
+    }
+    
+    .historial-container {
+        padding: 16px;
+    }
+    
+    .page-title {
+        font-size: 1.25rem;
+    }
+    
+    .historial-table {
+        min-width: 500px;
+    }
+}
+
+/* ===============================================
+   ANIMACIONES ADICIONALES
+   =============================================== */
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.loading-message {
+    animation: pulse 2s infinite;
+}
+
+/* ===============================================
+   UTILIDADES
+   =============================================== */
+
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mt-1 { margin-top: 4px; }
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 12px; }
+.mt-4 { margin-top: 16px; }
+
+.mb-1 { margin-bottom: 4px; }
+.mb-2 { margin-bottom: 8px; }
+.mb-3 { margin-bottom: 12px; }
+.mb-4 { margin-bottom: 16px; }
+
+.p-1 { padding: 4px; }
+.p-2 { padding: 8px; }
+.p-3 { padding: 12px; }
+.p-4 { padding: 16px; }
+

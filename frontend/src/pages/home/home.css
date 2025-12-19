@@ -27,9 +27,12 @@ body,
 
 .home-shell {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  /* Altura fija al viewport */
   background: linear-gradient(135deg, #AD1A1C 0%, #8B1517 100%);
   position: relative;
+  overflow: hidden;
+  /* Evita scroll global */
 }
 
 /* Modern Sidebar */
@@ -115,7 +118,10 @@ body,
   padding: 24px;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* El scroll lo manejarán las subpáginas si es necesario */
 }
 
 /* Topbar */
@@ -606,7 +612,53 @@ body,
   box-shadow: 0 0 0 3px rgba(173, 26, 28, 0.1);
 }
 
-/* Responsive */
+
+/* ===============================================
+   RESPONSIVE DESIGN MEJORADO
+   =============================================== */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 220px;
+    padding: 20px;
+  }
+
+  .sidebar-brand {
+    font-size: 18px;
+    padding: 12px;
+    margin-bottom: 24px;
+  }
+
+  .main-area {
+    padding: 20px;
+  }
+
+  .topbar {
+    padding: 14px 20px;
+    margin-bottom: 20px;
+  }
+
+  .hero {
+    grid-template-columns: 1fr 160px;
+    gap: 20px;
+  }
+
+  .big-card {
+    padding: 24px;
+  }
+
+  .hero-content-flex {
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .hero-greeting h2 {
+    font-size: 28px;
+  }
+}
+
+/* Tablets pequeñas y móviles grandes */
 @media (max-width: 900px) {
   .sidebar {
     display: none;
@@ -620,21 +672,420 @@ body,
     bottom: 0;
     z-index: 40;
     width: 260px;
+    animation: slideInLeft 0.3s ease;
+  }
+
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-100%);
+    }
+
+    to {
+      transform: translateX(0);
+    }
   }
 
   .hamburger {
     display: inline-block;
   }
 
+  .main-area {
+    padding: 16px;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .topbar-time {
+    order: 3;
+    margin: 0;
+    margin-top: 8px;
+    font-size: 12px;
+    padding: 8px 16px;
+  }
+
+  .logo-row {
+    order: 1;
+    flex: 1;
+  }
+
+  .top-actions {
+    order: 2;
+  }
+
   .hero {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .hero-content-flex {
     flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .hero-greeting h2 {
+    font-size: 24px;
+  }
+
+  .big-card {
+    padding: 20px;
+  }
+
+  .quick-actions {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+  }
+
+  .action-btn {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+
+  .date-card {
+    padding: 20px;
+  }
+
+  .date-card .day {
+    font-size: 40px;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 768px) {
+  .main-area {
+    padding: 12px;
+  }
+
+  .topbar {
+    padding: 10px 12px;
+  }
+
+  .logo-pill {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .logoNasakiwe {
+    width: 80px;
+    height: 40px;
+  }
+
+  .org {
+    font-size: 12px;
+  }
+
+  .topbar-time {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+
+  .top-actions .icon-btn {
+    padding: 8px;
+  }
+
+  .hero {
+    gap: 12px;
+  }
+
+  .big-card {
+    padding: 16px;
+  }
+
+  .hero-greeting h2 {
+    font-size: 22px;
+  }
+
+  .username {
+    font-size: 20px;
+  }
+
+  .hero-reminders h4,
+  .quick-actions-dashboard h4 {
+    font-size: 13px;
+  }
+
+  .reminders-list,
+  .create-form {
+    padding: 12px;
   }
 
   .quick-actions {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .action-btn {
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+
+  .date-card {
+    padding: 16px;
+  }
+
+  .date-card .day {
+    font-size: 36px;
+  }
+
+  .date-card .month,
+  .date-card .year {
+    font-size: 12px;
+  }
+
+  /* Notificaciones responsivas */
+  .notifications-panel {
+    width: 95vw;
+    max-width: none;
+    margin: 0 10px;
+  }
+
+  .notifications-header {
+    padding: 16px 20px;
+  }
+
+  .notifications-header h4 {
+    font-size: 16px;
+  }
+
+  .notifications-list {
+    max-height: 60vh;
+  }
+
+  .notification-item {
+    padding: 12px;
+  }
+
+  .notification-title {
+    font-size: 14px;
+  }
+
+  .notification-item .muted {
+    font-size: 11px;
+  }
+}
+
+/* Pantallas muy pequeñas */
+@media (max-width: 480px) {
+  .main-area {
+    padding: 8px;
+  }
+
+  .topbar {
+    padding: 8px;
+  }
+
+  .logo-row {
+    gap: 8px;
+  }
+
+  .logo-pill {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .logoNasakiwe {
+    width: 70px;
+    height: 36px;
+  }
+
+  .org {
+    font-size: 11px;
+  }
+
+  .topbar-time {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .hero {
+    gap: 8px;
+  }
+
+  .big-card {
+    padding: 12px;
+  }
+
+  .hero-greeting h2 {
+    font-size: 18px;
+  }
+
+  .username {
+    font-size: 16px;
+  }
+
+  .hero-reminders h4,
+  .quick-actions-dashboard h4 {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .reminders-list {
+    padding: 8px;
+    min-height: 60px;
+  }
+
+  .hero-reminders {
+    order: 2;
+  }
+
+  .hero-greeting {
+    order: 1;
+  }
+
+  .action-btn {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .date-card {
+    padding: 12px;
+  }
+
+  .date-card .day {
+    font-size: 28px;
+  }
+
+  .date-card .month,
+  .date-card .year {
+    font-size: 10px;
+  }
+
+  /* Menú móvil optimizado */
+  .mobile-menu-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .mobile-menu-item {
+    padding: 16px;
+  }
+
+  .mobile-menu-item .icon {
+    font-size: 20px;
+  }
+
+  .mobile-menu-item span {
+    font-size: 12px;
+  }
+
+  /* Formularios en móviles */
+  .create-form {
+    padding: 12px;
+    margin-top: 12px;
+  }
+
+  .create-form input,
+  .create-form textarea {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Pantallas extra pequeñas */
+@media (max-width: 360px) {
+  .main-area {
+    padding: 6px;
+  }
+
+  .topbar {
+    padding: 6px;
+  }
+
+  .hero {
+    gap: 6px;
+  }
+
+  .big-card {
+    padding: 10px;
+  }
+
+  .hero-greeting h2 {
+    font-size: 16px;
+  }
+
+  .username {
+    font-size: 14px;
+  }
+
+  .hero-reminders h4,
+  .quick-actions-dashboard h4 {
+    font-size: 11px;
+  }
+
+  .reminders-list {
+    padding: 6px;
+  }
+
+  .action-btn {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
+  .date-card {
+    padding: 10px;
+  }
+
+  .date-card .day {
+    font-size: 24px;
+  }
+
+  .topbar-time {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+}
+
+/* Mejoras de accesibilidad para móviles */
+@media (max-width: 768px) {
+
+  .action-btn:focus,
+  .nav-btn:focus,
+  .icon-btn:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+  }
+
+  .hamburger:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+  }
+}
+
+/* Orientación landscape en móviles */
+@media (max-height: 500px) and (orientation: landscape) {
+  .main-area {
+    padding: 8px;
+  }
+
+  .hero {
+    grid-template-columns: 1fr 120px;
+    gap: 12px;
+  }
+
+  .hero-content-flex {
+    flex-direction: row;
+    gap: 16px;
+  }
+
+  .big-card {
+    padding: 16px;
+  }
+
+  .hero-greeting h2 {
+    font-size: 20px;
+  }
+
+  .quick-actions {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .notifications-panel {
+    max-height: 85vh;
   }
 }

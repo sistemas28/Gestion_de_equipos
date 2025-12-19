@@ -41,9 +41,10 @@ function todos(tabla) {
     });
 }
 
+
 function uno(tabla, id) {
     return new Promise((resolve, reject) => {
-        conexion.query(`SELECT * FROM ${tabla} WHERE id =${id}`, (error, result) => {
+        conexion.query(`SELECT * FROM ${tabla} WHERE id = ?`, [id], (error, result) => {
             return error ? reject(error) : resolve(result);
         })
     });

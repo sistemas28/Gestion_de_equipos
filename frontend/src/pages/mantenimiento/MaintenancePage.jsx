@@ -6,7 +6,7 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaUser, FaBuilding, FaDesktop, FaTag, FaCalendarAlt, FaTools, FaFileAlt, FaSignature, FaSearch } from 'react-icons/fa';
 
 import logo from '../../assets/LOGO_INSTITUCIONAL.jpg';
 import { generateReport } from '../../utils/reportGenerator';
@@ -99,12 +99,10 @@ function MaintenancePage() {
                 setCalendarDate(new Date());
             }
 
-            // Intentar encontrar un equipo que coincida para pre-seleccionar en el dropdown
+
+            // Intentar encontrar un equipo que coincida por código para pre-seleccionar en el dropdown
             const matchingEquipo = equipos.find(eq =>
-                eq.usuario === data.usuario &&
-                eq.area === data.area &&
-                eq.tipo === data.tipo &&
-                eq.marca === data.marca
+                eq.codigo === data.id.toString()
             );
             setSelectedEquipoId(matchingEquipo ? matchingEquipo.id : '');
         } catch (err) {
@@ -140,10 +138,12 @@ function MaintenancePage() {
         setIsAdding(true);
     };
 
+
     const handleEdit = () => {
         setEditFormData({ ...detailedData });
         setSignatureType(detailedData.firmas_tecnico?.startsWith('data:image') ? 'image' : 'text');
-        setSelectedEquipoId(equipos.find(eq => eq.usuario === detailedData.usuario && eq.area === detailedData.area && eq.tipo === detailedData.tipo && eq.marca === detailedData.marca)?.id || '');
+        // Pre-seleccionar el equipo que coincide por código (el ID del mantenimiento es el código del equipo)
+        setSelectedEquipoId(equipos.find(eq => eq.codigo === detailedData.id.toString())?.id || '');
         setIsEditing(true);
     };
 
@@ -154,35 +154,48 @@ function MaintenancePage() {
         setSelectedEquipoId(''); // Limpiar selección de equipo
     };
 
+
     const handleSave = async (e) => {
         e.preventDefault();
         try {
-            // 1. Preparamos los datos para enviar, creando una copia para no modificar el estado directamente.
+            // 1. Preparamos los datos para enviar, creando una copia para no modificar el estado directamente
+            // No enviamos equipo_id, solo los datos del formulario
             const dataToSave = { ...editFormData };
-            // 2. Removemos propiedades que no deben estar en el cuerpo de la petición PUT.
+
+            // 2. Removemos propiedades que no deben estar en el cuerpo de la petición PUT
             delete dataToSave.id;
             delete dataToSave.equipoId;
+            delete dataToSave.equipo_id;
 
-            // 4. Enviamos la petición PUT al backend con los datos procesados.
+            // 3. Aseguramos que las fechas vacías se envíen como null
+            Object.keys(dataToSave).forEach(key => {
+                if (key.startsWith('fecha_') && dataToSave[key] === '') {
+                    dataToSave[key] = null;
+                }
+            });
+
+            // 4. Enviamos la petición PUT al backend usando el ID (código de equipo)
             await api.put(`/mantenimiento/${detailedData.id}`, dataToSave, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
 
-            // 5. Actualizamos el estado local para reflejar los cambios inmediatamente.
-            // Para asegurar que vemos los datos correctos (ej. firmas parseadas si el backend las devuelve)
-            // es mejor volver a pedir los datos del item.
+            // 5. Actualizamos el estado local para reflejar los cambios inmediatamente
             const response = await api.get(`/mantenimiento/${detailedData.id}`);
             const updatedData = response.data.body;
             setDetailedData(updatedData);
-            setIsEditing(false); // Salimos del modo edición.
-            fetchMaintenanceData(); // Actualizamos la lista principal en segundo plano.
+            setIsEditing(false);
+            fetchMaintenanceData(); // Actualizamos la lista principal en segundo plano
         } catch (err) {
             console.error("Error saving maintenance data:", err);
             setError("Error al guardar los cambios. Por favor, inténtalo de nuevo.");
         }
     };
+
+
+
+
 
     const handleSaveNew = async (e) => {
         e.preventDefault();
@@ -192,39 +205,92 @@ function MaintenancePage() {
         }
         // Buscamos el equipo completo para obtener su código de inventario
         const selectedEquipo = equipos.find(eq => eq.id === parseInt(selectedEquipoId, 10));
-        if (!selectedEquipo || !selectedEquipo.codigo) {
+        if (!selectedEquipo || (selectedEquipo.codigo === undefined || selectedEquipo.codigo === null || selectedEquipo.codigo === '')) {
+            console.error("Error: Equipo no válido o sin código", selectedEquipo);
             setError("El equipo seleccionado no tiene un código de inventario válido. No se puede crear el mantenimiento.");
             return;
         }
 
+        // Verificar si ya existe un mantenimiento con el código de equipo (el ID será el código del equipo)
+        const existingMaintenance = maintenanceData.find(maint =>
+            maint.id?.toString() === selectedEquipo.codigo.toString()
+        );
+
+        if (existingMaintenance) {
+            if (window.confirm(`Ya existe un mantenimiento para el equipo "${selectedEquipo.usuario}" con código "${selectedEquipo.codigo}". ¿Deseas actualizar la información existente con los nuevos datos ingresados?`)) {
+                try {
+                    const dataToUpdate = { ...newMaintenanceData };
+
+                    Object.keys(dataToUpdate).forEach(key => {
+                        if (key.startsWith('fecha_') && dataToUpdate[key] === '') {
+                            dataToUpdate[key] = null;
+                        }
+                    });
+
+                    await api.put(`/mantenimiento/${existingMaintenance.id}`, dataToUpdate, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    setIsAdding(false);
+                    setNewMaintenanceData(null);
+                    await fetchMaintenanceData();
+                    return;
+                } catch (err) {
+                    console.error("Error updating existing maintenance from create modal:", err);
+                    setError("Error al actualizar el mantenimiento existente: " + (err.response?.data?.message || err.message));
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
+
         try {
-            // Creamos el objeto a enviar con los datos del formulario.
-            const dataToSend = { ...newMaintenanceData };
+            // Creamos el objeto a enviar con los datos del formulario
+            const dataToSend = {
+                ...newMaintenanceData,
+                // El ID del mantenimiento será igual al código del equipo (sin equipo_id separado)
+                id: selectedEquipo.codigo,
+            };
 
-            // Asignamos la clave foránea que relaciona con el equipo.
-            dataToSend.equipo_id = parseInt(selectedEquipoId, 10);
-
-            // IMPORTANTE: Enviamos el código del equipo en un campo separado.
-            // El backend debe estar preparado para recibir y guardar "codigo_equipo".
-            // El campo "id" del mantenimiento se asignará igual al id del equipo.
-            dataToSend.codigo_equipo = selectedEquipo.codigo;
-            dataToSend.id = selectedEquipo.codigo;
-
+            // Aseguramos que las fechas vacías se envíen como null para evitar errores en la BD
+            Object.keys(dataToSend).forEach(key => {
+                if (key.startsWith('fecha_') && (dataToSend[key] === '' || dataToSend[key] === null)) {
+                    dataToSend[key] = null;
+                }
+            });
+            // Asignar fecha de elaboración si no está definida
+            if (!dataToSend.fecha_de_elaboracion) {
+                dataToSend.fecha_de_elaboracion = moment().format('YYYY-MM-DD');
+            }
             await api.post('/mantenimiento', dataToSend);
             setIsAdding(false);
             setNewMaintenanceData(null);
             await fetchMaintenanceData();
         } catch (err) {
             console.error("Error creating new maintenance:", err);
-            setError("Error al crear el nuevo mantenimiento.");
+
+            // Manejar errores específicos
+            if (err.response?.status === 409) {
+                setError(`Ya existe un mantenimiento para el equipo "${selectedEquipo.usuario}" con código "${selectedEquipo.codigo}". Cada equipo solo puede tener un mantenimiento.`);
+            } else if (err.response?.status === 500) {
+                setError("Error interno del servidor. Por favor, contacta al administrador.");
+            } else if (err.response?.status === 400) {
+                setError("Datos inválidos. Verifica que todos los campos estén correctamente llenados.");
+            } else {
+                setError("Error al crear el nuevo mantenimiento: " + (err.response?.data?.message || err.message));
+            }
         }
     };
 
     const handleDelete = async () => {
         if (window.confirm(`¿Estás seguro de que quieres eliminar el mantenimiento #${detailedData.id}?`)) {
             try {
+                const idToDelete = detailedData.id;
                 await api.delete(`/mantenimiento/${detailedData.id}`);
-                setSelectedItem(null); // Cierra el modal después de eliminar
+                setSelectedItem(null); // Cierra el panel de detalles inmediatamente
                 await fetchMaintenanceData();
             } catch (err) {
                 console.error("Error deleting maintenance data:", err);
@@ -519,27 +585,89 @@ function MaintenancePage() {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="details-view">
-                                                <div className="detail-item"><span>Usuario:</span><p>{detailedData.usuario}</p></div>
-                                                <div className="detail-item"><span>Área:</span><p>{detailedData.area}</p></div>
-                                                <div className="detail-item"><span>Tipo de Equipo:</span><p>{detailedData.tipo}</p></div>
-                                                <div className="detail-item"><span>Marca:</span><p>{detailedData.marca || 'N/A'}</p></div>
-                                                <hr />
-                                                <h4>Detalles del Mantenimiento</h4>
-                                                <div className="detail-item-full">
-                                                    <span>Actividades Realizadas:</span>
-                                                    <p>{detailedData.actividades_realizadas || 'No se registraron actividades.'}</p>
+                                            <div className="details-view-premium">
+                                                <div className="details-section-card">
+                                                    <div className="section-header">
+                                                        <FaDesktop className="section-icon" />
+                                                        <h4>Información del Equipo</h4>
+                                                    </div>
+                                                    <div className="details-grid-mini">
+                                                        <div className="detail-pill">
+                                                            <FaUser className="pill-icon" />
+                                                            <div className="pill-content">
+                                                                <span>Usuario</span>
+                                                                <p>{detailedData.usuario}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="detail-pill">
+                                                            <FaBuilding className="pill-icon" />
+                                                            <div className="pill-content">
+                                                                <span>Área</span>
+                                                                <p>{detailedData.area}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="detail-pill">
+                                                            <FaTag className="pill-icon" />
+                                                            <div className="pill-content">
+                                                                <span>Marca</span>
+                                                                <p>{detailedData.marca || 'N/A'}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="detail-pill">
+                                                            <FaTools className="pill-icon" />
+                                                            <div className="pill-content">
+                                                                <span>Tipo</span>
+                                                                <p>{detailedData.tipo}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="detail-item-full">
-                                                    <span>Observaciones:</span>
-                                                    <p>{detailedData.observaciones || 'Sin observaciones.'}</p>
+
+                                                <div className="details-section-card">
+                                                    <div className="section-header">
+                                                        <FaFileAlt className="section-icon" />
+                                                        <h4>Detalles del Servicio</h4>
+                                                    </div>
+                                                    <div className="service-details">
+                                                        <div className="service-item">
+                                                            <span>Actividades Realizadas</span>
+                                                            <div className="service-text-box">
+                                                                {detailedData.actividades_realizadas || 'No se registraron actividades.'}
+                                                            </div>
+                                                        </div>
+                                                        <div className="service-item">
+                                                            <span>Observaciones</span>
+                                                            <div className="service-text-box obs">
+                                                                {detailedData.observaciones || 'Sin observaciones.'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <hr />
-                                                <h4>Fechas Clave</h4>
-                                                <div className="detail-item"><span>Fecha de Elaboración:</span><p>{formatDate(detailedData.fecha_de_elaboracion)}</p></div>
-                                                <div className="detail-item"><span>Fecha de Ejecución:</span><p>{formatDate(detailedData.fecha_de_ejecucion)}</p></div>
-                                                <div className="detail-item"><span>Fecha Último Mantenimiento:</span><p>{formatDate(detailedData.fecha_ultimo_mantenimiento)}</p></div>
-                                                <div className="detail-item"><span>Fecha Próximo Mantenimiento:</span><p>{formatDate(detailedData.fecha_actual_de_mantenimiento)}</p></div>
+
+                                                <div className="details-section-card">
+                                                    <div className="section-header">
+                                                        <FaCalendarAlt className="section-icon" />
+                                                        <h4>Cronograma de Mantenimiento</h4>
+                                                    </div>
+                                                    <div className="dates-grid-premium">
+                                                        <div className="date-box elaboration">
+                                                            <span>Elaboración</span>
+                                                            <p>{formatDate(detailedData.fecha_de_elaboracion)}</p>
+                                                        </div>
+                                                        <div className="date-box execution">
+                                                            <span>Ejecución</span>
+                                                            <p>{formatDate(detailedData.fecha_de_ejecucion)}</p>
+                                                        </div>
+                                                        <div className="date-box last">
+                                                            <span>Último Mant.</span>
+                                                            <p>{formatDate(detailedData.fecha_ultimo_mantenimiento)}</p>
+                                                        </div>
+                                                        <div className="date-box next">
+                                                            <span>Próximo Mant.</span>
+                                                            <p>{formatDate(detailedData.fecha_actual_de_mantenimiento)}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -594,29 +722,37 @@ function MaintenancePage() {
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <div className="signature-item">
-                                                        <span>Técnico:</span>
-                                                        {detailedData.firmas_tecnico ? (
-                                                            detailedData.firmas_tecnico.startsWith('data:image')
-                                                                ? <img src={detailedData.firmas_tecnico} alt="Firma del técnico" className="signature-display" />
-                                                                : <p className="signature-text">{detailedData.firmas_tecnico}</p>
-                                                        ) : <p className="muted">Sin firma</p>}
-                                                    </div>
-                                                    <div className="signature-item">
-                                                        <span>Aprobó:</span>
-                                                        {detailedData.firmas_aprobo ? (
-                                                            detailedData.firmas_aprobo.startsWith('data:image')
-                                                                ? <img src={detailedData.firmas_aprobo} alt="Firma de quien aprueba" className="signature-display" />
-                                                                : <p className="signature-text">{detailedData.firmas_aprobo}</p>
-                                                        ) : <p className="muted">Sin firma</p>}
-                                                    </div>
-                                                    <div className="signature-item">
-                                                        <span>Revisó:</span>
-                                                        {detailedData.firmas_reviso ? (
-                                                            detailedData.firmas_reviso.startsWith('data:image')
-                                                                ? <img src={detailedData.firmas_reviso} alt="Firma de quien revisa" className="signature-display" />
-                                                                : <p className="signature-text">{detailedData.firmas_reviso}</p>
-                                                        ) : <p className="muted">Sin firma</p>}
+                                                    <div className="signatures-flex-grid">
+                                                        <div className="signature-item">
+                                                            <span><FaSignature className="pill-icon" /> Técnico</span>
+                                                            <div className="signature-box">
+                                                                {detailedData.firmas_tecnico ? (
+                                                                    detailedData.firmas_tecnico.startsWith('data:image')
+                                                                        ? <img src={detailedData.firmas_tecnico} alt="Firma del técnico" className="signature-display" />
+                                                                        : <p className="signature-text">{detailedData.firmas_tecnico}</p>
+                                                                ) : <p className="muted">Sin firma</p>}
+                                                            </div>
+                                                        </div>
+                                                        <div className="signature-item">
+                                                            <span><FaSignature className="pill-icon" /> Aprobó</span>
+                                                            <div className="signature-box">
+                                                                {detailedData.firmas_aprobo ? (
+                                                                    detailedData.firmas_aprobo.startsWith('data:image')
+                                                                        ? <img src={detailedData.firmas_aprobo} alt="Firma de quien aprueba" className="signature-display" />
+                                                                        : <p className="signature-text">{detailedData.firmas_aprobo}</p>
+                                                                ) : <p className="muted">Sin firma</p>}
+                                                            </div>
+                                                        </div>
+                                                        <div className="signature-item">
+                                                            <span><FaSignature className="pill-icon" /> Revisó</span>
+                                                            <div className="signature-box">
+                                                                {detailedData.firmas_reviso ? (
+                                                                    detailedData.firmas_reviso.startsWith('data:image')
+                                                                        ? <img src={detailedData.firmas_reviso} alt="Firma de quien revisa" className="signature-display" />
+                                                                        : <p className="signature-text">{detailedData.firmas_reviso}</p>
+                                                                ) : <p className="muted">Sin firma</p>}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </>
                                             )}
@@ -641,23 +777,29 @@ function MaintenancePage() {
                                         <form onSubmit={handleSaveNew}>
                                             <div className="form-section">
                                                 <h4>Información del Equipo</h4>
-                                                <label>
-                                                    Seleccionar Equipo Existente:
-                                                    <select name="equipoId" value={selectedEquipoId} onChange={handleFormChange} required>
+                                                <div className="equipment-selection-container">
+                                                    <label>Buscar y Seleccionar Equipo:</label>
+                                                    <select
+                                                        name="equipoId"
+                                                        value={selectedEquipoId}
+                                                        onChange={handleFormChange}
+                                                        required
+                                                        className="equipment-select-pro"
+                                                    >
                                                         <option value="">-- Seleccionar un equipo --</option>
                                                         {equipos.map(eq => (
                                                             <option key={eq.id} value={eq.id}>
-                                                                {eq.usuario} ({eq.tipo} - {eq.marca})
+                                                                {eq.codigo} - {eq.usuario} ({eq.tipo})
                                                             </option>
                                                         ))}
                                                     </select>
-                                                </label>
-                                                <div className="form-grid-inner">
-                                                    <label>Usuario: <input name="usuario" value={newMaintenanceData.usuario} readOnly placeholder="Se autocompleta" /></label>
-                                                    <label>Área: <input name="area" value={newMaintenanceData.area} readOnly placeholder="Se autocompleta" /></label>
-                                                    <label>Tipo: <input name="tipo" value={newMaintenanceData.tipo} readOnly placeholder="Se autocompleta" /></label>
-                                                    <label>Marca: <input name="marca" value={newMaintenanceData.marca} readOnly placeholder="Se autocompleta" /></label>
-                                                    <label>Código: <input name="codigo" value={newMaintenanceData.codigo} readOnly placeholder="Se autocompleta" /></label>
+                                                </div>
+                                                <div className="form-grid-inner info-card-grid">
+                                                    <div className="info-field"><span>Usuario:</span><input name="usuario" value={newMaintenanceData.usuario} readOnly /></div>
+                                                    <div className="info-field"><span>Área:</span><input name="area" value={newMaintenanceData.area} readOnly /></div>
+                                                    <div className="info-field"><span>Tipo:</span><input name="tipo" value={newMaintenanceData.tipo} readOnly /></div>
+                                                    <div className="info-field"><span>Marca:</span><input name="marca" value={newMaintenanceData.marca} readOnly /></div>
+                                                    <div className="info-field"><span>Código:</span><input name="codigo" value={newMaintenanceData.codigo} readOnly /></div>
                                                 </div>
                                                 <hr />
                                                 <h4>Detalles del Mantenimiento</h4>

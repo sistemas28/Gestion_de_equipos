@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const auth = require('../../auth');
 const TABLA = 'auth';
 
@@ -19,17 +19,17 @@ module.exports = function (dbInyectada) {
             throw error;
         }
 
-        return bcrypt.compare(password, data.password)
-            .then(resultado => {
-                if (resultado === true) {
-                    // generar token
-                    return auth.asignarToken({ ...data });
-                } else {
-                    const error = new Error('Usuario o contraseña inválidos');
-                    error.statusCode = 401;
-                    throw error;
-                }
-            })
+        const sonIguales = await bcrypt.compare(password, data.password);
+
+        if (sonIguales) {
+            // Si la contraseña es correcta, generar y devolver el token
+            return auth.asignarToken({ ...data });
+        }
+
+        // Si la contraseña es incorrecta, lanzar un error
+        const error = new Error('Usuario o contraseña inválidos');
+        error.statusCode = 401;
+        throw error;
     }
 
     async function agregar(data) {

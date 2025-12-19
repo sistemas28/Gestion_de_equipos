@@ -1,3 +1,4 @@
+
 const TABLA = 'CopiasDeSeguridad';
 module.exports = function (dbInyectada){
 
@@ -11,37 +12,62 @@ function todos(){
     return db.todos(TABLA);
 }
 
-function agregar(body){
-    const authData = {
-        id: body.id,
-        area: body.area,
-        tipo: body.tipo,
-        marca: body.marca,
-        fecha: body.fecha,
-    };
-
-    if(body.usuario){
-        authData.usuario = body.usuario
-    }
-
-    return db.agregar(TABLA, authData);
+function uno(id){
+    return db.uno(TABLA, id);
 }
 
-function modificar(body){
-    // reutilizamos la misma estructura que en `agregar` para hacer un upsert.
-    const authData = {
+function agregar(body){
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    
+    const copiaData = {
         id: body.id,
-        area: body.area,
-        tipo: body.tipo,
-        marca: body.marca,
+        equipo_id: body.equipo_id,
+        usuario: body.usuario || '',
+        area: body.area || '',
+        tipo: body.tipo || '',
+        marca: body.marca || '',
+        codigo: body.codigo || '',
         fecha: body.fecha,
+        estado_copia: body.estado_copia || 'Pendiente',
+        hora_inicio: body.hora_inicio || null,
+        hora_fin: body.hora_fin || null,
+        tipo_copia: body.tipo_copia || 'Completa',
+        ubicacion_almacenamiento: body.ubicacion_almacenamiento || '',
+        tamaño_datos: body.tamaño_datos || '',
+        tiempo_duracion: body.tiempo_duracion || '',
+        observaciones: body.observaciones || '',
+        responsable: body.responsable || '',
+        fecha_creacion: now,
+        fecha_actualizacion: now,
     };
 
-    if(body.usuario){
-        authData.usuario = body.usuario
-    }
+    return db.agregar(TABLA, copiaData);
+}
 
-    return db.agregar(TABLA, authData);
+function modificar(id, body){
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    
+    const copiaData = {
+        equipo_id: body.equipo_id,
+        usuario: body.usuario || '',
+        area: body.area || '',
+        tipo: body.tipo || '',
+        marca: body.marca || '',
+        codigo: body.codigo || '',
+        fecha: body.fecha,
+        estado_copia: body.estado_copia || 'Pendiente',
+        hora_inicio: body.hora_inicio || null,
+        hora_fin: body.hora_fin || null,
+        tipo_copia: body.tipo_copia || 'Completa',
+        ubicacion_almacenamiento: body.ubicacion_almacenamiento || '',
+        tamaño_datos: body.tamaño_datos || '',
+        tiempo_duracion: body.tiempo_duracion || '',
+        observaciones: body.observaciones || '',
+        responsable: body.responsable || '',
+        fecha_actualizacion: now,
+    };
+
+    return db.actualizar(TABLA, id, copiaData);
 }
 
 function eliminar(id){
@@ -51,6 +77,7 @@ function eliminar(id){
 
 return {
     todos,
+    uno,
     agregar,
     modificar,
     eliminar,

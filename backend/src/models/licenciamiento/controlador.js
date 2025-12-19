@@ -41,19 +41,66 @@ function uno(id){
 }
 
 
-function agregar(body){
-    const authData = {
-        id: body.id,
-        usuario: body.usuario,
-        area: body.area,
-        tipo: body.tipo,
-        descripcion: body.descripcion,
-        sistema_operativo: body.sistema_operativo,
-        software_de_oficina: body.software_de_oficina,
-        otro_software: body.otro_software,
-    };
 
-    return db.agregar(TABLA, authData);
+
+
+async function agregar(body){
+    try {
+        console.log('=== INICIO AGREGAR LICENCIAMIENTO ===');
+        console.log('Datos recibidos:', body);
+        
+        // Ahora recibimos equipo_id del frontend
+        if (!body.equipo_id) {
+            throw new Error('El ID del equipo es requerido para crear un licenciamiento');
+        }
+        
+        console.log('Buscando equipo con ID:', body.equipo_id);
+        
+        // Buscar el código del equipo usando el ID
+        const equipos = await db.uno('equipos', body.equipo_id);
+        console.log('Resultado de búsqueda de equipo:', equipos);
+        
+        const equipo = Array.isArray(equipos) ? equipos[0] : equipos;
+        
+        if (!equipo) {
+            throw new Error('Equipo no encontrado');
+        }
+        
+        console.log('Equipo encontrado:', equipo);
+        
+        // El ID del licenciamiento es exactamente el código del equipo
+        const codigoEquipo = String(equipo.codigo_de_equipo || '');
+        console.log('Código del equipo extraído:', codigoEquipo);
+        
+        if (!codigoEquipo) {
+            throw new Error('El equipo seleccionado no tiene un código de inventario válido');
+        }
+        
+        const authData = {
+            // El ID del licenciamiento es exactamente el código del equipo
+            id: codigoEquipo,
+            usuario: body.usuario || '',
+            area: body.area || '',
+            tipo: body.tipo || '',
+            descripcion: body.descripcion || '',
+            sistema_operativo: body.sistema_operativo || '',
+            software_de_oficina: body.software_de_oficina || '',
+            otro_software: body.otro_software || '',
+        };
+        
+        console.log('Datos a insertar en licenciamiento:', authData);
+        console.log('Tabla objetivo:', TABLA);
+
+        const resultado = await db.agregar(TABLA, authData);
+        console.log('Resultado de inserción:', resultado);
+        console.log('=== FIN AGREGAR LICENCIAMIENTO ===');
+        
+        return resultado;
+        
+    } catch (error) {
+        console.error('Error en agregar licenciamiento:', error);
+        throw error;
+    }
 }
 
 function modificar(body){

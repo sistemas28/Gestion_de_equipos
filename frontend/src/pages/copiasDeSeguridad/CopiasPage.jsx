@@ -25,14 +25,23 @@ function CopiasPage() {
     const [copiasData, setCopiasData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+
     const [selectedItem, setSelectedItem] = useState(null);
     const [detailedData, setDetailedData] = useState(null);
     const [isAdding, setIsAdding] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editCopiaData, setEditCopiaData] = useState(null);
     const [newCopiaData, setNewCopiaData] = useState(null);
     const [equipos, setEquipos] = useState([]);
     const [selectedEquipoId, setSelectedEquipoId] = useState('');
     const [calendarDate, setCalendarDate] = useState(new Date());
     const [searchTerm, setSearchTerm] = useState('');
+    const [historialView, setHistorialView] = useState(false);
+    const [filtroEstado, setFiltroEstado] = useState('');
+    const [filtroFechaInicio, setFiltroFechaInicio] = useState('');
+    const [filtroFechaFin, setFiltroFechaFin] = useState('');
+    const [estadisticas, setEstadisticas] = useState(null);
 
     useEffect(() => {
         fetchCopiasData();
@@ -79,6 +88,7 @@ function CopiasPage() {
         }
     }
 
+
     const handleOpenAddModal = () => {
         setNewCopiaData({
             usuario: '',
@@ -86,7 +96,16 @@ function CopiasPage() {
             tipo: '',
             marca: '',
             codigo: '',
-            fecha: moment().format('YYYY-MM-DD'), // Fecha de hoy por defecto
+            fecha: moment().format('YYYY-MM-DD'),
+            estado_copia: 'Pendiente',
+            hora_inicio: '',
+            hora_fin: '',
+            tipo_copia: 'Completa',
+            ubicacion_almacenamiento: '',
+            tamaño_datos: '',
+            tiempo_duracion: '',
+            observaciones: '',
+            responsable: '',
         });
         setSelectedEquipoId('');
         setSelectedItem(null);
@@ -116,6 +135,7 @@ function CopiasPage() {
         }
     };
 
+
     const handleSaveNew = async (e) => {
         e.preventDefault();
         if (!selectedEquipoId) {
@@ -134,6 +154,96 @@ function CopiasPage() {
         await api.post('/CopiasDeSeguridad', dataToSend);
         setIsAdding(false);
         fetchCopiasData();
+    };
+
+
+    const handleEdit = (item) => {
+        // Crear una copia completa de los datos del item para editar
+        setEditCopiaData({
+            id: item.id,
+            usuario: item.usuario || '',
+            area: item.area || '',
+            tipo: item.tipo || '',
+            marca: item.marca || '',
+            codigo: item.codigo || '',
+            fecha: item.fecha ? item.fecha.split('T')[0] : '',
+            estado_copia: item.estado_copia || 'Pendiente',
+            hora_inicio: item.hora_inicio || '',
+            hora_fin: item.hora_fin || '',
+            tipo_copia: item.tipo_copia || 'Completa',
+            ubicacion_almacenamiento: item.ubicacion_almacenamiento || '',
+            tamaño_datos: item.tamaño_datos || '',
+            tiempo_duracion: item.tiempo_duracion || '',
+            observaciones: item.observaciones || '',
+            responsable: item.responsable || '',
+            equipo_id: item.equipo_id || null
+        });
+        setSelectedEquipoId(item.equipo_id ? item.equipo_id.toString() : '');
+        setIsEditing(true);
+        setIsAdding(false);
+    };
+
+
+    const handleEditFormChange = (e) => {
+        const { name, value } = e.target;
+        if (name === "equipoId") {
+            setSelectedEquipoId(value);
+            const selectedEquipo = equipos.find(eq => eq.id === parseInt(value));
+            if (selectedEquipo) {
+                // Solo actualizar los campos del equipo si se selecciona uno nuevo
+                setEditCopiaData(prev => ({
+                    ...prev,
+                    usuario: selectedEquipo.usuario,
+                    area: selectedEquipo.area,
+                    tipo: selectedEquipo.tipo,
+                    marca: selectedEquipo.marca,
+                    codigo: selectedEquipo.codigo,
+                }));
+            } else {
+                // Si no se selecciona equipo, mantener los valores actuales (no sobrescribir con undefined)
+                // Los valores del equipo original se mantienen
+            }
+        } else {
+            // Actualizar cualquier otro campo normalmente
+            setEditCopiaData(prev => ({ ...prev, [name]: value }));
+        }
+    };
+
+    const handleSaveEdit = async (e) => {
+        e.preventDefault();
+        if (!editCopiaData || !editCopiaData.id) return;
+        
+        const dataToSend = {
+            ...editCopiaData,
+            equipo_id: selectedEquipoId ? parseInt(selectedEquipoId, 10) : null
+        };
+        
+        try {
+            await api.put(`/CopiasDeSeguridad/${editCopiaData.id}`, dataToSend);
+            setIsEditing(false);
+            setEditCopiaData(null);
+            setSelectedEquipoId('');
+            fetchCopiasData();
+        } catch (error) {
+            console.error('Error al actualizar:', error);
+            setError('Error al actualizar la copia de seguridad.');
+        }
+    };
+
+    const handleDelete = async (item) => {
+        if (!window.confirm(`¿Estás seguro de que deseas eliminar la copia de seguridad #${item.id}?`)) {
+            return;
+        }
+        
+        try {
+            await api.delete(`/CopiasDeSeguridad/${item.id}`);
+            setSelectedItem(null);
+            setDetailedData(null);
+            fetchCopiasData();
+        } catch (error) {
+            console.error('Error al eliminar:', error);
+            setError('Error al eliminar la copia de seguridad.');
+        }
     };
 
     const formatDate = (dateString) => {
@@ -180,17 +290,58 @@ function CopiasPage() {
 
     return (
         <div className="copias-page">
+
             <div className="page-header">
                 <h2 className="page-title">Gestión de Copias de Seguridad</h2>
-                <button className="action-btn save" onClick={handleOpenAddModal} disabled={loading}>
-                    Agregar Copia
-                </button>
-                <button className="refresh-btn" onClick={fetchCopiasData} disabled={loading}>
-                    {loading ? 'Cargando...' : 'Actualizar Datos'}
-                </button>
+                <div className="header-actions">
+                    <button className="action-btn save" onClick={handleOpenAddModal} disabled={loading}>
+                        Agregar Copia
+                    </button>
+                    <button className="action-btn" onClick={() => setHistorialView(!historialView)} disabled={loading}>
+                        {historialView ? 'Vista Simple' : 'Historial Completo'}
+                    </button>
+                    <button className="refresh-btn" onClick={fetchCopiasData} disabled={loading}>
+                        {loading ? 'Cargando...' : 'Actualizar Datos'}
+                    </button>
+                </div>
             </div>
 
+
             {error && <div className="error-message">{error}</div>}
+
+            {/* Filtros Avanzados */}
+            {historialView && (
+                <div className="filters-section card">
+                    <h3>Filtros de Historial</h3>
+                    <div className="filters-grid">
+                        <label>
+                            Estado
+                            <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}>
+                                <option value="">Todos los estados</option>
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="En Progreso">En Progreso</option>
+                                <option value="Exitosa">Exitosa</option>
+                                <option value="Fallida">Fallida</option>
+                            </select>
+                        </label>
+                        <label>
+                            Fecha Inicio
+                            <input type="date" value={filtroFechaInicio} onChange={(e) => setFiltroFechaInicio(e.target.value)} />
+                        </label>
+                        <label>
+                            Fecha Fin
+                            <input type="date" value={filtroFechaFin} onChange={(e) => setFiltroFechaFin(e.target.value)} />
+                        </label>
+                        <button className="action-btn" onClick={() => {
+                            setFiltroEstado('');
+                            setFiltroFechaInicio('');
+                            setFiltroFechaFin('');
+                        }}>
+                            Limpiar Filtros
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {loading && copiasData.length === 0 && <div className="loading-message">Cargando datos de copias de seguridad...</div>}
 
@@ -211,29 +362,82 @@ function CopiasPage() {
             {!loading && copiasData.length > 0 && (
                 <div className="copias-table-container card">
                     <table>
+
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Usuario</th>
-                                <th>Área</th>
-                                <th>Tipo</th>
-                                <th>Marca</th>
-                                <th>Fecha</th>
+                                {historialView ? (
+                                    <>
+                                        <th>ID</th>
+                                        <th>Usuario</th>
+                                        <th>Área</th>
+                                        <th>Estado</th>
+                                        <th>Tipo Copia</th>
+                                        <th>Fecha</th>
+                                        <th>Hora Inicio</th>
+                                        <th>Hora Fin</th>
+                                        <th>Responsable</th>
+                                        <th>Ubicación</th>
+                                    </>
+                                ) : (
+                                    <>
+                                        <th>ID</th>
+                                        <th>Usuario</th>
+                                        <th>Área</th>
+                                        <th>Tipo</th>
+                                        <th>Marca</th>
+                                        <th>Fecha</th>
+                                    </>
+                                )}
                             </tr>
                         </thead>
                         <tbody>
                             {copiasData
-                                .filter(item =>
-                                    (item.id.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
-                                    (String(item.usuario || '').toLowerCase().includes(searchTerm.toLowerCase()))
-                                ).map((item) => (
+                                .filter(item => {
+                                    // Filtro por término de búsqueda
+                                    const matchesSearch = (item.id.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
+                                        (String(item.usuario || '').toLowerCase().includes(searchTerm.toLowerCase()));
+                                    
+                                    // Filtros de historial
+                                    const matchesEstado = !filtroEstado || item.estado_copia === filtroEstado;
+                                    const matchesFechaInicio = !filtroFechaInicio || new Date(item.fecha) >= new Date(filtroFechaInicio);
+                                    const matchesFechaFin = !filtroFechaFin || new Date(item.fecha) <= new Date(filtroFechaFin);
+                                    
+                                    return matchesSearch && matchesEstado && matchesFechaInicio && matchesFechaFin;
+                                })
+                                .map((item) => (
                                     <tr key={item.id} onClick={() => handleRowClick(item)} className={selectedItem?.id === item.id ? 'selected' : ''}>
-                                        <td>{item.id}</td>
-                                        <td>{item.usuario || 'N/A'}</td>
-                                        <td>{item.area}</td>
-                                        <td>{item.tipo}</td>
-                                        <td>{item.marca}</td>
-                                        <td>{formatDate(item.fecha)}</td>
+                                        {historialView ? (
+                                            <>
+                                                <td>{item.id}</td>
+                                                <td>{item.usuario || 'N/A'}</td>
+                                                <td>{item.area}</td>
+                                                <td>
+                                                    <span className={`status-badge status-${(item.estado_copia || '').toLowerCase().replace(' ', '-')}`}>
+                                                        {item.estado_copia || 'N/A'}
+                                                    </span>
+                                                </td>
+                                                <td>{item.tipo_copia || 'N/A'}</td>
+                                                <td>{formatDate(item.fecha)}</td>
+                                                <td>{item.hora_inicio || 'N/A'}</td>
+                                                <td>{item.hora_fin || 'N/A'}</td>
+                                                <td>{item.responsable || 'N/A'}</td>
+                                                <td title={item.ubicacion_almacenamiento}>
+                                                    {item.ubicacion_almacenamiento ? 
+                                                        (item.ubicacion_almacenamiento.length > 20 ? 
+                                                            item.ubicacion_almacenamiento.substring(0, 20) + '...' : 
+                                                            item.ubicacion_almacenamiento) : 'N/A'}
+                                                </td>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <td>{item.id}</td>
+                                                <td>{item.usuario || 'N/A'}</td>
+                                                <td>{item.area}</td>
+                                                <td>{item.tipo}</td>
+                                                <td>{item.marca}</td>
+                                                <td>{formatDate(item.fecha)}</td>
+                                            </>
+                                        )}
                                     </tr>
                                 ))}
                         </tbody>
@@ -241,34 +445,103 @@ function CopiasPage() {
                 </div>
             )}
 
-            {(selectedItem || isAdding) && (
-                <div className="details-modal" onClick={(e) => { if (e.target === e.currentTarget) { setSelectedItem(null); setIsAdding(false); } }}>
-                    <div className="details-panel card" onClick={(e) => e.stopPropagation()}> {/* Eliminar el botón de cerrar */}
-                        <button className="close-details-btn" onClick={() => setSelectedItem(null)}><FaTimes /></button>
-                        {detailedData ? (
-                            <>
-                                <div className="details-header">
-                                    <h3>Detalles de la Copia de Seguridad #{detailedData.id}</h3>
-                                    <div className="details-actions">
-                                        <button type="button" className="action-btn download" onClick={handleDownloadPdf}>Descargar PDF</button>
-                                    </div>
-                                </div>
+
+
+
+            {(selectedItem || isAdding || isEditing) && (
+                <div className="details-modal" onClick={(e) => { 
+                    if (e.target === e.currentTarget) { 
+                        setSelectedItem(null); 
+                        setIsAdding(false); 
+                        setIsEditing(false); 
+                    } 
+                }}>
+                    <div className="details-panel card" onClick={(e) => e.stopPropagation()}>
+                        <div className="details-header">
+                            <h3>
+                                {detailedData && !isEditing && !isAdding 
+                                    ? `Detalles de la Copia de Seguridad #${detailedData.id}`
+                                    : isAdding 
+                                    ? 'Agregar Nueva Copia de Seguridad'
+                                    : `Editar Copia de Seguridad #${editCopiaData?.id}`
+                                }
+                            </h3>
+                            <div className="details-actions">
+                                {detailedData && !isEditing && !isAdding ? (
+                                    <>
+                                        <button type="button" className="action-btn edit" onClick={() => handleEdit(detailedData)}>
+                                            ✏️ Editar
+                                        </button>
+                                        <button type="button" className="action-btn delete" onClick={() => handleDelete(detailedData)}>
+                                            🗑️ Eliminar
+                                        </button>
+                                        <button type="button" className="action-btn download" onClick={handleDownloadPdf}>
+                                            📄 Descargar PDF
+                                        </button>
+                                    </>
+                                ) : isAdding ? (
+                                    <>
+                                        <button type="button" className="action-btn save" onClick={handleSaveNew}>Guardar</button>
+                                        <button type="button" className="action-btn cancel" onClick={() => setIsAdding(false)}>Cancelar</button>
+                                    </>
+                                ) : isEditing ? (
+                                    <>
+                                        <button type="button" className="action-btn save" onClick={handleSaveEdit}>Guardar Cambios</button>
+                                        <button type="button" className="action-btn cancel" onClick={() => setIsEditing(false)}>Cancelar</button>
+                                    </>
+                                ) : null}
+                                <button className="close-details-btn" onClick={() => { 
+                                    setSelectedItem(null); 
+                                    setIsAdding(false); 
+                                    setIsEditing(false); 
+                                }}><FaTimes /></button>
+                            </div>
+                        </div>
+
+                        <div className="details-content">
+                            {detailedData && !isEditing && !isAdding ? (
                                 <div className="details-content-grid">
                                     <div className="details-list">
+                                        <h4>📋 Información Principal</h4>
+                                        <div className="detail-item"><span>ID Copia:</span><p>#{detailedData.id}</p></div>
                                         <div className="detail-item"><span>Usuario:</span><p>{detailedData.usuario || 'N/A'}</p></div>
                                         <div className="detail-item"><span>Área:</span><p>{detailedData.area}</p></div>
-                                        <div className="detail-item"><span>Tipo de Equipo:</span><p>{detailedData.tipo}</p></div>
-                                        <div className="detail-item"><span>Marca:</span><p>{detailedData.marca}</p></div>
+                                        <div className="detail-item"><span>Equipo:</span><p>{detailedData.tipo} - {detailedData.marca}</p></div>
+                                        
+                                        <h4>📅 Fecha y Estado</h4>
                                         <div className="detail-item"><span>Fecha de Copia:</span><p>{formatDate(detailedData.fecha)}</p></div>
-                                    </div>
-                                    <div className="details-meta">
+                                        <div className="detail-item">
+                                            <span>Estado:</span>
+                                            <span className={`status-badge status-${(detailedData.estado_copia || '').toLowerCase().replace(' ', '-')}`}>
+                                                {detailedData.estado_copia || 'N/A'}
+                                            </span>
+                                        </div>
+                                        <div className="detail-item"><span>Tipo de Copia:</span><p>{detailedData.tipo_copia || 'N/A'}</p></div>
+                                        
+                                        <h4>⏱️ Tiempos y Responsable</h4>
+                                        <div className="detail-item"><span>Responsable:</span><p>{detailedData.responsable || 'N/A'}</p></div>
+                                        <div className="detail-item"><span>Hora Inicio:</span><p>{detailedData.hora_inicio || 'N/A'}</p></div>
+                                        <div className="detail-item"><span>Hora Fin:</span><p>{detailedData.hora_fin || 'N/A'}</p></div>
+                                        <div className="detail-item"><span>Duración:</span><p>{detailedData.tiempo_duracion || 'N/A'}</p></div>
+                                        
+                                        <h4>💾 Detalles del Respaldo</h4>
+                                        <div className="detail-item"><span>Ubicación:</span><p>{detailedData.ubicacion_almacenamiento || 'N/A'}</p></div>
+                                        <div className="detail-item"><span>Tamaño:</span><p>{detailedData.tamaño_datos || 'N/A'}</p></div>
+                                        
+                                        {detailedData.observaciones && (
+                                            <div className="detail-item full-width">
+                                                <span>📝 Observaciones:</span>
+                                                <p>{detailedData.observaciones}</p>
+                                            </div>
+                                        )}
+                                        
                                         <div className="calendar-container">
                                             <Calendar
                                                 localizer={localizer}
                                                 events={calendarEvents}
                                                 startAccessor="start"
                                                 endAccessor="end"
-                                                style={{ height: 300 }}
+                                                style={{ height: 200 }}
                                                 toolbar={true}
                                                 date={calendarDate}
                                                 onNavigate={(date) => setCalendarDate(date)}
@@ -278,18 +551,7 @@ function CopiasPage() {
                                         </div>
                                     </div>
                                 </div>
-                            </>
-                        ) : <div className="loading-message">Cargando...</div>}
-
-                        {isAdding && newCopiaData && (
-                            <>
-                                <div className="details-header">
-                                    <h3>Agregar Nueva Copia de Seguridad</h3>
-                                    <div className="details-actions">
-                                        <button type="button" className="action-btn save" onClick={handleSaveNew}>Guardar</button>
-                                        <button type="button" className="action-btn cancel" onClick={() => setIsAdding(false)}>Cancelar</button>
-                                    </div>
-                                </div>
+                            ) : (isAdding && newCopiaData) ? (
                                 <form onSubmit={handleSaveNew}>
                                     <div className="details-grid">
                                         <label className="full-width">
@@ -309,14 +571,144 @@ function CopiasPage() {
                                         <label>Tipo <input name="tipo" value={newCopiaData.tipo} readOnly placeholder="Se autocompleta" /></label>
                                         <label>Marca <input name="marca" value={newCopiaData.marca} readOnly placeholder="Se autocompleta" /></label>
                                         <label>Código Inventario <input name="codigo" value={newCopiaData.codigo} readOnly placeholder="Se autocompleta" /></label>
+                                        
+                                        <h4 className="full-width">Información de la Copia</h4>
                                         <label>
                                             Fecha de la Copia
                                             <input type="date" name="fecha" value={newCopiaData.fecha} onChange={handleNewFormChange} required />
                                         </label>
+                                        <label>
+                                            Estado
+                                            <select name="estado_copia" value={newCopiaData.estado_copia} onChange={handleNewFormChange}>
+                                                <option value="Pendiente">Pendiente</option>
+                                                <option value="En Progreso">En Progreso</option>
+                                                <option value="Exitosa">Exitosa</option>
+                                                <option value="Fallida">Fallida</option>
+                                            </select>
+                                        </label>
+                                        <label>
+                                            Tipo de Copia
+                                            <select name="tipo_copia" value={newCopiaData.tipo_copia} onChange={handleNewFormChange}>
+                                                <option value="Completa">Completa</option>
+                                                <option value="Incremental">Incremental</option>
+                                                <option value="Diferencial">Diferencial</option>
+                                            </select>
+                                        </label>
+                                        <label>
+                                            Responsable
+                                            <input name="responsable" value={newCopiaData.responsable} onChange={handleNewFormChange} placeholder="Persona que realizó la copia" />
+                                        </label>
+                                        
+                                        <h4 className="full-width">Tiempos</h4>
+                                        <label>
+                                            Hora Inicio
+                                            <input type="time" name="hora_inicio" value={newCopiaData.hora_inicio} onChange={handleNewFormChange} />
+                                        </label>
+                                        <label>
+                                            Hora Fin
+                                            <input type="time" name="hora_fin" value={newCopiaData.hora_fin} onChange={handleNewFormChange} />
+                                        </label>
+                                        <label>
+                                            Tiempo de Duración
+                                            <input name="tiempo_duracion" value={newCopiaData.tiempo_duracion} onChange={handleNewFormChange} placeholder="Ej: 2h 30min" />
+                                        </label>
+                                        
+                                        <h4 className="full-width">Detalles del Respaldo</h4>
+                                        <label>
+                                            Ubicación de Almacenamiento
+                                            <input name="ubicacion_almacenamiento" value={newCopiaData.ubicacion_almacenamiento} onChange={handleNewFormChange} placeholder="Disco externo, servidor, nube..." />
+                                        </label>
+                                        <label>
+                                            Tamaño de Datos
+                                            <input name="tamaño_datos" value={newCopiaData.tamaño_datos} onChange={handleNewFormChange} placeholder="Ej: 500GB, 1.2TB" />
+                                        </label>
+                                        <label className="full-width">
+                                            Observaciones
+                                            <textarea name="observaciones" value={newCopiaData.observaciones} onChange={handleNewFormChange} rows="3" placeholder="Notas adicionales sobre el proceso de copia"></textarea>
+                                        </label>
                                     </div>
                                 </form>
-                            </>
-                        )}
+                            ) : (isEditing && editCopiaData) ? (
+                                <form onSubmit={handleSaveEdit}>
+                                    <div className="details-grid">
+                                        <label className="full-width">
+                                            Seleccionar Equipo:
+                                            <select name="equipoId" value={selectedEquipoId} onChange={handleEditFormChange}>
+                                                <option value="">-- Seleccionar un equipo --</option>
+                                                {equipos.map(eq => (
+                                                    <option key={eq.id} value={eq.id}>
+                                                        {eq.usuario} ({eq.tipo} - {eq.codigo})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </label>
+                                        <hr className="full-width" />
+                                        <label>Usuario <input name="usuario" value={editCopiaData.usuario || ''} readOnly placeholder="Se autocompleta" /></label>
+                                        <label>Área <input name="area" value={editCopiaData.area || ''} readOnly placeholder="Se autocompleta" /></label>
+                                        <label>Tipo <input name="tipo" value={editCopiaData.tipo || ''} readOnly placeholder="Se autocompleta" /></label>
+                                        <label>Marca <input name="marca" value={editCopiaData.marca || ''} readOnly placeholder="Se autocompleta" /></label>
+                                        <label>Código Inventario <input name="codigo" value={editCopiaData.codigo || ''} readOnly placeholder="Se autocompleta" /></label>
+                                        
+                                        <h4 className="full-width">Información de la Copia</h4>
+                                        <label>
+                                            Fecha de la Copia
+                                            <input type="date" name="fecha" value={editCopiaData.fecha ? editCopiaData.fecha.split('T')[0] : ''} onChange={handleEditFormChange} required />
+                                        </label>
+                                        <label>
+                                            Estado
+                                            <select name="estado_copia" value={editCopiaData.estado_copia || 'Pendiente'} onChange={handleEditFormChange}>
+                                                <option value="Pendiente">Pendiente</option>
+                                                <option value="En Progreso">En Progreso</option>
+                                                <option value="Exitosa">Exitosa</option>
+                                                <option value="Fallida">Fallida</option>
+                                            </select>
+                                        </label>
+                                        <label>
+                                            Tipo de Copia
+                                            <select name="tipo_copia" value={editCopiaData.tipo_copia || 'Completa'} onChange={handleEditFormChange}>
+                                                <option value="Completa">Completa</option>
+                                                <option value="Incremental">Incremental</option>
+                                                <option value="Diferencial">Diferencial</option>
+                                            </select>
+                                        </label>
+                                        <label>
+                                            Responsable
+                                            <input name="responsable" value={editCopiaData.responsable || ''} onChange={handleEditFormChange} placeholder="Persona que realizó la copia" />
+                                        </label>
+                                        
+                                        <h4 className="full-width">Tiempos</h4>
+                                        <label>
+                                            Hora Inicio
+                                            <input type="time" name="hora_inicio" value={editCopiaData.hora_inicio || ''} onChange={handleEditFormChange} />
+                                        </label>
+                                        <label>
+                                            Hora Fin
+                                            <input type="time" name="hora_fin" value={editCopiaData.hora_fin || ''} onChange={handleEditFormChange} />
+                                        </label>
+                                        <label>
+                                            Tiempo de Duración
+                                            <input name="tiempo_duracion" value={editCopiaData.tiempo_duracion || ''} onChange={handleEditFormChange} placeholder="Ej: 2h 30min" />
+                                        </label>
+                                        
+                                        <h4 className="full-width">Detalles del Respaldo</h4>
+                                        <label>
+                                            Ubicación de Almacenamiento
+                                            <input name="ubicacion_almacenamiento" value={editCopiaData.ubicacion_almacenamiento || ''} onChange={handleEditFormChange} placeholder="Disco externo, servidor, nube..." />
+                                        </label>
+                                        <label>
+                                            Tamaño de Datos
+                                            <input name="tamaño_datos" value={editCopiaData.tamaño_datos || ''} onChange={handleEditFormChange} placeholder="Ej: 500GB, 1.2TB" />
+                                        </label>
+                                        <label className="full-width">
+                                            Observaciones
+                                            <textarea name="observaciones" value={editCopiaData.observaciones || ''} onChange={handleEditFormChange} rows="3" placeholder="Notas adicionales sobre el proceso de copia"></textarea>
+                                        </label>
+                                    </div>
+                                </form>
+                            ) : (
+                                <div className="loading-message">Cargando...</div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

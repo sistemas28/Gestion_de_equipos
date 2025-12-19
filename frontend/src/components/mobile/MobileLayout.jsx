@@ -26,7 +26,7 @@ const MobileLayout = ({ username, onLogout }) => {
                                 <div className="mobile-brand">
                                     <span>GE</span> Gestión
                                 </div>
-                                <button className="icon-btn" style={{ color: 'white' }} onClick={() => setShowNotifications(!showNotifications)}>
+                                <button className="icon-btn notification-btn" onClick={() => setShowNotifications(!showNotifications)}>
                                     <FaBell />
                                 </button>
                             </div>
@@ -36,8 +36,8 @@ const MobileLayout = ({ username, onLogout }) => {
                             </div>
                         </div>
 
-                        <div style={{ padding: '0 20px' }}>
-                            <h3 style={{ marginBottom: '16px', fontSize: '18px' }}>Accesos Rápidos</h3>
+                        <div className="mobile-section">
+                            <h3 className="section-title">Accesos Rápidos</h3>
                             <div className="mobile-menu-grid">
                                 <button className="mobile-menu-item" onClick={() => setCurrentView('agregarEquipo')}>
                                     <span className="icon"><FaLaptop /></span>
@@ -66,13 +66,13 @@ const MobileLayout = ({ username, onLogout }) => {
                             <div className="mobile-avatar">
                                 <FaUserCircle />
                             </div>
-                            <div>
-                                <h3 style={{ margin: 0 }}>{username}</h3>
-                                <p style={{ margin: 0, color: '#6b7280', fontSize: '14px' }}>Administrador</p>
+                            <div className="mobile-user-info">
+                                <h3>{username}</h3>
+                                <p>Administrador</p>
                             </div>
                         </div>
 
-                        <h4 style={{ marginBottom: '16px', color: '#374151' }}>Todas las aplicaciones</h4>
+                        <h4 className="menu-group-title">Todas las aplicaciones</h4>
                         <div className="mobile-menu-grid">
                             <button className="mobile-menu-item" onClick={() => setCurrentView('copias')}>
                                 <span className="icon"><FaDatabase /></span>
