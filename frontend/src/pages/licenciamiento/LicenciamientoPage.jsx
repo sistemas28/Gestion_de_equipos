@@ -8,8 +8,6 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 import { generateReport } from '../../utils/reportGenerator';
-
-import logo from '../../assets/LOGO_INSTITUCIONAL.jpg';
 function LicenciamientoPage() {
     const [licenciamientoData, setLicenciamientoData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -223,20 +221,29 @@ function LicenciamientoPage() {
                 type: 'info',
                 title: 'INFORMACIÓN DEL EQUIPO',
                 data: [
+                    { label: 'CÓDIGO INVENTARIO', value: detailedData.codigo || detailedData.id || 'N/A' },
                     { label: 'USUARIO', value: detailedData.usuario || 'N/A' },
                     { label: 'ÁREA', value: detailedData.area || 'N/A' },
-                    { label: 'TIPO', value: detailedData.tipo || 'N/A' },
-                    { label: 'CÓDIGO', value: detailedData.id || 'N/A' }, // Using ID as code if not present
+                    { label: 'TIPO DE EQUIPO', value: detailedData.tipo || 'N/A' },
+                    { label: '', value: '' },
+                    { label: '', value: '' }
                 ]
             },
             {
                 type: 'info',
-                title: 'DETALLES DEL LICENCIAMIENTO',
+                title: 'LICENCIAS DE SOFTWARE',
                 data: [
-                    { label: 'SISTEMA OPERATIVO', value: detailedData.sistema_operativo || 'N/A' },
-                    { label: 'SOFTWARE OFICINA', value: detailedData.software_de_oficina || 'N/A' },
-                    { label: 'OTRO SOFTWARE', value: detailedData.otro_software || 'N/A' },
-                    { label: 'DESCRIPCIÓN', value: detailedData.descripcion || 'Sin descripción.' }
+                    { label: 'SISTEMA OPERATIVO', value: detailedData.sistema_operativo || 'No especificado' },
+                    { label: 'SOFTWARE DE OFICINA', value: detailedData.software_de_oficina || 'No especificado' },
+                    { label: 'OTRO SOFTWARE', value: detailedData.otro_software || 'No especificado' },
+                    { label: '', value: '' }
+                ]
+            },
+            {
+                type: 'info',
+                title: 'DESCRIPCIÓN Y DETALLES',
+                data: [
+                    { label: 'DESCRIPCIÓN COMPLETA', value: detailedData.descripcion || 'Sin descripción adicional proporcionada.' }
                 ]
             }
         ];
@@ -255,13 +262,16 @@ function LicenciamientoPage() {
         <div className="licenciamiento-page">
             <div className="page-header">
                 <h2 className="page-title">Gestión de Licenciamiento</h2>
-                <button className="action-btn save" onClick={handleOpenAddModal} disabled={loading}>
-                    Crear Licenciamiento
-                </button>
-                <button className="refresh-btn" onClick={fetchLicenciamientoData} disabled={loading}>
-                    {loading ? 'Cargando...' : 'Actualizar Datos'}
-                </button>
+                <div className="header-actions">
+                    <button className="action-btn save" onClick={handleOpenAddModal} disabled={loading}>
+                        Crear Licenciamiento
+                    </button>
+                    <button className="refresh-btn" onClick={fetchLicenciamientoData} disabled={loading}>
+                        {loading ? 'Cargando...' : 'Actualizar Datos'}
+                    </button>
+                </div>
             </div>
+
 
             {error && <div className="error-message">{error}</div>}
 

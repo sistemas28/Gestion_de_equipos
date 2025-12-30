@@ -2,9 +2,19 @@ const express = require('express');
 const config = require('./config');
 const morgan = require('morgan');
 const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
 
+// Rate limiting to prevent abuse
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1000, // Limit each IP to 1000 requests per windowMs
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
-//importing routes
+// Importing routes
 const clientes = require('./models/clientes/rutas');
 const usuarios = require('./models/usuarios/rutas');
 const auth = require('./models/auth/rutas');
@@ -19,18 +29,26 @@ const error = require('./red/errors');
 
 const app = express();
 
-//midlewares
-app.use(morgan('dev'));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// Security and Performance Middleware
+app.use(helmet({
+    crossOriginResourcePolicy: false, // For local dev images/assets
+}));
+app.use(compression()); // Compress all responses
+app.use(limiter); // Apply rate limiting
 
-// Configuración de CORS
+app.use(morgan('dev'));
+app.use(express.json({ limit: '10mb' })); // Reduced limit for better memory usage
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+// CORS configuration
 app.use(cors({
     origin: [
         "http://localhost:5173",
         "http://18.218.142.48"
     ],
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 //config
 app.set('port', config.app.port);

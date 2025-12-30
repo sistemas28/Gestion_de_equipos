@@ -29,6 +29,23 @@ export default defineConfig({
       },
     }
   },
+  build: {
+    target: 'esnext',
+    minify: 'esbuild',
+    cssMinify: true,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('jspdf')) return 'vendor-jspdf';
+            if (id.includes('react-big-calendar')) return 'vendor-calendar';
+            if (id.includes('moment')) return 'vendor-moment';
+            return 'vendor'; // combine rest of modules
+          }
+        }
+      }
+    }
+  },
   plugins: [
     react({
       jsxRuntime: 'automatic'
@@ -44,9 +61,8 @@ export default defineConfig({
         start_url: '/',
         display: 'standalone',
         background_color: '#f6f9ff',
-        theme_color: '#2563eb',
+        theme_color: '#AD1A1C',
         icons: [
-          // Prefer PNG icons in /public/icons/*.png - SVG can be used as fallback
           { src: '/GeLogo.svg', sizes: 'any', type: 'image/svg+xml' }
         ]
       }
@@ -56,7 +72,6 @@ export default defineConfig({
       configureServer(server) {
         server.httpServer?.once('listening', () => {
           setTimeout(() => {
-            // Imprimimos la URL Pública sin el puerto
             console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mPublic:\x1b[0m   \x1b[36mhttp://18.218.142.48/\x1b[0m`);
             console.log(`  \x1b[32m➜\x1b[0m  \x1b[1mpress h + enter to show help\x1b[0m\n`);
           }, 100);

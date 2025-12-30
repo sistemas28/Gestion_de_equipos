@@ -1,0 +1,105 @@
+.notification-bell-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bell-btn {
+    background: #ffffff;
+    border: 1px solid rgba(173, 26, 28, 0.1);
+    color: #1e293b;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 18px;
+    position: relative;
+}
+
+.bell-btn:hover {
+    background: #AD1A1C;
+    color: #ffffff;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 5px 15px rgba(173, 26, 28, 0.2);
+}
+
+.bell-btn:active {
+    transform: scale(0.95);
+}
+
+.bell-btn.active {
+    background: #AD1A1C;
+    color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(173, 26, 28, 0.1);
+}
+
+.bell-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #FCE821;
+    color: #AD1A1C;
+    font-size: 10px;
+    font-weight: 800;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+}
+
+.bell-icon {
+    transition: all 0.4s ease;
+}
+
+.bell-btn:hover .bell-icon {
+    animation: rattle 0.5s ease;
+}
+
+@keyframes rattle {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(20deg);
+    }
+
+    50% {
+        transform: rotate(-20deg);
+    }
+
+    75% {
+        transform: rotate(10deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .bell-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 16px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+    }
+
+    .bell-badge {
+        border-color: #AD1A1C;
+    }
+}

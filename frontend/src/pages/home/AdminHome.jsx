@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import api from '../../api/axios';
 import './AdminHome.css';
 import './home.css';
-import { FaBars, FaBell, FaSignOutAlt, FaUsers, FaTools, FaFileAlt, FaLaptop, FaPlus, FaEye, FaEyeSlash, FaCheck } from 'react-icons/fa';
+import { FaBars, FaSignOutAlt, FaUsers, FaTools, FaFileAlt, FaLaptop, FaPlus, FaEye, FaEyeSlash, FaCheck, FaDatabase, FaPrint, FaHistory } from 'react-icons/fa';
+import logo from '../../assets/LOGO_INSTITUCIONAL.jpg';
 
 // Importar componentes móviles
 import useIsMobile from '../../hooks/useIsMobile.js';
@@ -15,6 +16,10 @@ import CopiasPage from '../copiasDeSeguridad/CopiasPage.jsx';
 import ImpresorasPage from '../impresoras/ImpresorasPage.jsx';
 import HistorialEquiposPage from '../historialEquipos/HistorialEquiposPage.jsx';
 import AgregarEquipoPage from './AgregarEquipoPage.jsx';
+
+// Importar nuevos componentes de notificaciones
+import NotificationBell from '../../components/notifications/NotificationBell.jsx';
+import NotificationPanel from '../../components/notifications/NotificationPanel.jsx';
 
 // Componente principal que decide qué renderizar
 function AdminHome({ onBack, username }) {
@@ -56,97 +61,15 @@ function DesktopAdminHome({ onBack, username }) {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    // Estados para el layout del dashboard (copiados de Home.jsx)
+    // Estados para el layout
     const [now, setNow] = useState(new Date());
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [currentAdminView, setCurrentAdminView] = useState('dashboard'); // 'dashboard', 'userManagement', 'mantenimiento', etc.
-    const [showNotifications, setShowNotifications] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [currentAdminView, setCurrentAdminView] = useState('dashboard');
 
-    // Estados para notificaciones (copiados de Home.jsx)
-    const [reminders, setReminders] = useState([]);
-    const [loadingReminders, setLoadingReminders] = useState(false);
-
-    const notificationsRef = useRef(null);
-
-    const fetchUsers = async () => {
-        try {
-            setLoading(true);
-            const response = await api.get('/usuarios');
-            setUsers(response.data.body || []);
-            setError('');
-        } catch (err) {
-            console.error("Error al obtener usuarios:", err);
-            setError('No se pudieron cargar los usuarios. Inténtalo de nuevo.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Lógica de notificaciones (copiada de Home.jsx)
-    async function fetchReminders() {
-        setLoadingReminders(true);
-        try {
-            // 1. Obtener recordatorios manuales
-            const remindersPromise = api.get('/recordatorios');
-            // 2. Obtener datos de mantenimiento para generar recordatorios automáticos
-            const maintenancePromise = api.get('/mantenimiento');
-
-            const [remindersResp, maintenanceResp] = await Promise.all([remindersPromise, maintenancePromise]);
-
-            const manualReminders = remindersResp.data.body || [];
-
-            // 3. Transformar mantenimientos en recordatorios
-            const maintenanceReminders = (maintenanceResp.data.body || [])
-                .filter(item => item.fecha_actual_de_mantenimiento) // Solo los que tienen fecha
-                .map(item => ({
-                    id: `mantenimiento-${item.id}`, // ID único para evitar colisiones
-                    title: `Próximo mantenimiento: ${item.usuario} (${item.tipo})`,
-                    date: item.fecha_actual_de_mantenimiento,
-                    realizado: new Date(item.fecha_actual_de_mantenimiento) < new Date(item.fecha_ultimo_mantenimiento), // Considerar realizado si la fecha de próximo mant. es anterior al último.
-                    source: 'mantenimiento' // Identificador de origen
-                }));
-
-            // 4. Combinar ambos tipos de recordatorios
-            setReminders([...manualReminders, ...maintenanceReminders]);
-
-        } catch (err) {
-            console.error('Error al obtener recordatorios y mantenimientos:', err);
-        } finally {
-            setLoadingReminders(false);
-        }
-    }
-
-    async function handleToggleRealizado(rem) {
-        // No se puede marcar como realizado un recordatorio automático de mantenimiento
-        if (rem.source === 'mantenimiento') {
-            alert('Este recordatorio se gestiona desde la sección de Mantenimiento.');
-            return;
-        }
-        try {
-            const newVal = rem.realizado ? 0 : 1;
-            await api.patch(`/recordatorios/${rem.id}/realizado`, { realizado: newVal });
-            fetchReminders();
-        } catch (err) {
-            console.error('Error toggling realizado', err);
-        }
-    }
-
-    async function handleClearAllNotifications() {
-        if (!confirm('¿Marcar todos los recordatorios manuales como realizados?')) return;
-        try {
-            // Solo marcar los recordatorios manuales no completados
-            const uncompletedManualReminders = reminders.filter(r => !r.realizado && !r.source);
-            const promises = uncompletedManualReminders.map(rem =>
-                api.patch(`/recordatorios/${rem.id}/realizado`, { realizado: 1 })
-            );
-            if (promises.length > 0) await Promise.all(promises);
-            fetchReminders(); // Volver a cargar para reflejar los cambios
-        } catch (err) {
-            console.error('Error al limpiar los recordatorios', err);
-        }
-    }
-
-    const uncompletedReminders = reminders.filter(r => !r.realizado);
+    // Estados para datos de progreso
+    const [maintenanceData, setMaintenanceData] = useState([]);
+    const [backupsData, setBackupsData] = useState([]);
+    const [progressPeriod, setProgressPeriod] = useState('month');
 
     useEffect(() => {
         const t = setInterval(() => setNow(new Date()), 1000);
@@ -155,96 +78,130 @@ function DesktopAdminHome({ onBack, username }) {
 
     useEffect(() => {
         fetchUsers();
-        fetchReminders();
+        fetchMaintenanceData();
+        fetchBackupsData();
     }, []);
+
+    // Refrescar datos al volver al dashboard para asegurar sincronización
+    useEffect(() => {
+        if (currentAdminView === 'dashboard') {
+            fetchMaintenanceData();
+            fetchBackupsData();
+        }
+    }, [currentAdminView]);
+
+    const fetchUsers = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/usuarios');
+            setUsers(response.data.body || []);
+        } catch (err) {
+            console.error("Error al obtener usuarios:", err);
+            setError('No se pudieron cargar los usuarios.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const fetchMaintenanceData = async () => {
+        try {
+            const response = await api.get('/mantenimiento');
+            setMaintenanceData(response.data.body || []);
+        } catch (err) { /* silent */ }
+    };
+
+    const fetchBackupsData = async () => {
+        try {
+            const response = await api.get('/CopiasDeSeguridad');
+            setBackupsData(response.data.body || []);
+        } catch (err) { /* silent */ }
+    };
+
+    const getMaintenanceStats = (data, period) => {
+        if (!data.length) return { percentage: 0, completed: 0, total: 0 };
+        const now = new Date();
+        let startDate, endDate;
+        switch (period) {
+            case 'month': startDate = new Date(now.getFullYear(), now.getMonth(), 1); endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); break;
+            case 'quarter': const qs = Math.floor(now.getMonth() / 3) * 3; startDate = new Date(now.getFullYear(), qs, 1); endDate = new Date(now.getFullYear(), qs + 3, 0); break;
+            case 'year': startDate = new Date(now.getFullYear(), 0, 1); endDate = new Date(now.getFullYear(), 11, 31); break;
+            default: return { percentage: 0, completed: 0, total: 0 };
+        }
+        const periodData = data.filter(item => {
+            const itemDate = new Date(item.fecha_actual_de_mantenimiento || item.fecha_de_ejecucion || item.fecha_de_elaboracion);
+            return itemDate >= startDate && itemDate <= endDate;
+        });
+        const completed = periodData.filter(item => item.estado === 'Terminado').length;
+        const total = periodData.length;
+        return {
+            percentage: total ? Math.round((completed / total) * 100) : 0,
+            completed,
+            total
+        };
+    };
+
+    const getBackupsStats = (data, period) => {
+        if (!data.length) return { percentage: 0, completed: 0, total: 0 };
+        const now = new Date();
+        let startDate, endDate;
+        switch (period) {
+            case 'month': startDate = new Date(now.getFullYear(), now.getMonth(), 1); endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); break;
+            case 'quarter': const qs = Math.floor(now.getMonth() / 3) * 3; startDate = new Date(now.getFullYear(), qs, 1); endDate = new Date(now.getFullYear(), qs + 3, 0); break;
+            case 'year': startDate = new Date(now.getFullYear(), 0, 1); endDate = new Date(now.getFullYear(), 11, 31); break;
+            default: return { percentage: 0, completed: 0, total: 0 };
+        }
+        const periodData = data.filter(item => {
+            const itemDate = new Date(item.fecha);
+            return itemDate >= startDate && itemDate <= endDate;
+        });
+        const completed = periodData.filter(item => item.estado_copia === 'Exitosa').length;
+        const total = periodData.length;
+        return {
+            percentage: total ? Math.round((completed / total) * 100) : 0,
+            completed,
+            total
+        };
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const openModalForCreate = () => {
-        setEditingUser(null);
-        setFormData({ nombre: '', correo: '', usuario: '', password: '', confirmPassword: '' });
-        setShowPassword(false);
-        setShowConfirmPassword(false);
-        setIsModalOpen(true);
-        setError('');
-        setSuccess('');
-    };
-
-    const openModalForEdit = (user) => {
-        setEditingUser(user);
-        setFormData({
-            nombre: user.nombre,
-            correo: user.correo,
-            usuario: user.usuario, // Necesitaríamos el nombre de usuario aquí
-            password: '', // La contraseña no se edita directamente
-            confirmPassword: '',
-        });
-        setShowPassword(false);
-        setShowConfirmPassword(false);
-        setIsModalOpen(true);
-        setError('');
-        setSuccess('');
-    };
-
     const handleModalSubmit = async (e) => {
         e.preventDefault();
-
-        // Validación simple
-        if (!formData.nombre || !formData.usuario || !formData.correo) {
-            setError('Nombre, correo y usuario son obligatorios.');
-            return;
-        }
-        if (!editingUser && !formData.password) {
-            setError('La contraseña es obligatoria para nuevos usuarios.');
-            return;
-        }
-        if (formData.password !== formData.confirmPassword) {
-            setError('Las contraseñas no coinciden.');
-            return;
-        }
-
+        if (formData.password !== formData.confirmPassword) { setError('Las contraseñas no coinciden.'); return; }
         try {
-            let response;
             if (editingUser) {
-                response = await api.put(`/usuarios/${editingUser.id}`, formData);
-                setSuccess(`Usuario "${formData.nombre}" actualizado con éxito.`);
+                await api.put(`/usuarios/${editingUser.id}`, formData);
+                setSuccess(`Usuario actualizado con éxito.`);
             } else {
-                // Lógica para crear (POST /usuarios)
-                response = await api.post('/usuarios', formData);
-                setSuccess(`Usuario "${formData.nombre}" creado con éxito.`);
+                await api.post('/usuarios', formData);
+                setSuccess(`Usuario creado con éxito.`);
             }
-
             setIsModalOpen(false);
-            fetchUsers(); // Recargar la lista de usuarios
-
+            fetchUsers();
         } catch (err) {
-            console.error("Error al guardar el usuario:", err);
-            setError(err.response?.data?.body || 'No se pudo guardar el usuario.');
+            setError(err.response?.data?.body || 'Error al guardar.');
         }
     };
 
     const handleDeleteUser = async (userId, userName) => {
-        if (window.confirm(`¿Estás seguro de que quieres eliminar al usuario "${userName}"? Esta acción no se puede deshacer.`)) {
+        if (window.confirm(`¿Eliminar al usuario "${userName}"?`)) {
             try {
                 await api.delete(`/usuarios/${userId}`);
-                setSuccess(`Usuario "${userName}" eliminado con éxito.`);
-                fetchUsers(); // Recargar la lista
-            } catch (err) {
-                console.error("Error al eliminar el usuario:", err);
-                setError(err.response?.data?.body || 'No se pudo eliminar el usuario.');
-            }
+                setSuccess(`Usuario eliminado.`);
+                fetchUsers();
+            } catch (err) { setError('No se pudo eliminar.'); }
         }
     };
+
 
     const handleLogout = () => {
         localStorage.removeItem('authToken');
         localStorage.removeItem('username');
-        if (onBack) {
-            onBack();
-        }
+        if (onBack) onBack();
     };
 
     const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -255,262 +212,176 @@ function DesktopAdminHome({ onBack, username }) {
     return (
         <div className={`home-shell ${sidebarOpen ? 'sidebar-open' : ''}`}>
             <aside className="sidebar">
-                <div className="sidebar-top">
-                    <div className="sidebar-brand">ADMIN<br />DASHBOARD</div>
-                    <nav className="side-nav">
-                        {/* Botones de navegación del Admin */}
-                        <button className={currentAdminView === 'dashboard' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('dashboard')}>DASHBOARD ADMIN</button>
-                        <button className={currentAdminView === 'userManagement' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('userManagement')}>GESTIÓN USUARIOS</button>
-                        {/* Botones de navegación a otras secciones */}
-                        <button className={currentAdminView === 'mantenimiento' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('mantenimiento')}>MANTENIMIENTO</button>
-                        <button className={currentAdminView === 'historialEquipos' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('historialEquipos')}>HISTORIAL EQUIPOS</button>
-                        <button className={currentAdminView === 'licenciamiento' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('licenciamiento')}>LICENCIAMIENTO</button>
-                        <button className={currentAdminView === 'copias' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('copias')}>COPIAS DE SEGURIDAD</button>
-                        <button className={currentAdminView === 'impresoras' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('impresoras')}>IMPRESORAS</button>
-                        <button className={currentAdminView === 'agregarEquipo' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('agregarEquipo')}>AGREGAR EQUIPO</button>
-                        {/* Aquí podrías añadir más botones para otras secciones de administración si las hubiera */}
-                    </nav>
-                </div>
+                <div className="sidebar-brand">AD<span>MIN</span></div>
+                <nav className="side-nav">
+                    <button className={currentAdminView === 'dashboard' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('dashboard')}><FaLaptop /> DASHBOARD</button>
+                    <button className={currentAdminView === 'userManagement' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('userManagement')}><FaUsers /> USUARIOS</button>
+                    <button className={currentAdminView === 'mantenimiento' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('mantenimiento')}><FaTools /> MANTENIMIENTO</button>
+                    <button className={currentAdminView === 'historialEquipos' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('historialEquipos')}><FaHistory /> HISTORIAL</button>
+                    <button className={currentAdminView === 'licenciamiento' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('licenciamiento')}><FaFileAlt /> LICENCIAS</button>
+                    <button className={currentAdminView === 'copias' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('copias')}><FaDatabase /> COPIAS</button>
+                    <button className={currentAdminView === 'impresoras' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('impresoras')}><FaPrint /> IMPRESORAS</button>
+                    <button className={currentAdminView === 'agregarEquipo' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('agregarEquipo')}><FaPlus /> + EQUIPO</button>
+                </nav>
             </aside>
 
             <main className="main-area">
                 <header className="topbar">
                     <div className="logo-row">
                         <button className="hamburger" onClick={() => setSidebarOpen(s => !s)} aria-label="Toggle menu"><FaBars /></button>
-                        <div className="logo-pill">AD</div>
-                        <div className="org">ADMIN<br />DASHBOARD</div>
-                        <div className="topbar-time">{timeStr}</div>
-                        <div className="logoNasakiwe"></div> {/* Mantener si es parte del branding */}
+                        <img src={logo} alt="Logo Institucional" className="topbar-logo" />
+                        <div className="org">ADMINISTRACIÓN<br /><span>EQUIPOS</span></div>
                     </div>
+                    <div className="topbar-time">{timeStr}</div>
                     <div className="top-actions">
-                        {/* Puedes añadir botones de ajustes o notificaciones aquí si son relevantes para el admin */}
-                        <button className="icon-btn" onClick={() => setShowNotifications(s => !s)}>
-                            <FaBell />
-                            {uncompletedReminders.length > 0 && <span className="notification-badge">{uncompletedReminders.length}</span>}
-                        </button>
+                        <NotificationBell />
                         <button className="icon-btn" title="Cerrar sesión" onClick={handleLogout}><FaSignOutAlt /></button>
                     </div>
                 </header>
 
-                {/* Contenido principal del dashboard de administración */}
                 {currentAdminView === 'dashboard' && (
-                    <section className="hero">
-                        <div className="hero-left card big-card">
-                            <div className="hero-content-flex">
-                                <div className="hero-greeting">
-                                    <h2>HOLA,<br /><span className="username">{username || '(USUARIO)'}</span></h2>
-                                    <p>Bienvenido al panel de administración. Aquí puedes gestionar los usuarios del sistema.</p>
+                    <>
+                        <section className="hero">
+                            <div className="hero-left big-card">
+                                <div className="hero-content-flex">
+                                    <div className="hero-greeting">
+                                        <h2>BIENVENIDO,<br /><span className="username">ADMIN</span></h2>
+                                        <p>Centro de control para la infraestructura técnica.</p>
+                                    </div>
+                                    <div className="quick-actions-dashboard">
+                                        <div className="quick-actions">
+                                            <button className="action-btn" onClick={() => setCurrentAdminView('userManagement')}><FaUsers /> Usuarios</button>
+                                            <button className="action-btn" onClick={() => setCurrentAdminView('mantenimiento')}><FaTools /> Mantenimiento</button>
+                                            <button className="action-btn" onClick={() => setCurrentAdminView('licenciamiento')}><FaFileAlt /> Licencias</button>
+                                            <button className="action-btn" onClick={() => setCurrentAdminView('agregarEquipo')}><FaPlus /> + Equipo</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="quick-actions-dashboard">
-                                <h4>Acciones rápidas</h4>
-                                <div className="quick-actions">
-                                    <button className="action-btn" onClick={() => setCurrentAdminView('userManagement')}>
-                                        <span className="icon"><FaUsers /></span> Gestionar Usuarios
-                                    </button>
-                                    <button className="action-btn" onClick={() => setCurrentAdminView('mantenimiento')}>
-                                        <span className="icon"><FaTools /></span> Ir a Mantenimiento
-                                    </button>
-                                    <button className="action-btn" onClick={() => setCurrentAdminView('licenciamiento')}>
-                                        <span className="icon"><FaFileAlt /></span> Ir a Licenciamiento
-                                    </button>
-                                    <button className="action-btn" onClick={() => setCurrentAdminView('agregarEquipo')}>
-                                        <span className="icon"><FaLaptop /></span> Agregar Equipo
-                                    </button>
+                            <aside className="hero-right">
+                                <div className="date-card">
+                                    <div className="day">{day}</div>
+                                    <div className="month">{month}</div>
+                                    <div className="year">{year}</div>
+                                </div>
+                            </aside>
+                        </section>
+                        <section className="progress-section">
+                            <div className="progress-header">
+                                <h3>ESTADÍSTICAS</h3>
+                                <div className="progress-selector">
+                                    <select value={progressPeriod} onChange={(e) => setProgressPeriod(e.target.value)}>
+                                        <option value="month">Mes</option>
+                                        <option value="quarter">Trimestre</option>
+                                        <option value="year">Año</option>
+                                    </select>
                                 </div>
                             </div>
-                        </div>
-                        <aside className="hero-right">
-                            <div className="date-card card">
-                                <div className="month">{month}</div>
-                                <div className="day">{day}</div>
-                                <div className="year">{year}</div>
+                            <div className="progress-panels">
+                                <div className="progress-card">
+                                    <div className="progress-info">
+                                        <div className="progress-card-header">
+                                            <h4>Mantenimientos</h4>
+                                            <span className="progress-percentage">{getMaintenanceStats(maintenanceData, progressPeriod).percentage}%</span>
+                                        </div>
+                                        <div className="progress-bar-container">
+                                            <div
+                                                className="progress-bar-fill maintenance"
+                                                style={{ width: `${getMaintenanceStats(maintenanceData, progressPeriod).percentage}%` }}
+                                            ></div>
+                                        </div>
+                                        <div className="progress-footer">
+                                            <p className="progress-label">Equipos gestionados este periodo</p>
+                                            <span className="progress-count">{getMaintenanceStats(maintenanceData, progressPeriod).completed} / {getMaintenanceStats(maintenanceData, progressPeriod).total}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="progress-card">
+                                    <div className="progress-info">
+                                        <div className="progress-card-header">
+                                            <h4>Copias Seguridad</h4>
+                                            <span className="progress-percentage">{getBackupsStats(backupsData, progressPeriod).percentage}%</span>
+                                        </div>
+                                        <div className="progress-bar-container">
+                                            <div
+                                                className="progress-bar-fill backups"
+                                                style={{ width: `${getBackupsStats(backupsData, progressPeriod).percentage}%` }}
+                                            ></div>
+                                        </div>
+                                        <div className="progress-footer">
+                                            <p className="progress-label">Respaldos verificados</p>
+                                            <span className="progress-count">{getBackupsStats(backupsData, progressPeriod).completed} / {getBackupsStats(backupsData, progressPeriod).total}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </aside>
-                    </section>
+                        </section>
+                    </>
                 )}
 
                 {currentAdminView === 'userManagement' && (
-                    <div className="admin-dashboard-content"> {/* Nuevo contenedor para la gestión de usuarios */}
+                    <div className="admin-dashboard-content">
                         <header className="page-header">
                             <div>
                                 <h1>Gestión de Usuarios</h1>
-                                <p>Crea, edita y elimina usuarios del sistema.</p>
+                                <p>Control de acceso y perfiles de sistema.</p>
                             </div>
                         </header>
-
                         <div className="toolbar">
-                            <button className="btn primary" onClick={openModalForCreate}>
-                                <span className="icon"><FaPlus /></span> Crear Nuevo Usuario
+                            <button className="btn primary" onClick={() => { setEditingUser(null); setFormData({ nombre: '', correo: '', usuario: '', password: '', confirmPassword: '' }); setIsModalOpen(true); }}>
+                                <FaPlus /> Nuevo Usuario
                             </button>
                         </div>
-
-                        {error && <div className="form-message error" style={{ margin: '1rem 0' }}>{error}</div>}
-                        {success && <div className="form-message success" style={{ margin: '1rem 0' }}>{success}</div>}
-
-                        <div className="users-list card">
-                            {loading ? (
-                                <p>Cargando usuarios...</p>
-                            ) : (
-                                <div className="table-responsive">
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Nombre</th>
-                                                <th>Correo Electrónico</th>
-                                                <th>Usuario</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {users.map(user => (
-                                                <tr key={user.id}>
-                                                    <td>{user.id}</td>
-                                                    <td>{user.nombre}</td>
-                                                    <td>{user.correo}</td>
-                                                    <td>{user.usuario}</td>
-                                                    <td className="actions-cell">
-                                                        <button className="action-btn-sm edit" onClick={() => openModalForEdit(user)}>Editar</button>
-                                                        <button className="action-btn-sm delete" onClick={() => handleDeleteUser(user.id, user.nombre)}>Eliminar</button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                            {!loading && users.length === 0 && <p>No hay usuarios registrados.</p>}
+                        {success && <div className="form-message success">{success}</div>}
+                        <div className="users-list">
+                            <div className="table-responsive">
+                                <table>
+                                    <thead><tr><th>ID</th><th>Nombre</th><th>Usuario</th><th>Acciones</th></tr></thead>
+                                    <tbody>
+                                        {users.map(u => (
+                                            <tr key={u.id}><td>{u.id}</td><td>{u.nombre}</td><td>{u.usuario}</td><td>
+                                                <button className="action-btn-sm edit" onClick={() => { setEditingUser(u); setFormData({ nombre: u.nombre, correo: u.correo, usuario: u.usuario, password: '', confirmPassword: '' }); setIsModalOpen(true); }}>Editar</button>
+                                                <button className="action-btn-sm delete" onClick={() => handleDeleteUser(u.id, u.nombre)}>Borrar</button>
+                                            </td></tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 )}
 
-                {/* Renderizado condicional de las otras páginas */}
                 {currentAdminView === 'mantenimiento' && <MaintenancePage />}
                 {currentAdminView === 'historialEquipos' && <HistorialEquiposPage />}
                 {currentAdminView === 'licenciamiento' && <LicenciamientoPage />}
                 {currentAdminView === 'copias' && <CopiasPage />}
                 {currentAdminView === 'impresoras' && <ImpresorasPage />}
-
                 {currentAdminView === 'agregarEquipo' && <AgregarEquipoPage onEquipoAgregado={() => setCurrentAdminView('dashboard')} />}
-
             </main>
 
-            {/* Modal para Crear/Editar Usuario */}
             {isModalOpen && (
                 <div className="modal-backdrop">
-                    <div className="modal-content card">
-                        <h2>{editingUser ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</h2>
+                    <div className="modal-content">
+                        <h2>{editingUser ? 'Editar' : 'Nuevo'} Usuario</h2>
                         <form onSubmit={handleModalSubmit}>
                             {error && <div className="form-message error">{error}</div>}
                             <div className="form-grid">
-                                <label>
-                                    Nombre Completo
-                                    <input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} required />
-                                </label>
-                                <label>
-                                    Correo Electrónico
-                                    <input type="email" name="correo" value={formData.correo} onChange={handleInputChange} required />
-                                </label>
-                                <label>
-                                    Nombre de Usuario
-                                    <input type="text" name="usuario" value={formData.usuario} onChange={handleInputChange} required />
-                                </label>
-                                <label>
-                                    Contraseña {editingUser ? '(Dejar en blanco para no cambiar)' : ''}
-                                    <div style={{ position: 'relative' }}>
-                                        <input
-                                            type={showPassword ? "text" : "password"}
-                                            name="password"
-                                            value={formData.password}
-                                            onChange={handleInputChange}
-                                            required={!editingUser}
-                                            style={{ paddingRight: '2.5rem' }}
-                                        />
-                                        <button
-                                            type="button"
-                                            className="password-toggle-btn"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            title={showPassword ? "Ocultar contraseña" : "Ver contraseña"}
-                                        >
-                                            {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                        </button>
-                                    </div>
-                                </label>
-                                <label>
-                                    Confirmar Contraseña
-                                    <div style={{ position: 'relative' }}>
-                                        <input
-                                            type={showConfirmPassword ? "text" : "password"}
-                                            name="confirmPassword"
-                                            value={formData.confirmPassword}
-                                            onChange={handleInputChange}
-                                            required={!editingUser || formData.password !== ''}
-                                            style={{ paddingRight: '2.5rem' }}
-                                        />
-                                        <button
-                                            type="button"
-                                            className="password-toggle-btn"
-                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            title={showConfirmPassword ? "Ocultar contraseña" : "Ver contraseña"}
-                                        >
-                                            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                                        </button>
-                                    </div>
-                                </label>
+                                <label>Nombre<input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} required /></label>
+                                <label>Correo<input type="email" name="correo" value={formData.correo} onChange={handleInputChange} required /></label>
+                                <label>Usuario<input type="text" name="usuario" value={formData.usuario} onChange={handleInputChange} required /></label>
+                                <label>Contraseña<input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleInputChange} required={!editingUser} /></label>
+                                <label>Confirmar<input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} required={!editingUser} /></label>
                             </div>
                             <div className="form-actions">
-                                <button type="submit" className="action-btn save">
-                                    {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
-                                </button>
-                                <button type="button" className="action-btn cancel" onClick={() => setIsModalOpen(false)}>
-                                    Cancelar
-                                </button>
+                                <button type="submit" className="action-btn save">Guardar</button>
+                                <button type="button" className="action-btn cancel" onClick={() => setIsModalOpen(false)}>Cerrar</button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
 
-            {/* Modal de Notificaciones para Admin */}
-            {showNotifications && (
-                <div className="notifications-modal" onClick={() => setShowNotifications(false)}>
-                    <div className="notifications-panel" onClick={(e) => e.stopPropagation()}>
-                        <div className="notifications-header">
-                            <div className="notifications-header-title">
-                                <span className="icon"><FaBell /></span>
-                                <h4>Notificaciones</h4>
-                            </div>
-                            <button className="link small" onClick={handleClearAllNotifications}>Limpiar todo</button>
-                        </div>
-                        <div className="notifications-list">
-                            {uncompletedReminders.length > 0 ? (
-                                uncompletedReminders.map(rem => (
-                                    <div key={rem.id} className="notification-item">
-                                        <div className="notification-content">
-                                            <div className="notification-title">{rem.title}</div>
-                                            <small className="muted">{rem.date ? new Date(rem.date).toLocaleString() : ''}</small>
-                                            {rem.source === 'mantenimiento' && (
-                                                <small className="notification-source">
-                                                    <span onClick={(e) => { e.stopPropagation(); setShowNotifications(false); setCurrentAdminView('mantenimiento'); }}>Ir a Mantenimiento</span>
-                                                </small>
-                                            )}
-                                        </div>
-                                        <button
-                                            className="clear-notification-btn"
-                                            title="Marcar como realizado"
-                                            onClick={(e) => { e.stopPropagation(); handleToggleRealizado(rem); }}
-                                        ><FaCheck /></button>
-                                    </div>
-                                ))
-                            ) : <div className="muted" style={{ padding: '1rem' }}>No hay notificaciones nuevas.</div>}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Backdrop solo para el sidebar móvil */}
-            {sidebarOpen && <div className="backdrop" onClick={() => setSidebarOpen(false)} />}
+            <NotificationPanel />
         </div>
     );
 }

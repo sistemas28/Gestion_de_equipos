@@ -36,7 +36,20 @@
 
 .mobile-nav-item.active {
     color: #AD1A1C;
-    font-weight: 600;
+    font-weight: 700;
+}
+
+.mobile-nav-item.active .nav-icon {
+    transform: translateY(-2px);
+    color: #AD1A1C;
+}
+
+.nav-label {
+    transition: all 0.2s ease;
+}
+
+.mobile-nav-item.active .nav-label {
+    font-size: 11px;
 }
 
 .mobile-nav-center {
@@ -248,4 +261,91 @@
     font-weight: 700;
     font-size: 1rem;
     padding-left: 4px;
+}
+
+/* Mobile Statistics Styles */
+.mobile-stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.mobile-period-select {
+    padding: 6px 12px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+    outline: none;
+}
+
+.mobile-stats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.mobile-stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(173, 26, 28, 0.05);
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.stat-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #374151;
+}
+
+.stat-percentage {
+    font-size: 14px;
+    font-weight: 800;
+    color: #AD1A1C;
+    background: rgba(173, 26, 28, 0.1);
+    padding: 2px 8px;
+    border-radius: 8px;
+}
+
+.mobile-progress-bar {
+    height: 8px;
+    background: #f3f4f6;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.mobile-progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s ease-in-out;
+}
+
+.mobile-progress-fill.maintenance {
+    background: linear-gradient(90deg, #AD1A1C, #FF4D4F);
+}
+
+.mobile-progress-fill.backups {
+    background: linear-gradient(90deg, #FDE047, #FACC15);
+}
+
+.stat-footer {
+    display: flex;
+    justify-content: flex-end;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
 }

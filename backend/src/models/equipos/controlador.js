@@ -11,6 +11,7 @@ module.exports = function (dbInyectada) {
         // Mapeamos los nombres de las columnas de la BD a los que espera el frontend
         return db.todos(TABLA).then(equipos => {
             return equipos.map(equipo => ({
+                ...equipo, // Incluir todos los campos originales de la BD
                 id: equipo.id,
                 usuario: equipo.nombre_de_usuario_asignado,
                 area: equipo.Area,
@@ -27,6 +28,7 @@ module.exports = function (dbInyectada) {
             const equipo = equipos[0];
             if (!equipo) return null;
             return {
+                ...equipo, // Incluir todos los campos originales
                 id: equipo.id,
                 usuario: equipo.nombre_de_usuario_asignado,
                 area: equipo.Area,

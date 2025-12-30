@@ -1,4 +1,4 @@
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise'); // Using promise-based pool for cleaner code
 const config = require('../config');
 
 const dbconfig = {
@@ -6,94 +6,51 @@ const dbconfig = {
     user: config.mysql.user,
     password: config.mysql.password,
     database: config.mysql.database,
-}
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+};
 
-let conexion;
+const pool = mysql.createPool(dbconfig);
 
-function conMysql() {
-    conexion = mysql.createConnection(dbconfig);
-
-    conexion.connect((err) => {
-        if (err) {
-            console.log('[db err]', err);
-            setTimeout(conMysql, 200);
-        } else {
-            console.log('DB conectada!!!');
-        }
-    });
-
-    conexion.on('error', err => {
-        console.log('[DB err]', err);
-        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            conMysql();
-        } else {
-            throw err;
-        }
-    })
-}
-conMysql();
-
-function todos(tabla) {
-    return new Promise((resolve, reject) => {
-        conexion.query(`SELECT * FROM ${tabla}`, (error, result) => {
-            return error ? reject(error) : resolve(result);
-        })
-    });
+async function todos(tabla) {
+    const [rows] = await pool.query(`SELECT * FROM ${tabla}`);
+    return rows;
 }
 
 
-function uno(tabla, id) {
-    return new Promise((resolve, reject) => {
-        conexion.query(`SELECT * FROM ${tabla} WHERE id = ?`, [id], (error, result) => {
-            return error ? reject(error) : resolve(result);
-        })
-    });
+async function uno(tabla, id) {
+    const [rows] = await pool.query(`SELECT * FROM ${tabla} WHERE id = ?`, [id]);
+    return rows;
 }
 
-function agregar(tabla, data) {
-    // Se modifica la consulta para que sea un INSERT simple.
-    return new Promise((resolve, reject) => {
-        conexion.query(`INSERT INTO ${tabla} SET ?`, data, (error, result) => {
-            return error ? reject(error) : resolve(result);
-        })
-    });
+async function agregar(tabla, data) {
+    const [result] = await pool.query(`INSERT INTO ${tabla} SET ?`, data);
+    return result;
 }
 
 
-function eliminar(tabla, id) {
-    return new Promise((resolve, reject) => {
-        conexion.query(`DELETE FROM ${tabla} WHERE id = ?`, [id], (error, result) => {
-            return error ? reject(error) : resolve(result);
-        })
-    });
+async function eliminar(tabla, id) {
+    const [result] = await pool.query(`DELETE FROM ${tabla} WHERE id = ?`, [id]);
+    return result;
 }
 
-function query(tabla, consulta) {
-    return new Promise((resolve, reject) => {
-        const keys = Object.keys(consulta);
-        const values = Object.values(consulta);
-        const whereClause = keys.map(key => `${key} = ?`).join(' AND ');
-        conexion.query(`SELECT * FROM ${tabla} WHERE ${whereClause}`, values, (error, result) => {
-            return error ? reject(error) : resolve(result[0] || null);
-        })
-    });
+async function query(tabla, consulta) {
+    const keys = Object.keys(consulta);
+    const values = Object.values(consulta);
+    const whereClause = keys.map(key => `${key} = ?`).join(' AND ');
+    const [rows] = await pool.query(`SELECT * FROM ${tabla} WHERE ${whereClause}`, values);
+    return rows[0] || null;
 }
 
-function actualizar(tabla, id, data) {
-    return new Promise((resolve, reject) => {
-        conexion.query(`UPDATE ${tabla} SET ? WHERE id = ?`, [data, id], (error, result) => {
-            return error ? reject(error) : resolve(result);
-        });
-    });
+async function actualizar(tabla, id, data) {
+    const [result] = await pool.query(`UPDATE ${tabla} SET ? WHERE id = ?`, [data, id]);
+    return result;
 }
 
-// Método para ejecutar consultas SQL directas (raw queries)
-function rawQuery(sql, params = []) {
-    return new Promise((resolve, reject) => {
-        conexion.query(sql, params, (error, result) => {
-            return error ? reject(error) : resolve(result);
-        });
-    });
+async function rawQuery(sql, params = []) {
+    const [result] = await pool.query(sql, params);
+    return result;
 }
 
 module.exports = {
@@ -104,5 +61,5 @@ module.exports = {
     query,
     actualizar,
     rawQuery,
-    conexion,
+    pool, // Exporting pool instead of conexion
 }

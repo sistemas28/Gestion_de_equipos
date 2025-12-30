@@ -10,19 +10,12 @@ module.exports = function (dbInyectada) {
     }
 
     async function todos() {
-        return new Promise((resolve, reject) => {
-            db.conexion.query(`SELECT u.id, u.nombre, u.correo, a.usuario FROM usuarios u JOIN auth a ON u.id = a.id`, (error, result) => {
-                return error ? reject(error) : resolve(result);
-            });
-        });
+        return db.rawQuery(`SELECT u.id, u.nombre, u.correo, a.usuario FROM usuarios u JOIN auth a ON u.id = a.id`);
     }
 
-    function uno(id) {
-        return new Promise((resolve, reject) => {
-            db.conexion.query(`SELECT u.id, u.nombre, u.correo, a.usuario FROM usuarios u JOIN auth a ON u.id = a.id WHERE u.id = ?`, [id], (error, result) => {
-                return error ? reject(error) : resolve(result[0] || null);
-            });
-        });
+    async function uno(id) {
+        const result = await db.rawQuery(`SELECT u.id, u.nombre, u.correo, a.usuario FROM usuarios u JOIN auth a ON u.id = a.id WHERE u.id = ?`, [id]);
+        return result[0] || null;
     }
 
     async function agregar(body) {

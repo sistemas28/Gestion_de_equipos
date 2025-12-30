@@ -2,14 +2,16 @@ import React, { useEffect, useState } from "react";
 import './copiasPage.css';
 import api from '../../api/axios';
 import moment from 'moment';
+import 'moment/locale/es';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaTimes } from 'react-icons/fa';
+import { FaCalendarAlt, FaHistory, FaDownload, FaTrash, FaPlus, FaSearch, FaSync, FaShieldAlt } from 'react-icons/fa';
+import useIsMobile from '../../hooks/useIsMobile';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { generateReport } from '../../utils/reportGenerator';
-import logo from '../../assets/LOGO_INSTITUCIONAL.jpg';
 
 // Configuración para el calendario en español
 moment.updateLocale('es', {
@@ -21,7 +23,8 @@ moment.updateLocale('es', {
 });
 const localizer = momentLocalizer(moment);
 
-function CopiasPage() {
+const CopiasPage = () => {
+    const isMobile = useIsMobile();
     const [copiasData, setCopiasData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -212,12 +215,12 @@ function CopiasPage() {
     const handleSaveEdit = async (e) => {
         e.preventDefault();
         if (!editCopiaData || !editCopiaData.id) return;
-        
+
         const dataToSend = {
             ...editCopiaData,
             equipo_id: selectedEquipoId ? parseInt(selectedEquipoId, 10) : null
         };
-        
+
         try {
             await api.put(`/CopiasDeSeguridad/${editCopiaData.id}`, dataToSend);
             setIsEditing(false);
@@ -234,7 +237,7 @@ function CopiasPage() {
         if (!window.confirm(`¿Estás seguro de que deseas eliminar la copia de seguridad #${item.id}?`)) {
             return;
         }
-        
+
         try {
             await api.delete(`/CopiasDeSeguridad/${item.id}`);
             setSelectedItem(null);
@@ -243,6 +246,18 @@ function CopiasPage() {
         } catch (error) {
             console.error('Error al eliminar:', error);
             setError('Error al eliminar la copia de seguridad.');
+        }
+    };
+
+    const handleStatusUpdate = async (id, newStatus) => {
+        try {
+            await api.put(`/CopiasDeSeguridad/${id}`, {
+                estado_copia: newStatus
+            });
+            await fetchCopiasData();
+        } catch (err) {
+            console.error("Error updating status:", err);
+            setError("Error al actualizar el estado de la copia de seguridad.");
         }
     };
 
@@ -266,17 +281,56 @@ function CopiasPage() {
         const sections = [
             {
                 type: 'info',
-                title: 'DETALLES DEL RESPALDO',
+                title: 'INFORMACIÓN DEL EQUIPO',
                 data: [
-                    { label: 'CÓDIGO INVENTARIO', value: detailedData.id || 'N/A' },
+                    { label: 'CÓDIGO INVENTARIO', value: detailedData.codigo || detailedData.id || 'N/A' },
                     { label: 'USUARIO', value: detailedData.usuario || 'N/A' },
                     { label: 'ÁREA', value: detailedData.area || 'N/A' },
-                    { label: 'TIPO', value: detailedData.tipo || 'N/A' },
+                    { label: 'TIPO DE EQUIPO', value: detailedData.tipo || 'N/A' },
                     { label: 'MARCA', value: detailedData.marca || 'N/A' },
-                    { label: 'FECHA COPIA', value: formatDate(detailedData.fecha) }
+                    { label: '', value: '' }
+                ]
+            },
+            {
+                type: 'info',
+                title: 'DETALLES DE LA COPIA DE SEGURIDAD',
+                data: [
+                    { label: 'FECHA DE COPIA', value: formatDate(detailedData.fecha) },
+                    { label: 'ESTADO', value: detailedData.estado_copia || 'N/A' },
+                    { label: 'TIPO DE COPIA', value: detailedData.tipo_copia || 'N/A' },
+                    { label: 'RESPONSABLE', value: detailedData.responsable || 'N/A' }
+                ]
+            },
+            {
+                type: 'info',
+                title: 'TIEMPOS Y DURACIÓN',
+                data: [
+                    { label: 'HORA INICIO', value: detailedData.hora_inicio || 'N/A' },
+                    { label: 'HORA FIN', value: detailedData.hora_fin || 'N/A' },
+                    { label: 'TIEMPO DURACIÓN', value: detailedData.tiempo_duracion || 'N/A' },
+                    { label: '', value: '' }
+                ]
+            },
+            {
+                type: 'info',
+                title: 'ALMACENAMIENTO Y CAPACIDAD',
+                data: [
+                    { label: 'UBICACIÓN ALMACENAMIENTO', value: detailedData.ubicacion_almacenamiento || 'N/A' },
+                    { label: 'TAMAÑO DE DATOS', value: detailedData.tamaño_datos || 'N/A' }
                 ]
             }
         ];
+
+        // Agregar observaciones si existen
+        if (detailedData.observaciones && detailedData.observaciones.trim() !== '') {
+            sections.push({
+                type: 'info',
+                title: 'OBSERVACIONES',
+                data: [
+                    { label: 'NOTAS', value: detailedData.observaciones }
+                ]
+            });
+        }
 
         generateReport(
             'PROCESO DE GESTIÓN DE INFORMÁTICA',
@@ -305,6 +359,7 @@ function CopiasPage() {
                     </button>
                 </div>
             </div>
+
 
 
             {error && <div className="error-message">{error}</div>}
@@ -369,22 +424,23 @@ function CopiasPage() {
                                     <>
                                         <th>ID</th>
                                         <th>Usuario</th>
-                                        <th>Área</th>
+                                        {!isMobile && <th>Área</th>}
                                         <th>Estado</th>
-                                        <th>Tipo Copia</th>
+                                        {!isMobile && <th>Tipo Copia</th>}
                                         <th>Fecha</th>
-                                        <th>Hora Inicio</th>
-                                        <th>Hora Fin</th>
-                                        <th>Responsable</th>
-                                        <th>Ubicación</th>
+                                        {!isMobile && <th>Hora Inicio</th>}
+                                        {!isMobile && <th>Hora Fin</th>}
+                                        {!isMobile && <th>Responsable</th>}
+                                        {!isMobile && <th>Ubicación</th>}
                                     </>
                                 ) : (
                                     <>
                                         <th>ID</th>
                                         <th>Usuario</th>
-                                        <th>Área</th>
-                                        <th>Tipo</th>
-                                        <th>Marca</th>
+                                        {!isMobile && <th>Área</th>}
+                                        <th>Estado</th>
+                                        {!isMobile && <th>Tipo</th>}
+                                        {!isMobile && <th>Marca</th>}
                                         <th>Fecha</th>
                                     </>
                                 )}
@@ -396,12 +452,12 @@ function CopiasPage() {
                                     // Filtro por término de búsqueda
                                     const matchesSearch = (item.id.toString().toLowerCase().includes(searchTerm.toLowerCase())) ||
                                         (String(item.usuario || '').toLowerCase().includes(searchTerm.toLowerCase()));
-                                    
+
                                     // Filtros de historial
                                     const matchesEstado = !filtroEstado || item.estado_copia === filtroEstado;
                                     const matchesFechaInicio = !filtroFechaInicio || new Date(item.fecha) >= new Date(filtroFechaInicio);
                                     const matchesFechaFin = !filtroFechaFin || new Date(item.fecha) <= new Date(filtroFechaFin);
-                                    
+
                                     return matchesSearch && matchesEstado && matchesFechaInicio && matchesFechaFin;
                                 })
                                 .map((item) => (
@@ -410,31 +466,54 @@ function CopiasPage() {
                                             <>
                                                 <td>{item.id}</td>
                                                 <td>{item.usuario || 'N/A'}</td>
-                                                <td>{item.area}</td>
+                                                {!isMobile && <td>{item.area}</td>}
                                                 <td>
-                                                    <span className={`status-badge status-${(item.estado_copia || '').toLowerCase().replace(' ', '-')}`}>
-                                                        {item.estado_copia || 'N/A'}
-                                                    </span>
+                                                    <select
+                                                        className={`status-select ${(item.estado_copia || '').toLowerCase().replace(' ', '-')}`}
+                                                        value={item.estado_copia || 'Pendiente'}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={(e) => handleStatusUpdate(item.id, e.target.value)}
+                                                    >
+                                                        <option value="Pendiente">Pendiente</option>
+                                                        <option value="En Progreso">En Progreso</option>
+                                                        <option value="Exitosa">Exitosa</option>
+                                                        <option value="Fallida">Fallida</option>
+                                                    </select>
                                                 </td>
-                                                <td>{item.tipo_copia || 'N/A'}</td>
+                                                {!isMobile && <td>{item.tipo_copia || 'N/A'}</td>}
                                                 <td>{formatDate(item.fecha)}</td>
-                                                <td>{item.hora_inicio || 'N/A'}</td>
-                                                <td>{item.hora_fin || 'N/A'}</td>
-                                                <td>{item.responsable || 'N/A'}</td>
-                                                <td title={item.ubicacion_almacenamiento}>
-                                                    {item.ubicacion_almacenamiento ? 
-                                                        (item.ubicacion_almacenamiento.length > 20 ? 
-                                                            item.ubicacion_almacenamiento.substring(0, 20) + '...' : 
-                                                            item.ubicacion_almacenamiento) : 'N/A'}
-                                                </td>
+                                                {!isMobile && <td>{item.hora_inicio || 'N/A'}</td>}
+                                                {!isMobile && <td>{item.hora_fin || 'N/A'}</td>}
+                                                {!isMobile && <td>{item.responsable || 'N/A'}</td>}
+                                                {!isMobile && (
+                                                    <td title={item.ubicacion_almacenamiento}>
+                                                        {item.ubicacion_almacenamiento ?
+                                                            (item.ubicacion_almacenamiento.length > 20 ?
+                                                                item.ubicacion_almacenamiento.substring(0, 20) + '...' :
+                                                                item.ubicacion_almacenamiento) : 'N/A'}
+                                                    </td>
+                                                )}
                                             </>
                                         ) : (
                                             <>
                                                 <td>{item.id}</td>
                                                 <td>{item.usuario || 'N/A'}</td>
-                                                <td>{item.area}</td>
-                                                <td>{item.tipo}</td>
-                                                <td>{item.marca}</td>
+                                                {!isMobile && <td>{item.area}</td>}
+                                                <td>
+                                                    <select
+                                                        className={`status-select ${(item.estado_copia || '').toLowerCase().replace(' ', '-')}`}
+                                                        value={item.estado_copia || 'Pendiente'}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={(e) => handleStatusUpdate(item.id, e.target.value)}
+                                                    >
+                                                        <option value="Pendiente">Pendiente</option>
+                                                        <option value="En Progreso">En Progreso</option>
+                                                        <option value="Exitosa">Exitosa</option>
+                                                        <option value="Fallida">Fallida</option>
+                                                    </select>
+                                                </td>
+                                                {!isMobile && <td>{item.tipo}</td>}
+                                                {!isMobile && <td>{item.marca}</td>}
                                                 <td>{formatDate(item.fecha)}</td>
                                             </>
                                         )}
@@ -449,21 +528,21 @@ function CopiasPage() {
 
 
             {(selectedItem || isAdding || isEditing) && (
-                <div className="details-modal" onClick={(e) => { 
-                    if (e.target === e.currentTarget) { 
-                        setSelectedItem(null); 
-                        setIsAdding(false); 
-                        setIsEditing(false); 
-                    } 
+                <div className="details-modal" onClick={(e) => {
+                    if (e.target === e.currentTarget) {
+                        setSelectedItem(null);
+                        setIsAdding(false);
+                        setIsEditing(false);
+                    }
                 }}>
                     <div className="details-panel card" onClick={(e) => e.stopPropagation()}>
                         <div className="details-header">
                             <h3>
-                                {detailedData && !isEditing && !isAdding 
+                                {detailedData && !isEditing && !isAdding
                                     ? `Detalles de la Copia de Seguridad #${detailedData.id}`
-                                    : isAdding 
-                                    ? 'Agregar Nueva Copia de Seguridad'
-                                    : `Editar Copia de Seguridad #${editCopiaData?.id}`
+                                    : isAdding
+                                        ? 'Agregar Nueva Copia de Seguridad'
+                                        : `Editar Copia de Seguridad #${editCopiaData?.id}`
                                 }
                             </h3>
                             <div className="details-actions">
@@ -490,10 +569,10 @@ function CopiasPage() {
                                         <button type="button" className="action-btn cancel" onClick={() => setIsEditing(false)}>Cancelar</button>
                                     </>
                                 ) : null}
-                                <button className="close-details-btn" onClick={() => { 
-                                    setSelectedItem(null); 
-                                    setIsAdding(false); 
-                                    setIsEditing(false); 
+                                <button className="close-details-btn" onClick={() => {
+                                    setSelectedItem(null);
+                                    setIsAdding(false);
+                                    setIsEditing(false);
                                 }}><FaTimes /></button>
                             </div>
                         </div>
@@ -507,7 +586,7 @@ function CopiasPage() {
                                         <div className="detail-item"><span>Usuario:</span><p>{detailedData.usuario || 'N/A'}</p></div>
                                         <div className="detail-item"><span>Área:</span><p>{detailedData.area}</p></div>
                                         <div className="detail-item"><span>Equipo:</span><p>{detailedData.tipo} - {detailedData.marca}</p></div>
-                                        
+
                                         <h4>📅 Fecha y Estado</h4>
                                         <div className="detail-item"><span>Fecha de Copia:</span><p>{formatDate(detailedData.fecha)}</p></div>
                                         <div className="detail-item">
@@ -517,24 +596,24 @@ function CopiasPage() {
                                             </span>
                                         </div>
                                         <div className="detail-item"><span>Tipo de Copia:</span><p>{detailedData.tipo_copia || 'N/A'}</p></div>
-                                        
+
                                         <h4>⏱️ Tiempos y Responsable</h4>
                                         <div className="detail-item"><span>Responsable:</span><p>{detailedData.responsable || 'N/A'}</p></div>
                                         <div className="detail-item"><span>Hora Inicio:</span><p>{detailedData.hora_inicio || 'N/A'}</p></div>
                                         <div className="detail-item"><span>Hora Fin:</span><p>{detailedData.hora_fin || 'N/A'}</p></div>
                                         <div className="detail-item"><span>Duración:</span><p>{detailedData.tiempo_duracion || 'N/A'}</p></div>
-                                        
+
                                         <h4>💾 Detalles del Respaldo</h4>
                                         <div className="detail-item"><span>Ubicación:</span><p>{detailedData.ubicacion_almacenamiento || 'N/A'}</p></div>
                                         <div className="detail-item"><span>Tamaño:</span><p>{detailedData.tamaño_datos || 'N/A'}</p></div>
-                                        
+
                                         {detailedData.observaciones && (
                                             <div className="detail-item full-width">
                                                 <span>📝 Observaciones:</span>
                                                 <p>{detailedData.observaciones}</p>
                                             </div>
                                         )}
-                                        
+
                                         <div className="calendar-container">
                                             <Calendar
                                                 localizer={localizer}
@@ -571,7 +650,7 @@ function CopiasPage() {
                                         <label>Tipo <input name="tipo" value={newCopiaData.tipo} readOnly placeholder="Se autocompleta" /></label>
                                         <label>Marca <input name="marca" value={newCopiaData.marca} readOnly placeholder="Se autocompleta" /></label>
                                         <label>Código Inventario <input name="codigo" value={newCopiaData.codigo} readOnly placeholder="Se autocompleta" /></label>
-                                        
+
                                         <h4 className="full-width">Información de la Copia</h4>
                                         <label>
                                             Fecha de la Copia
@@ -598,7 +677,7 @@ function CopiasPage() {
                                             Responsable
                                             <input name="responsable" value={newCopiaData.responsable} onChange={handleNewFormChange} placeholder="Persona que realizó la copia" />
                                         </label>
-                                        
+
                                         <h4 className="full-width">Tiempos</h4>
                                         <label>
                                             Hora Inicio
@@ -612,7 +691,7 @@ function CopiasPage() {
                                             Tiempo de Duración
                                             <input name="tiempo_duracion" value={newCopiaData.tiempo_duracion} onChange={handleNewFormChange} placeholder="Ej: 2h 30min" />
                                         </label>
-                                        
+
                                         <h4 className="full-width">Detalles del Respaldo</h4>
                                         <label>
                                             Ubicación de Almacenamiento
@@ -648,7 +727,7 @@ function CopiasPage() {
                                         <label>Tipo <input name="tipo" value={editCopiaData.tipo || ''} readOnly placeholder="Se autocompleta" /></label>
                                         <label>Marca <input name="marca" value={editCopiaData.marca || ''} readOnly placeholder="Se autocompleta" /></label>
                                         <label>Código Inventario <input name="codigo" value={editCopiaData.codigo || ''} readOnly placeholder="Se autocompleta" /></label>
-                                        
+
                                         <h4 className="full-width">Información de la Copia</h4>
                                         <label>
                                             Fecha de la Copia
@@ -675,7 +754,7 @@ function CopiasPage() {
                                             Responsable
                                             <input name="responsable" value={editCopiaData.responsable || ''} onChange={handleEditFormChange} placeholder="Persona que realizó la copia" />
                                         </label>
-                                        
+
                                         <h4 className="full-width">Tiempos</h4>
                                         <label>
                                             Hora Inicio
@@ -689,7 +768,7 @@ function CopiasPage() {
                                             Tiempo de Duración
                                             <input name="tiempo_duracion" value={editCopiaData.tiempo_duracion || ''} onChange={handleEditFormChange} placeholder="Ej: 2h 30min" />
                                         </label>
-                                        
+
                                         <h4 className="full-width">Detalles del Respaldo</h4>
                                         <label>
                                             Ubicación de Almacenamiento

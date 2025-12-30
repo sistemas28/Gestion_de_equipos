@@ -3,6 +3,7 @@ import './Login.css';
 import '../../index.css';
 import api from '../../api/axios';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import logo from '../../assets/LOGO_INSTITUCIONAL.jpg';
 
 function Login({ onForgot, onLogin }) {
     const [user, setUser] = useState('');
@@ -40,7 +41,7 @@ function Login({ onForgot, onLogin }) {
         <main className="page login-page">
             <section className="login-wrapper" aria-labelledby="login-heading">
                 <div className="brand">
-                    <div className="logo" aria-hidden="true">GE</div>
+                    <img src={logo} alt="Logo Institucional" className="login-logo" />
                     <h1 id="login-heading">Gestión de equipos</h1>
                     <p className="subtitle">Accede a tu panel</p>
                 </div>

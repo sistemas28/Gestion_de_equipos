@@ -3,7 +3,6 @@ import api from '../../api/axios';
 import './HistorialEquiposPage.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import logo from '../../assets/LOGO_INSTITUCIONAL.jpg';
 import moment from 'moment';
 import { generateReport } from '../../utils/reportGenerator';
 
@@ -61,6 +60,16 @@ function HistorialEquiposPage() {
     const handleDownloadPDF = () => {
         const sections = [
             {
+                type: 'info',
+                title: 'RESUMEN DEL HISTORIAL',
+                data: [
+                    { label: 'TOTAL DE REGISTROS', value: String(filteredHistorial.length) },
+                    { label: 'FECHA DE GENERACIÓN', value: moment().format('DD/MM/YYYY HH:mm') },
+                    { label: 'EQUIPOS CON HISTORIAL', value: stats ? String(stats.equipos_con_historial) : 'N/A' },
+                    { label: 'TOTAL DE CAMBIOS', value: stats ? String(stats.total_cambios) : 'N/A' }
+                ]
+            },
+            {
                 type: 'table',
                 headers: ['Código', 'Usuario Anterior', 'Usuario Nuevo', 'Área Anterior', 'Área Nueva', 'Fecha', 'Motivo'],
                 body: filteredHistorial.map(item => [
@@ -71,7 +80,16 @@ function HistorialEquiposPage() {
                     getDisplayValue(item.area_nueva),
                     moment(item.fecha_cambio).format('DD/MM/YYYY HH:mm'),
                     getDisplayValue(item.motivo_cambio)
-                ])
+                ]),
+                columnStyles: {
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 'auto' },
+                    3: { cellWidth: 'auto' },
+                    4: { cellWidth: 'auto' },
+                    5: { cellWidth: 35 },
+                    6: { cellWidth: 'auto' }
+                }
             }
         ];
 
@@ -101,9 +119,11 @@ function HistorialEquiposPage() {
                 title: 'INFORMACIÓN DEL EQUIPO',
                 data: [
                     { label: 'CÓDIGO DE INVENTARIO', value: codigo },
-                    { label: 'TIPO', value: getDisplayValue(primerRegistro.tipo) },
+                    { label: 'TIPO DE EQUIPO', value: getDisplayValue(primerRegistro.tipo) },
                     { label: 'MARCA', value: getDisplayValue(primerRegistro.marca) },
-                    { label: 'TOTAL CAMBIOS', value: String(historialCodigo.length) }
+                    { label: 'TOTAL DE CAMBIOS', value: String(historialCodigo.length) },
+                    { label: 'PRIMER CAMBIO', value: moment(historialCodigo[historialCodigo.length - 1].fecha_cambio).format('DD/MM/YYYY') },
+                    { label: 'ÚLTIMO CAMBIO', value: moment(historialCodigo[0].fecha_cambio).format('DD/MM/YYYY') }
                 ]
             },
             {
@@ -116,7 +136,15 @@ function HistorialEquiposPage() {
                     getDisplayValue(item.area_nueva),
                     moment(item.fecha_cambio).format('DD/MM/YYYY HH:mm'),
                     getDisplayValue(item.motivo_cambio)
-                ])
+                ]),
+                columnStyles: {
+                    0: { cellWidth: 'auto' },
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 'auto' },
+                    3: { cellWidth: 'auto' },
+                    4: { cellWidth: 35 },
+                    5: { cellWidth: 'auto' }
+                }
             }
         ];
 
@@ -149,7 +177,7 @@ function HistorialEquiposPage() {
                         </div>
                     )}
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div className="header-actions" style={{ display: 'flex', gap: '12px' }}>
                     <button className="action-btn save" onClick={handleDownloadPDF} disabled={loading || filteredHistorial.length === 0}>
                         Descargar PDF Completo
                     </button>
@@ -158,6 +186,7 @@ function HistorialEquiposPage() {
                     </button>
                 </div>
             </div>
+
 
             {error && <div className="error-message">{error}</div>}
 

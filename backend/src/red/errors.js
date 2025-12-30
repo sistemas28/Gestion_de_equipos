@@ -1,6 +1,6 @@
 const respuesta = require('./respuestas');
 
-function errors(err, req, res, next){
+function errors(err, req, res, next) {
     console.error('[error', err);
 
     const mensaje = err.message || 'Error interno';

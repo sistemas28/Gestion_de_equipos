@@ -1,14 +1,20 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import "./maintenancePage.css";
 import api from '../../api/axios';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
+import 'moment/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { FaTimes, FaUser, FaBuilding, FaDesktop, FaTag, FaCalendarAlt, FaTools, FaFileAlt, FaSignature, FaSearch } from 'react-icons/fa';
+import {
+    FaTimes, FaUser, FaBuilding, FaDesktop, FaTag,
+    FaCalendarAlt, FaTools, FaFileAlt, FaSignature, FaSearch,
+    FaPlus, FaTrash, FaCheckCircle, FaExclamationTriangle,
+    FaDownload, FaSync
+} from 'react-icons/fa';
+import useIsMobile from '../../hooks/useIsMobile';
 
-import logo from '../../assets/LOGO_INSTITUCIONAL.jpg';
 import { generateReport } from '../../utils/reportGenerator';
 
 // Configuración para el calendario en español
@@ -24,7 +30,8 @@ moment.updateLocale('es', {
 });
 const localizer = momentLocalizer(moment);
 
-function MaintenancePage() {
+const MaintenancePage = () => {
+    const isMobile = useIsMobile();
     const [maintenanceData, setMaintenanceData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -90,20 +97,28 @@ function MaintenancePage() {
             // Usamos el endpoint para obtener un solo registro
             const response = await api.get(`/mantenimiento/${item.id}`);
             const data = response.data.body;
-            setDetailedData(data);
 
-            // Centramos el calendario en la fecha del próximo mantenimiento si existe, si no, en la fecha actual.
+            // Intentar encontrar un equipo que coincida por código para pre-seleccionar en el dropdown y obtener detalles extra
+            const matchingEquipo = equipos.find(eq =>
+                eq.codigo === data.id.toString()
+            );
+
+            // Combinar datos del mantenimiento con datos del equipo (procesador, ram, so, etc.)
+            // Establecemos equipo_id para que la búsqueda de historial funcióne (usando el código)
+            const mergedData = {
+                ...data,
+                ...(matchingEquipo || {}),
+                equipo_id: data.codigo || data.id
+            };
+
+            setDetailedData(mergedData);
+
             if (data.fecha_actual_de_mantenimiento) {
                 setCalendarDate(new Date(data.fecha_actual_de_mantenimiento));
             } else {
                 setCalendarDate(new Date());
             }
 
-
-            // Intentar encontrar un equipo que coincida por código para pre-seleccionar en el dropdown
-            const matchingEquipo = equipos.find(eq =>
-                eq.codigo === data.id.toString()
-            );
             setSelectedEquipoId(matchingEquipo ? matchingEquipo.id : '');
         } catch (err) {
             console.error("Error fetching maintenance details:", err);
@@ -131,6 +146,7 @@ function MaintenancePage() {
             firmas_tecnico: '',
             firmas_aprobo: '',
             firmas_reviso: '',
+            estado: 'Pendiente',
         });
         setSelectedEquipoId(''); // Resetea el equipo seleccionado
         setSelectedItem(null); // Cierra el panel de detalles si está abierto
@@ -299,6 +315,19 @@ function MaintenancePage() {
         }
     };
 
+    const handleStatusUpdate = async (e, id, newStatus) => {
+        if (e) e.stopPropagation();
+        try {
+            await api.put(`/mantenimiento/${id}`, {
+                estado: newStatus
+            });
+            await fetchMaintenanceData();
+        } catch (err) {
+            console.error("Error updating status:", err);
+            setError("Error al actualizar el estado del mantenimiento.");
+        }
+    };
+
     const handleFormChange = (e) => {
         const { name, value } = e.target;
         const formDataSetter = isEditing ? setEditFormData : setNewMaintenanceData;
@@ -373,34 +402,61 @@ function MaintenancePage() {
                 type: 'info',
                 title: 'INFORMACIÓN DEL EQUIPO',
                 data: [
+                    { label: 'CÓDIGO INVENTARIO', value: detailedData.codigo || detailedData.id || 'N/A' },
                     { label: 'USUARIO', value: detailedData.usuario || 'N/A' },
                     { label: 'ÁREA', value: detailedData.area || 'N/A' },
-                    { label: 'TIPO', value: detailedData.tipo || 'N/A' },
+                    { label: 'TIPO DE EQUIPO', value: detailedData.tipo || 'N/A' },
                     { label: 'MARCA', value: detailedData.marca || 'N/A' },
-                    // Assuming code is available in detailedData or we can use ID as fallback
-                    { label: 'CÓDIGO', value: detailedData.codigo || detailedData.id || 'N/A' },
-                    { label: '', value: '' } // Padding
+                    { label: 'SISTEMA OPERATIVO', value: detailedData.sistema_operativo || detailedData.os || 'N/A' },
+                    { label: 'PROCESADOR', value: detailedData.procesador || 'N/A' },
+                    { label: 'MEMORIA RAM', value: detailedData.memoria_ram || detailedData.ram || 'N/A' },
+                    { label: 'DISCO DURO', value: detailedData.disco_duro || 'N/A' },
+                    { label: 'ESTADO ACTUAL', value: detailedData.estado || 'N/A' }
                 ]
             },
             {
                 type: 'info',
-                title: 'DETALLES DEL MANTENIMIENTO',
+                title: 'CRONOGRAMA DE MANTENIMIENTO',
                 data: [
-                    { label: 'ACTIVIDADES', value: detailedData.actividades_realizadas || 'Sin actividades.' },
-                    { label: 'OBSERVACIONES', value: detailedData.observaciones || 'Sin observaciones.' }
+                    { label: 'FECHA ELABORACIÓN', value: formatDate(detailedData.fecha_de_elaboracion) },
+                    { label: 'FECHA EJECUCIÓN', value: formatDate(detailedData.fecha_de_ejecucion) },
+                    { label: 'ÚLTIMO MANTENIMIENTO', value: formatDate(detailedData.fecha_ultimo_mantenimiento) },
+                    { label: 'PRÓXIMO MANTENIMIENTO', value: formatDate(detailedData.fecha_actual_de_mantenimiento) }
                 ]
             },
             {
                 type: 'info',
-                title: 'FECHAS',
+                title: 'ACTIVIDADES REALIZADAS',
                 data: [
-                    { label: 'ELABORACIÓN', value: formatDate(detailedData.fecha_de_elaboracion) },
-                    { label: 'EJECUCIÓN', value: formatDate(detailedData.fecha_de_ejecucion) },
-                    { label: 'ÚLTIMO MANT.', value: formatDate(detailedData.fecha_ultimo_mantenimiento) },
-                    { label: 'PRÓXIMO MANT.', value: formatDate(detailedData.fecha_actual_de_mantenimiento) }
+                    { label: 'DESCRIPCIÓN', value: detailedData.actividades_realizadas || 'No se registraron actividades realizadas.' }
+                ]
+            },
+            {
+                type: 'info',
+                title: 'OBSERVACIONES Y NOTAS',
+                data: [
+                    { label: 'OBSERVACIONES', value: detailedData.observaciones || 'Sin observaciones adicionales.' }
                 ]
             }
         ];
+
+        // Add History Table if exists
+        if (historial.length > 0) {
+            sections.push({
+                type: 'table',
+                headers: ['Fecha de Ejecución', 'Actividades Realizadas', 'Observaciones'],
+                body: historial.map(item => [
+                    formatDate(item.fecha_de_ejecucion),
+                    item.actividades_realizadas || 'N/A',
+                    item.observaciones || 'N/A'
+                ]),
+                columnStyles: {
+                    0: { cellWidth: 35 },
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 50 }
+                }
+            });
+        }
 
         // Add Signatures
         const signatures = [];
@@ -412,18 +468,6 @@ function MaintenancePage() {
             sections.push({
                 type: 'signatures',
                 data: signatures
-            });
-        }
-
-        // Add History Table if exists
-        if (historial.length > 0) {
-            sections.push({
-                type: 'table',
-                headers: ['Fecha de Ejecución', 'Actividades Realizadas'],
-                body: historial.map(item => [
-                    formatDate(item.fecha_de_ejecucion),
-                    item.actividades_realizadas
-                ])
             });
         }
 
@@ -466,12 +510,14 @@ function MaintenancePage() {
         <div className="maintenance-page">
             <div className="page-header">
                 <h2 className="page-title">Gestión de Mantenimiento</h2>
-                <button className="action-btn save" onClick={handleOpenAddModal} disabled={loading}>
-                    Crear Mantenimiento
-                </button>
-                <button className="refresh-btn" onClick={fetchMaintenanceData} disabled={loading}>
-                    {loading ? 'Cargando...' : 'Actualizar Datos'}
-                </button>
+                <div className="header-actions">
+                    <button className="action-btn save" onClick={handleOpenAddModal} disabled={loading}>
+                        Crear Mantenimiento
+                    </button>
+                    <button className="refresh-btn" onClick={fetchMaintenanceData} disabled={loading}>
+                        {loading ? 'Cargando...' : 'Actualizar Datos'}
+                    </button>
+                </div>
             </div>
 
             {error && <div className="error-message">{error}</div>}
@@ -499,9 +545,10 @@ function MaintenancePage() {
                             <tr>
                                 <th>ID</th>
                                 <th>Usuario</th>
-                                <th>Área</th>
-                                <th>Tipo</th>
-                                <th>Próximo Mantenimiento</th>
+                                {!isMobile && <th>Área</th>}
+                                {!isMobile && <th>Tipo</th>}
+                                <th>Fecha</th>
+                                <th>Estado</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -513,9 +560,20 @@ function MaintenancePage() {
                                     <tr key={item.id} onClick={() => handleRowClick(item)} className={selectedItem?.id === item.id ? 'selected' : ''}>
                                         <td>{item.id}</td>
                                         <td>{item.usuario}</td>
-                                        <td>{item.area}</td>
-                                        <td>{item.tipo}</td>
-                                        <td>{item.fecha_actual_de_mantenimiento ? new Date(item.fecha_actual_de_mantenimiento).toLocaleDateString() : 'N/A'}</td>
+                                        {!isMobile && <td>{item.area}</td>}
+                                        {!isMobile && <td>{item.tipo}</td>}
+                                        <td>{item.fecha_actual_de_mantenimiento ? new Date(item.fecha_actual_de_mantenimiento).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : 'N/A'}</td>
+                                        <td onClick={(e) => e.stopPropagation()}>
+                                            <select
+                                                className={`status-select ${item.statusClass || item.estado?.toLowerCase().replace(' ', '-') || 'pendiente'}`}
+                                                value={item.estado || 'Pendiente'}
+                                                onChange={(e) => handleStatusUpdate(null, item.id, e.target.value)}
+                                            >
+                                                <option value="Pendiente">Pendiente</option>
+                                                <option value="En ejecución">En ejecución</option>
+                                                <option value="Terminado">Terminado</option>
+                                            </select>
+                                        </td>
                                     </tr>
                                 ))}
                         </tbody>
@@ -575,6 +633,14 @@ function MaintenancePage() {
                                                 <h4>Detalles del Mantenimiento</h4>
                                                 <label>Actividades Realizadas: <textarea name="actividades_realizadas" value={editFormData.actividades_realizadas || ''} onChange={handleFormChange} rows="4"></textarea></label>
                                                 <label>Observaciones: <textarea name="observaciones" value={editFormData.observaciones || ''} onChange={handleFormChange} rows="3"></textarea></label>
+                                                <label>
+                                                    Estado:
+                                                    <select name="estado" value={editFormData.estado || 'Pendiente'} onChange={handleFormChange}>
+                                                        <option value="Pendiente">Pendiente</option>
+                                                        <option value="En ejecución">En ejecución</option>
+                                                        <option value="Terminado">Terminado</option>
+                                                    </select>
+                                                </label>
                                                 <hr />
                                                 <h4>Fechas Clave</h4>
                                                 <div className="form-grid-inner">
@@ -618,6 +684,34 @@ function MaintenancePage() {
                                                             <div className="pill-content">
                                                                 <span>Tipo</span>
                                                                 <p>{detailedData.tipo}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="detail-pill">
+                                                            <FaDesktop className="pill-icon" />
+                                                            <div className="pill-content">
+                                                                <span>S.O.</span>
+                                                                <p>{detailedData.sistema_operativo || detailedData.os || 'N/A'}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="detail-pill">
+                                                            <FaTag className="pill-icon" />
+                                                            <div className="pill-content">
+                                                                <span>Procesador</span>
+                                                                <p>{detailedData.procesador || 'N/A'}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="detail-pill">
+                                                            <FaTag className="pill-icon" />
+                                                            <div className="pill-content">
+                                                                <span>RAM</span>
+                                                                <p>{detailedData.memoria_ram || detailedData.ram || 'N/A'}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="detail-pill">
+                                                            <FaTag className="pill-icon" />
+                                                            <div className="pill-content">
+                                                                <span>Disco Duro</span>
+                                                                <p>{detailedData.disco_duro || 'N/A'}</p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -856,9 +950,9 @@ function MaintenancePage() {
                             </>
                         )}
                     </div>
-                </div>
+                </div >
             )}
-        </div>
+        </div >
     );
 }
 
