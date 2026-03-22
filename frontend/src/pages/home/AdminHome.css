@@ -2,81 +2,121 @@
 .home-shell {
     display: flex;
     min-height: 100vh;
-    background: var(--bg-app);
+    background: #f1f5f9;
 }
 
-/* Sidebar - Sleek & Modern */
+/* Sidebar - Premium Floating Design */
 .sidebar {
-    width: 260px;
-    background: #0f172a; /* Deep Navy for contrast */
+    width: 280px;
+    background: #0f172a;
     color: white;
+    margin: 15px;
+    border-radius: 24px;
     display: flex;
     flex-direction: column;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 100;
+    overflow: hidden;
 }
 
 .sidebar-brand {
-    padding: 30px;
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: 2px;
+    padding: 24px;
+    margin: 20px;
+    background: linear-gradient(135deg, #AD1A1C, #8B1517);
+    border-radius: 20px;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 1px;
     color: #fff;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    text-align: center;
+    box-shadow: 0 10px 15px -3px rgba(173, 26, 28, 0.3);
 }
 
-.sidebar-brand span { color: var(--primary); }
+.sidebar-brand span { 
+    color: #FCE821; /* Gold/Yellow for better contrast on red */
+    opacity: 1;
+}
 
 .side-nav {
-    padding: 20px 12px;
+    padding: 10px 15px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
 }
 
 .nav-btn {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-radius: var(--radius-md);
-    color: rgba(255,255,255,0.6);
+    gap: 15px;
+    padding: 14px 20px;
+    border-radius: 16px;
+    color: rgba(255,255,255,0.7);
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     background: transparent;
     border: none;
     text-align: left;
     width: 100%;
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .nav-btn:hover {
     color: white;
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.05);
+    transform: translateX(5px);
 }
 
 .nav-btn.active {
-    background: var(--primary);
+    background: #AD1A1C;
     color: white;
-    box-shadow: 0 4px 12px rgba(173, 26, 28, 0.3);
+    box-shadow: 0 8px 16px rgba(173, 26, 28, 0.4);
 }
 
-/* Main Area */
+.nav-btn.active:hover {
+    background: #8B1517;
+}
+
+/* Main Area - Matching Floating Design */
 .main-area {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 24px;
+    padding: 30px;
+    margin: 15px 15px 15px 0;
+    background: white;
+    border-radius: 24px;
+    box-shadow: var(--shadow-md);
     overflow-y: auto;
+    transition: all 0.3s ease;
 }
 
-/* Header */
+@media (max-width: 768px) {
+    .main-area {
+        margin: 15px;
+        padding: 20px;
+    }
+}
+
+/* Sidebar Transition Logic */
+.home-shell.sidebar-closed .sidebar {
+    width: 0;
+    margin: 0;
+    opacity: 0;
+    transform: translateX(-300px);
+}
+
+/* Header Spacing */
 .topbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0 30px 0;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 30px;
 }
 
 .logo-row {
