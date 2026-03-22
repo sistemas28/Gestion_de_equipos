@@ -28,6 +28,8 @@ function decodeJwt(token) {
 
 import { NotificationProvider } from './context/NotificationContext';
 
+import { SettingsProvider } from './context/SettingsContext';
+
 function App() {
   const [view, setView] = useState('login')
   const [token, setToken] = useState(null)
@@ -58,22 +60,24 @@ function App() {
   }
 
   return (
-    <NotificationProvider>
-      <div className="app-container">
-        <Suspense fallback={<LoadingView />}>
-          {view === 'login' && (
-            <Login onLogin={(token) => handleLogin(token)} />
-          )}
+    <SettingsProvider>
+      <NotificationProvider>
+        <div className="app-container">
+          <Suspense fallback={<LoadingView />}>
+            {view === 'login' && (
+              <Login onLogin={(token) => handleLogin(token)} />
+            )}
 
-          {view === 'adminHome' && (
-            <AdminHome onBack={() => { setToken(null); setUser(null); setView('login'); }} username={user} token={token} />
-          )}
-          {view === 'home' && (
-            <Home onBack={() => { setToken(null); setUser(null); setView('login'); }} username={user} token={token} />
-          )}
-        </Suspense>
-      </div>
-    </NotificationProvider>
+            {view === 'adminHome' && (
+              <AdminHome onBack={() => { setToken(null); setUser(null); setView('login'); }} username={user} token={token} />
+            )}
+            {view === 'home' && (
+              <Home onBack={() => { setToken(null); setUser(null); setView('login'); }} username={user} token={token} />
+            )}
+          </Suspense>
+        </div>
+      </NotificationProvider>
+    </SettingsProvider>
   )
 }
 

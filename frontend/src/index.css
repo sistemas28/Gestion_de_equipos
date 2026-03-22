@@ -1,108 +1,109 @@
 :root {
   --primary: #AD1A1C;
+  --primary-light: rgba(173, 26, 28, 0.1);
   --primary-dark: #8B1517;
   --accent: #FCE821;
   --accent-dark: #D4C11C;
-  --bg-gradient: linear-gradient(135deg, #AD1A1C 0%, #8B1517 100%);
-  --card-bg: rgba(255, 255, 255, 0.98);
-  --glass-effect: blur(12px);
-  --shadow-sm: 0 4px 12px rgba(173, 26, 28, 0.1);
-  --shadow-md: 0 8px 24px rgba(173, 26, 28, 0.15);
-  --shadow-lg: 0 16px 48px rgba(173, 26, 28, 0.2);
-  --radius: 16px;
+  --surface: #ffffff;
+  --bg-app: #f8fafc;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 15px 30px rgba(173, 26, 28, 0.08);
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: radial-gradient(circle at top right, #fff5f5, #fffcf0);
-  background-attachment: fixed;
-  color: #1a202c;
-  min-height: 100vh;
+  font-family: var(--font-main);
+  background-color: var(--bg-app);
+  color: var(--text-main);
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
-/* Global Transitions */
-* {
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Specific Transitions for UI performance */
+.transition-all {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.card {
-  background: var(--card-bg);
-  backdrop-filter: var(--glass-effect);
-  border: 1px solid rgba(252, 232, 33, 0.3);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-}
-
-.card:hover {
-  transform: translateY(-4px);
+.hover-lift:hover {
+  transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--accent);
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  font-family: inherit;
-  border-radius: 12px;
+button, a {
+  transition: all 0.2s ease;
+  text-decoration: none;
 }
 
 button:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar (Light) */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f8fafc;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, var(--primary), var(--accent));
-  border-radius: 20px;
-  border: 2px solid #f8fafc;
+  background: var(--border);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-dark);
+  background: var(--text-muted);
 }
 
-/* Utils */
-.fade-in {
-  animation: fadeIn 0.5s ease-out;
+/* Animations (Minimalist) */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.animate-in {
+  animation: slideUp 0.4s cubic-bezier(0.2, 1, 0.3, 1) forwards;
 }
 
-input,
-select,
-textarea {
-  border: 2px solid #e2e8f0;
-  background: white;
-  border-radius: 10px;
-  padding: 12px;
+/* Forms */
+input, select, textarea {
+  font-family: inherit;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
   font-size: 14px;
+  color: var(--text-main);
+  outline: none;
 }
 
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
+input:focus, select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(173, 26, 28, 0.1);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }

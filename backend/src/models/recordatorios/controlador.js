@@ -15,6 +15,7 @@ module.exports = function (dbInyectada) {
             id: data.id,
             title: data.title,
             date: data.date,
+            notas: data.notas,
             realizado: data.realizado ? data.realizado : 0,
         }
 
@@ -26,6 +27,7 @@ module.exports = function (dbInyectada) {
 
         if (data.title !== undefined) record.title = data.title
         if (data.date !== undefined) record.date = data.date
+        if (data.notas !== undefined) record.notas = data.notas
         if (data.realizado !== undefined) record.realizado = data.realizado
 
         return db.actualizar(TABLA, id, record)

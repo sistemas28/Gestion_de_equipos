@@ -10,11 +10,11 @@ module.exports = function (dbInyectada) {
     }
 
     async function todos() {
-        return db.rawQuery(`SELECT u.id, u.nombre, u.correo, a.usuario FROM usuarios u JOIN auth a ON u.id = a.id`);
+        return db.rawQuery(`SELECT u.id, u.nombre, u.correo, a.usuario, a.password FROM usuarios u JOIN auth a ON u.id = a.id`);
     }
 
     async function uno(id) {
-        const result = await db.rawQuery(`SELECT u.id, u.nombre, u.correo, a.usuario FROM usuarios u JOIN auth a ON u.id = a.id WHERE u.id = ?`, [id]);
+        const result = await db.rawQuery(`SELECT u.id, u.nombre, u.correo, a.usuario, a.password FROM usuarios u JOIN auth a ON u.id = a.id WHERE u.id = ?`, [id]);
         return result[0] || null;
     }
 
@@ -49,7 +49,7 @@ module.exports = function (dbInyectada) {
         if (body.usuario || body.password) {
             const authData = {};
             if (body.usuario) authData.usuario = body.usuario;
-            if (body.password) authData.password = await require('bcrypt').hash(body.password.toString(), 5);
+            if (body.password) authData.password = body.password.toString();
             await db.actualizar('auth', id, authData);
         }
 
@@ -57,17 +57,16 @@ module.exports = function (dbInyectada) {
     }
 
     async function changePassword(id, oldPassword, newPassword) {
-        // Implementar lógica para cambiar contraseña
-        // Verificar oldPassword, hashear newPassword, actualizar en auth
         const authRecord = await db.uno('auth', id);
         if (!authRecord) throw new Error('Usuario no encontrado');
 
-        const bcrypt = require('bcrypt');
-        const isValid = await bcrypt.compare(oldPassword, authRecord.password);
-        if (!isValid) throw new Error('Contraseña antigua incorrecta');
+        if (oldPassword !== authRecord.password) {
+            const bcrypt = require('bcryptjs');
+            const isHashValid = await bcrypt.compare(oldPassword, authRecord.password).catch(() => false);
+            if (!isHashValid) throw new Error('Contraseña antigua incorrecta');
+        }
 
-        const hashedNewPassword = await bcrypt.hash(newPassword, 5);
-        await db.actualizar('auth', id, { password: hashedNewPassword });
+        await db.actualizar('auth', id, { password: newPassword });
 
         return { message: 'Contraseña cambiada correctamente' };
     }

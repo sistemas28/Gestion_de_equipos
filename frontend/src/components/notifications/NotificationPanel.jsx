@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNotifications } from '../../context/NotificationContext';
-import { FaCheck, FaBell, FaCalendarAlt, FaTools, FaLaptop, FaTrash } from 'react-icons/fa';
+import api from '../../api/axios';
+import { FaCheck, FaBell, FaCalendarAlt, FaTools, FaLaptop, FaTrash, FaPlus } from 'react-icons/fa';
 import './NotificationPanel.css';
 
 const NotificationPanel = () => {
@@ -10,8 +11,11 @@ const NotificationPanel = () => {
         closePanel,
         markAsRead,
         clearAll,
-        loading
+        loading,
+        refresh
     } = useNotifications();
+
+    const [expandedNotif, setExpandedNotif] = useState(null);
 
     if (!showPanel) return null;
 
@@ -38,11 +42,13 @@ const NotificationPanel = () => {
             <div className="notification-panel-overlay" onClick={e => e.stopPropagation()}>
                 <div className="notification-panel-header">
                     <h3>Notificaciones</h3>
-                    {notifications.length > 0 && (
-                        <button className="clear-all-btn" onClick={clearAll}>
-                            Limpiar manuables
-                        </button>
-                    )}
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        {notifications.length > 0 && (
+                            <button className="clear-all-btn" onClick={clearAll}>
+                                Limpiar todo
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="notification-list-container">
@@ -72,6 +78,13 @@ const NotificationPanel = () => {
                                             </span>
                                         )}
                                     </div>
+                                    {notif.notas && (
+                                        <div className="notification-notes-preview" onClick={(e) => { e.stopPropagation(); setExpandedNotif(expandedNotif === notif.id ? null : notif.id) }}>
+                                            {expandedNotif === notif.id ? notif.notas : (
+                                                <span className="notes-truncated">Ver notas...</span>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                                 {!notif.source && (
                                     <div className="item-actions">
@@ -88,7 +101,7 @@ const NotificationPanel = () => {
                         ))
                     )}
                 </div>
-            </div>
+            </div >
         </>
     );
 };

@@ -9,6 +9,7 @@ import AgregarEquipoPage from './AgregarEquipoPage.jsx';
 import HistorialEquiposPage from '../historialEquipos/HistorialEquiposPage.jsx';
 import UserSettingsModal from './UserSettingsModal.jsx';
 import AppSettingsModal from './AppSettingsModal.jsx';
+import RemindersWidget from './RemindersWidget.jsx';
 import { FaBars, FaUser, FaCog, FaSignOutAlt, FaCheck, FaTools, FaFileAlt, FaDatabase, FaPlus, FaTimes, FaUsers, FaLaptop, FaHistory, FaPrint } from 'react-icons/fa';
 import logo from '../../assets/LOGO_INSTITUCIONAL.jpg';
 
@@ -61,10 +62,6 @@ function DesktopHome({ onBack, username }) {
     }, []);
 
     const { notifications } = useNotifications();
-    const [showForm, setShowForm] = useState(false);
-    const [formTitle, setFormTitle] = useState('');
-    const [formDateTime, setFormDateTime] = useState('');
-    const [editingId, setEditingId] = useState(null);
 
 
     useEffect(() => {
@@ -144,25 +141,7 @@ function DesktopHome({ onBack, username }) {
         };
     };
 
-    function isoToLocalInput(iso) {
-        if (!iso) return '';
-        const d = new Date(iso);
-        const tzOffset = d.getTimezoneOffset() * 60000;
-        const local = new Date(d - tzOffset).toISOString().slice(0, 16);
-        return local;
-    }
 
-
-    function getLatestReminder() {
-        if (!notifications || notifications.length === 0) return null;
-        const nowISO = now.toISOString();
-        const past = notifications.filter(r => r.date && r.date <= nowISO).sort((a, b) => b.date.localeCompare(a.date));
-        if (past.length) return past[0];
-        const future = notifications.slice().filter(r => r.date).sort((a, b) => a.date.localeCompare(b.date));
-        return future[0] || null;
-    }
-
-    const latest = getLatestReminder();
 
     const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
 
@@ -207,80 +186,37 @@ function DesktopHome({ onBack, username }) {
 
                 {currentView === 'dashboard' && (
                     <>
-                        <section className="hero">
+                        <section className="dashboard-grid-layout">
                             <div className="hero-left big-card">
                                 <div className="hero-content-flex">
                                     <div className="hero-greeting">
                                         <h2>BIENVENIDO,<br /><span className="username">{username || 'USUARIO'}</span></h2>
                                     </div>
-                                    <div className="hero-reminders">
-                                        <div className="reminders-list">
-                                            {latest ? (
-                                                <div className="reminder-item">
-                                                    <div className="reminder-title">{latest.title}</div>
-                                                    <div className="reminder-date">{new Date(latest.date).toLocaleString([], { hour: 'numeric', minute: '2-digit', hour12: true, day: '2-digit', month: 'short' })}</div>
-                                                </div>
-                                            ) : (
-                                                <div style={{ opacity: 0.6, fontSize: '12px' }}>Sin recordatorios pendientes</div>
-                                            )}
+                                    <div className="quick-actions-dashboard">
+                                        <div className="quick-actions">
+                                            <button className="action-btn" onClick={() => setCurrentView('mantenimiento')}>
+                                                <span className="icon"><FaTools /></span> Mantenimiento
+                                            </button>
+                                            <button className="action-btn" onClick={() => setCurrentView('licenciamiento')}>
+                                                <span className="icon"><FaFileAlt /></span> Licencias
+                                            </button>
+                                            <button className="action-btn" onClick={() => setCurrentView('copias')}>
+                                                <span className="icon"><FaDatabase /></span> Copias
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="quick-actions-dashboard">
-                                    <div className="quick-actions">
-                                        <button className="action-btn" onClick={() => setCurrentView('mantenimiento')}>
-                                            <span className="icon"><FaTools /></span> Mantenimiento
-                                        </button>
-                                        <button className="action-btn" onClick={() => setCurrentView('licenciamiento')}>
-                                            <span className="icon"><FaFileAlt /></span> Licencias
-                                        </button>
-                                        <button className="action-btn" onClick={() => setCurrentView('copias')}>
-                                            <span className="icon"><FaDatabase /></span> Copias
-                                        </button>
-                                        <button className="action-btn" onClick={() => { setShowForm(s => !s); setEditingId(null); setFormTitle(''); setFormDateTime(''); }}>
-                                            <span className="icon">{showForm ? <FaTimes /> : <FaPlus />}</span>
-                                            {showForm ? 'Cancelar' : 'Recordatorio'}
-                                        </button>
-                                    </div>
-                                    {showForm && (
-                                        <form className="create-form" onSubmit={async (e) => {
-                                            e.preventDefault();
-                                            try {
-                                                const payloadDate = formDateTime ? new Date(formDateTime).toISOString() : new Date().toISOString();
-                                                if (editingId) {
-                                                    await api.put(`/recordatorios/${editingId}`, { title: formTitle, date: payloadDate });
-                                                } else {
-                                                    await api.post('/recordatorios', { title: formTitle, date: payloadDate, realizado: 0 });
-                                                }
-                                                setShowForm(false);
-                                                setFormTitle('');
-                                                setFormDateTime('');
-                                                setEditingId(null);
-                                                // refresh is not directly available here, but context handles it. 
-                                                // Actually we should expose 'refresh' from useNotifications
-                                            } catch (err) {
-                                                console.error('Error saving reminder', err);
-                                                alert('Error al guardar recordatorio');
-                                            }
-                                        }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
-                                                <input required placeholder="Título" value={formTitle} onChange={e => setFormTitle(e.target.value)} />
-                                                <input type="datetime-local" value={formDateTime} onChange={e => setFormDateTime(e.target.value)} />
-                                                <div style={{ display: 'flex', gap: 8 }}>
-                                                    <button className="action-btn" type="submit">Guardar</button>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    )}
-                                </div>
                             </div>
-                            <aside className="hero-right">
-                                <div className="date-card">
+                            <div className="dashboard-widgets-col">
+                                <div className="date-card-mini">
                                     <div className="day">{day}</div>
-                                    <div className="month">{month}</div>
-                                    <div className="year">{year}</div>
+                                    <div>
+                                        <div className="month">{month}</div>
+                                        <div className="year">{year}</div>
+                                    </div>
                                 </div>
-                            </aside>
+                                <RemindersWidget />
+                            </div>
                         </section>
                         <section className="progress-section">
                             <div className="progress-header">

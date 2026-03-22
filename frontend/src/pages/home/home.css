@@ -1345,3 +1345,64 @@ body,
     max-height: 85vh;
   }
 }
+
+/* Shared Dashboard Grid Layout */
+.dashboard-grid-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  /* Hero takes 2/3, Widgets take 1/3 */
+  gap: 20px;
+  margin-bottom: 24px;
+  height: 450px;
+  /* Fixed height to prevent layout shift */
+}
+
+.dashboard-widgets-col {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  height: 100%;
+}
+
+.date-card-mini {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 10px 30px -10px rgba(30, 41, 59, 0.5);
+  flex-shrink: 0;
+}
+
+.date-card-mini .day {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  color: #FCE821;
+}
+
+.date-card-mini .month {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.date-card-mini .year {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* Adjust hero to fit grid if needed */
+.hero-left.big-card {
+  height: 100%;
+  margin-bottom: 0;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}

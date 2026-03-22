@@ -17,7 +17,11 @@ module.exports = function (dbInyectada) {
                 area: equipo.Area,
                 tipo: equipo.tipo,
                 marca: equipo.marca,
-                codigo: String(equipo.codigo_de_equipo || '')
+                codigo: String(equipo.codigo_de_equipo || ''),
+                so: equipo.sistema_operativo,
+                procesador: equipo.procesador,
+                ram: equipo.ram,
+                disco_duro: equipo.disco_duro
             }));
         });
     }
@@ -34,12 +38,25 @@ module.exports = function (dbInyectada) {
                 area: equipo.Area,
                 tipo: equipo.tipo,
                 marca: equipo.marca,
-                codigo: String(equipo.codigo_de_equipo || '')
+                codigo: String(equipo.codigo_de_equipo || ''),
+                so: equipo.sistema_operativo,
+                procesador: equipo.procesador,
+                ram: equipo.ram,
+                disco_duro: equipo.disco_duro
             };
         });
     }
 
     async function agregar(body) {
+        if (body.codigo) {
+            const existe = await db.query(TABLA, { codigo_de_equipo: body.codigo });
+            if (existe) {
+                const error = new Error(`El código de inventario '${body.codigo}' ya está asignado a otro equipo.`);
+                error.statusCode = 400;
+                throw error;
+            }
+        }
+
         // Mapeamos los datos del frontend a los nombres de columna de la BD
         const equipo = {
             nombre_de_usuario_asignado: body.usuario,
@@ -47,6 +64,10 @@ module.exports = function (dbInyectada) {
             tipo: body.tipo,
             marca: body.marca,
             codigo_de_equipo: body.codigo,
+            sistema_operativo: body.so,
+            procesador: body.procesador,
+            ram: body.ram,
+            disco_duro: body.disco_duro
         };
 
         const resultado = await db.agregar(TABLA, equipo);
@@ -74,6 +95,15 @@ module.exports = function (dbInyectada) {
         // Primero obtenemos el equipo actual para comparar
         const equipoActual = await uno(id);
 
+        if (body.codigo && String(body.codigo) !== String(equipoActual.codigo)) {
+            const existe = await db.query(TABLA, { codigo_de_equipo: body.codigo });
+            if (existe) {
+                const error = new Error(`El código de inventario '${body.codigo}' ya está asignado a otro equipo.`);
+                error.statusCode = 400;
+                throw error;
+            }
+        }
+
         // La función de modificar también necesita mapear los campos
         const equipo = {
             nombre_de_usuario_asignado: body.usuario,
@@ -81,6 +111,10 @@ module.exports = function (dbInyectada) {
             tipo: body.tipo,
             marca: body.marca,
             codigo_de_equipo: body.codigo,
+            sistema_operativo: body.so,
+            procesador: body.procesador,
+            ram: body.ram,
+            disco_duro: body.disco_duro
         };
 
         // Verificar si hubo cambio de usuario o área

@@ -29,6 +29,9 @@ const error = require('./red/errors');
 
 const app = express();
 
+// Trust proxy for Nginx on EC2
+app.set("trust proxy", 1);
+
 // Security and Performance Middleware
 app.use(helmet({
     crossOriginResourcePolicy: false, // For local dev images/assets

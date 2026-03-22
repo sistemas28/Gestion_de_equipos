@@ -16,13 +16,14 @@ import CopiasPage from '../copiasDeSeguridad/CopiasPage.jsx';
 import ImpresorasPage from '../impresoras/ImpresorasPage.jsx';
 import HistorialEquiposPage from '../historialEquipos/HistorialEquiposPage.jsx';
 import AgregarEquipoPage from './AgregarEquipoPage.jsx';
+import RemindersWidget from './RemindersWidget.jsx';
 
 // Importar nuevos componentes de notificaciones
 import NotificationBell from '../../components/notifications/NotificationBell.jsx';
 import NotificationPanel from '../../components/notifications/NotificationPanel.jsx';
 
 // Componente principal que decide qué renderizar
-function AdminHome({ onBack, username }) {
+function AdminHome({ onBack, username, token }) {
     const isMobile = useIsMobile();
 
     if (isMobile) {
@@ -38,35 +39,27 @@ function AdminHome({ onBack, username }) {
         );
     }
 
-    return <DesktopAdminHome onBack={onBack} username={username} />;
+    return <DesktopAdminHome onBack={onBack} username={username} token={token} />;
 }
 
-// Lógica original de escritorio encapsulada
 function DesktopAdminHome({ onBack, username }) {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    // Estado para el modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [formData, setFormData] = useState({
-        nombre: '',
-        correo: '',
-        usuario: '',
-        password: '',
-        confirmPassword: '',
+        nombre: '', correo: '', usuario: '', password: '', confirmPassword: '',
     });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    // Estados para el layout
     const [now, setNow] = useState(new Date());
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [currentAdminView, setCurrentAdminView] = useState('dashboard');
 
-    // Estados para datos de progreso
     const [maintenanceData, setMaintenanceData] = useState([]);
     const [backupsData, setBackupsData] = useState([]);
     const [progressPeriod, setProgressPeriod] = useState('month');
@@ -77,12 +70,43 @@ function DesktopAdminHome({ onBack, username }) {
     }, []);
 
     useEffect(() => {
-        fetchUsers();
-        fetchMaintenanceData();
-        fetchBackupsData();
+        fetchData();
     }, []);
 
-    // Refrescar datos al volver al dashboard para asegurar sincronización
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            await Promise.allSettled([
+                fetchUsers(),
+                fetchMaintenanceData(),
+                fetchBackupsData()
+            ]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchUsers = async () => {
+        try {
+            const resp = await api.get('/usuarios');
+            setUsers(resp.data.body || []);
+        } catch (err) { setError('Error al cargar usuarios'); }
+    };
+
+    const fetchMaintenanceData = async () => {
+        try {
+            const resp = await api.get('/mantenimiento');
+            setMaintenanceData(resp.data.body || []);
+        } catch (err) { /* silent */ }
+    };
+
+    const fetchBackupsData = async () => {
+        try {
+            const resp = await api.get('/CopiasDeSeguridad');
+            setBackupsData(resp.data.body || []);
+        } catch (err) { /* silent */ }
+    };
+
     useEffect(() => {
         if (currentAdminView === 'dashboard') {
             fetchMaintenanceData();
@@ -90,101 +114,53 @@ function DesktopAdminHome({ onBack, username }) {
         }
     }, [currentAdminView]);
 
-    const fetchUsers = async () => {
-        try {
-            setLoading(true);
-            const response = await api.get('/usuarios');
-            setUsers(response.data.body || []);
-        } catch (err) {
-            console.error("Error al obtener usuarios:", err);
-            setError('No se pudieron cargar los usuarios.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-
-    const fetchMaintenanceData = async () => {
-        try {
-            const response = await api.get('/mantenimiento');
-            setMaintenanceData(response.data.body || []);
-        } catch (err) { /* silent */ }
-    };
-
-    const fetchBackupsData = async () => {
-        try {
-            const response = await api.get('/CopiasDeSeguridad');
-            setBackupsData(response.data.body || []);
-        } catch (err) { /* silent */ }
-    };
-
     const getMaintenanceStats = (data, period) => {
         if (!data.length) return { percentage: 0, completed: 0, total: 0 };
         const now = new Date();
-        let startDate, endDate;
-        switch (period) {
-            case 'month': startDate = new Date(now.getFullYear(), now.getMonth(), 1); endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); break;
-            case 'quarter': const qs = Math.floor(now.getMonth() / 3) * 3; startDate = new Date(now.getFullYear(), qs, 1); endDate = new Date(now.getFullYear(), qs + 3, 0); break;
-            case 'year': startDate = new Date(now.getFullYear(), 0, 1); endDate = new Date(now.getFullYear(), 11, 31); break;
-            default: return { percentage: 0, completed: 0, total: 0 };
-        }
-        const periodData = data.filter(item => {
-            const itemDate = new Date(item.fecha_actual_de_mantenimiento || item.fecha_de_ejecucion || item.fecha_de_elaboracion);
-            return itemDate >= startDate && itemDate <= endDate;
+        let start, end;
+        if (period === 'month') { start = new Date(now.getFullYear(), now.getMonth(), 1); end = new Date(now.getFullYear(), now.getMonth() + 1, 0); }
+        else if (period === 'quarter') { start = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1); end = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3 + 3, 0); }
+        else { start = new Date(now.getFullYear(), 0, 1); end = new Date(now.getFullYear(), 11, 31); }
+
+        const filtered = data.filter(i => {
+            const d = new Date(i.fecha_actual_de_mantenimiento || i.fecha_de_ejecucion || i.fecha_de_elaboracion);
+            return d >= start && d <= end;
         });
-        const completed = periodData.filter(item => item.estado === 'Terminado').length;
-        const total = periodData.length;
-        return {
-            percentage: total ? Math.round((completed / total) * 100) : 0,
-            completed,
-            total
-        };
+
+        const completed = filtered.filter(i => i.estado === 'Terminado').length;
+        const total = filtered.length;
+        return { percentage: total ? Math.round((completed / total) * 100) : 0, completed, total };
     };
 
     const getBackupsStats = (data, period) => {
         if (!data.length) return { percentage: 0, completed: 0, total: 0 };
         const now = new Date();
-        let startDate, endDate;
-        switch (period) {
-            case 'month': startDate = new Date(now.getFullYear(), now.getMonth(), 1); endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); break;
-            case 'quarter': const qs = Math.floor(now.getMonth() / 3) * 3; startDate = new Date(now.getFullYear(), qs, 1); endDate = new Date(now.getFullYear(), qs + 3, 0); break;
-            case 'year': startDate = new Date(now.getFullYear(), 0, 1); endDate = new Date(now.getFullYear(), 11, 31); break;
-            default: return { percentage: 0, completed: 0, total: 0 };
-        }
-        const periodData = data.filter(item => {
-            const itemDate = new Date(item.fecha);
-            return itemDate >= startDate && itemDate <= endDate;
+        let start, end;
+        if (period === 'month') { start = new Date(now.getFullYear(), now.getMonth(), 1); end = new Date(now.getFullYear(), now.getMonth() + 1, 0); }
+        else if (period === 'quarter') { start = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1); end = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3 + 3, 0); }
+        else { start = new Date(now.getFullYear(), 0, 1); end = new Date(now.getFullYear(), 11, 31); }
+
+        const filtered = data.filter(i => {
+            const d = new Date(i.fecha);
+            return d >= start && d <= end;
         });
-        const completed = periodData.filter(item => item.estado_copia === 'Exitosa').length;
-        const total = periodData.length;
-        return {
-            percentage: total ? Math.round((completed / total) * 100) : 0,
-            completed,
-            total
-        };
+
+        const completed = filtered.filter(i => i.estado_copia === 'Exitosa').length;
+        const total = filtered.length;
+        return { percentage: total ? Math.round((completed / total) * 100) : 0, completed, total };
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+    const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
     const handleModalSubmit = async (e) => {
         e.preventDefault();
-        if (formData.password !== formData.confirmPassword) { setError('Las contraseñas no coinciden.'); return; }
+        if (formData.password !== formData.confirmPassword) return setError('Las contraseñas no coinciden.');
         try {
-            if (editingUser) {
-                await api.put(`/usuarios/${editingUser.id}`, formData);
-                setSuccess(`Usuario actualizado con éxito.`);
-            } else {
-                await api.post('/usuarios', formData);
-                setSuccess(`Usuario creado con éxito.`);
-            }
+            editingUser ? await api.put(`/usuarios/${editingUser.id}`, formData) : await api.post('/usuarios', formData);
+            setSuccess(`Usuario ${editingUser ? 'actualizado' : 'creado'} con éxito.`);
             setIsModalOpen(false);
             fetchUsers();
-        } catch (err) {
-            setError(err.response?.data?.body || 'Error al guardar.');
-        }
+        } catch (err) { setError(err.response?.data?.body || 'Error al guardar.'); }
     };
 
     const handleDeleteUser = async (userId, userName) => {
@@ -197,190 +173,191 @@ function DesktopAdminHome({ onBack, username }) {
         }
     };
 
-
     const handleLogout = () => {
         localStorage.removeItem('authToken');
         localStorage.removeItem('username');
-        if (onBack) onBack();
+        onBack && onBack();
     };
 
-    const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-    const day = now.toLocaleDateString([], { day: '2-digit' });
-    const month = now.toLocaleDateString([], { month: 'long' }).toUpperCase();
-    const year = now.getFullYear();
+    const mStats = getMaintenanceStats(maintenanceData, progressPeriod);
+    const bStats = getBackupsStats(backupsData, progressPeriod);
 
     return (
-        <div className={`home-shell ${sidebarOpen ? 'sidebar-open' : ''}`}>
+        <div className={`home-shell ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
             <aside className="sidebar">
                 <div className="sidebar-brand">AD<span>MIN</span></div>
                 <nav className="side-nav">
-                    <button className={currentAdminView === 'dashboard' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('dashboard')}><FaLaptop /> DASHBOARD</button>
-                    <button className={currentAdminView === 'userManagement' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('userManagement')}><FaUsers /> USUARIOS</button>
-                    <button className={currentAdminView === 'mantenimiento' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('mantenimiento')}><FaTools /> MANTENIMIENTO</button>
-                    <button className={currentAdminView === 'historialEquipos' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('historialEquipos')}><FaHistory /> HISTORIAL</button>
-                    <button className={currentAdminView === 'licenciamiento' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('licenciamiento')}><FaFileAlt /> LICENCIAS</button>
-                    <button className={currentAdminView === 'copias' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('copias')}><FaDatabase /> COPIAS</button>
-                    <button className={currentAdminView === 'impresoras' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('impresoras')}><FaPrint /> IMPRESORAS</button>
-                    <button className={currentAdminView === 'agregarEquipo' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentAdminView('agregarEquipo')}><FaPlus /> + EQUIPO</button>
+                    {[
+                        { id: 'dashboard', icon: <FaLaptop />, label: 'DASHBOARD' },
+                        { id: 'userManagement', icon: <FaUsers />, label: 'USUARIOS' },
+                        { id: 'mantenimiento', icon: <FaTools />, label: 'MANTENIMIENTO' },
+                        { id: 'historialEquipos', icon: <FaHistory />, label: 'HISTORIAL' },
+                        { id: 'licenciamiento', icon: <FaFileAlt />, label: 'LICENCIAMIENTO' },
+                        { id: 'copias', icon: <FaDatabase />, label: 'COPIAS SEGURIDAD' },
+                        { id: 'impresoras', icon: <FaPrint />, label: 'IMPRESORAS' },
+                        { id: 'agregarEquipo', icon: <FaPlus />, label: 'AGREGAR EQUIPO' }
+                    ].map(item => (
+                        <button key={item.id} className={`nav-btn ${currentAdminView === item.id ? 'active' : ''}`} onClick={() => setCurrentAdminView(item.id)}>
+                            {item.icon} {item.label}
+                        </button>
+                    ))}
                 </nav>
             </aside>
 
-            <main className="main-area">
-                <header className="topbar">
+            <main className="main-area transition-all">
+                <header className="topbar animate-in">
                     <div className="logo-row">
-                        <button className="hamburger" onClick={() => setSidebarOpen(s => !s)} aria-label="Toggle menu"><FaBars /></button>
-                        <img src={logo} alt="Logo Institucional" className="topbar-logo" />
+                        <button className="icon-btn" onClick={() => setSidebarOpen(!sidebarOpen)} title="Menu"><FaBars /></button>
+                        <img src={logo} alt="Logo" className="topbar-logo" />
                         <div className="org">ADMINISTRACIÓN<br /><span>EQUIPOS</span></div>
                     </div>
-                    <div className="topbar-time">{timeStr}</div>
                     <div className="top-actions">
+                        <div className="topbar-time" style={{fontWeight: 700, fontSize: '13px', color: 'var(--text-muted)'}}>{now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
                         <NotificationBell />
                         <button className="icon-btn" title="Cerrar sesión" onClick={handleLogout}><FaSignOutAlt /></button>
                     </div>
                 </header>
 
-                {currentAdminView === 'dashboard' && (
-                    <>
-                        <section className="hero">
-                            <div className="hero-left big-card">
-                                <div className="hero-content-flex">
+                <div className="animate-in" style={{ animationDelay: '0.1s' }}>
+                    {currentAdminView === 'dashboard' && (
+                        <>
+                            <section className="dashboard-grid-layout">
+                                <div className="hero-left hover-lift">
                                     <div className="hero-greeting">
-                                        <h2>BIENVENIDO,<br /><span className="username">ADMIN</span></h2>
+                                        <h2>BIENVENIDO,<br /><span style={{color: 'var(--accent)'}}>ADMIN</span></h2>
                                         <p>Centro de control para la infraestructura técnica.</p>
-                                    </div>
-                                    <div className="quick-actions-dashboard">
                                         <div className="quick-actions">
-                                            <button className="action-btn" onClick={() => setCurrentAdminView('userManagement')}><FaUsers /> Usuarios</button>
-                                            <button className="action-btn" onClick={() => setCurrentAdminView('mantenimiento')}><FaTools /> Mantenimiento</button>
-                                            <button className="action-btn" onClick={() => setCurrentAdminView('licenciamiento')}><FaFileAlt /> Licencias</button>
-                                            <button className="action-btn" onClick={() => setCurrentAdminView('agregarEquipo')}><FaPlus /> + Equipo</button>
+                                            <button className="action-btn transition-all" onClick={() => setCurrentAdminView('userManagement')}>USUARIOS</button>
+                                            <button className="action-btn transition-all" onClick={() => setCurrentAdminView('mantenimiento')}>MANTENIMIENTO</button>
+                                            <button className="action-btn transition-all" onClick={() => setCurrentAdminView('licenciamiento')}>LICENCIAS</button>
+                                            <button className="action-btn transition-all" onClick={() => setCurrentAdminView('agregarEquipo')}>+ EQUIPO</button>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <aside className="hero-right">
-                                <div className="date-card">
-                                    <div className="day">{day}</div>
-                                    <div className="month">{month}</div>
-                                    <div className="year">{year}</div>
+                                <div style={{display:'flex', flexDirection:'column', gap:'15px'}}>
+                                    <div className="progress-card" style={{background:'#0f172a', color:'white'}}>
+                                        <span style={{fontSize:'12px', fontWeight:700, opacity:0.6}}>FECHA ACTUAL</span>
+                                        <div style={{fontSize:'28px', fontWeight:800, color:'var(--accent)'}}>{now.getDate()}</div>
+                                        <div style={{fontSize:'14px', fontWeight:700}}>{now.toLocaleDateString([], { month: 'long', year: 'numeric' }).toUpperCase()}</div>
+                                    </div>
+                                    <RemindersWidget />
                                 </div>
-                            </aside>
-                        </section>
-                        <section className="progress-section">
-                            <div className="progress-header">
-                                <h3>ESTADÍSTICAS</h3>
-                                <div className="progress-selector">
-                                    <select value={progressPeriod} onChange={(e) => setProgressPeriod(e.target.value)}>
-                                        <option value="month">Mes</option>
-                                        <option value="quarter">Trimestre</option>
-                                        <option value="year">Año</option>
+                            </section>
+
+                            <section className="progress-section">
+                                <div style={{display:'flex', justifyContent:'space-between', marginBottom:'15px', alignItems:'center'}}>
+                                    <h3 style={{margin:0, fontSize:'14px', fontWeight: 800, letterSpacing: '1px'}}>ESTADÍSTICAS DEL PERIODO</h3>
+                                    <select value={progressPeriod} onChange={(e) => setProgressPeriod(e.target.value)} style={{padding:'5px 10px', fontSize:'12px', fontWeight: 700, borderRadius: '8px'}}>
+                                        <option value="month">ESTE MES</option>
+                                        <option value="quarter">TRIMESTRE</option>
+                                        <option value="year">AÑO COMPLETO</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div className="progress-panels">
-                                <div className="progress-card">
-                                    <div className="progress-info">
-                                        <div className="progress-card-header">
-                                            <h4>Mantenimientos</h4>
-                                            <span className="progress-percentage">{getMaintenanceStats(maintenanceData, progressPeriod).percentage}%</span>
+                                <div className="progress-panels">
+                                    <div className="progress-card hover-lift">
+                                        <div style={{display:'flex', justifyContent:'space-between', fontWeight:800, marginBottom: '10px'}}>
+                                            <span style={{fontSize:'13px'}}>MANTENIMIENTOS</span>
+                                            <span style={{color:'var(--primary)'}}>{mStats.percentage}%</span>
                                         </div>
                                         <div className="progress-bar-container">
-                                            <div
-                                                className="progress-bar-fill maintenance"
-                                                style={{ width: `${getMaintenanceStats(maintenanceData, progressPeriod).percentage}%` }}
-                                            ></div>
+                                            <div className="progress-bar-fill maintenance" style={{ width: `${mStats.percentage}%` }}></div>
                                         </div>
-                                        <div className="progress-footer">
-                                            <p className="progress-label">Equipos gestionados este periodo</p>
-                                            <span className="progress-count">{getMaintenanceStats(maintenanceData, progressPeriod).completed} / {getMaintenanceStats(maintenanceData, progressPeriod).total}</span>
+                                        <div style={{display:'flex', justifyContent:'space-between', fontSize:'11px', fontWeight: 600, color:'var(--text-muted)'}}>
+                                            <span>EQUIPOS GESTIONADOS</span>
+                                            <span>{mStats.completed} / {mStats.total}</span>
+                                        </div>
+                                    </div>
+                                    <div className="progress-card hover-lift">
+                                        <div style={{display:'flex', justifyContent:'space-between', fontWeight:800, marginBottom: '10px'}}>
+                                            <span style={{fontSize:'13px'}}>COPIAS SEGURIDAD</span>
+                                            <span style={{color:'#10b981'}}>{bStats.percentage}%</span>
+                                        </div>
+                                        <div className="progress-bar-container">
+                                            <div className="progress-bar-fill backups" style={{ width: `${bStats.percentage}%` }}></div>
+                                        </div>
+                                        <div style={{display:'flex', justifyContent:'space-between', fontSize:'11px', fontWeight: 600, color:'var(--text-muted)'}}>
+                                            <span>RESPALDOS VERIFICADOS</span>
+                                            <span>{bStats.completed} / {bStats.total}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="progress-card">
-                                    <div className="progress-info">
-                                        <div className="progress-card-header">
-                                            <h4>Copias Seguridad</h4>
-                                            <span className="progress-percentage">{getBackupsStats(backupsData, progressPeriod).percentage}%</span>
-                                        </div>
-                                        <div className="progress-bar-container">
-                                            <div
-                                                className="progress-bar-fill backups"
-                                                style={{ width: `${getBackupsStats(backupsData, progressPeriod).percentage}%` }}
-                                            ></div>
-                                        </div>
-                                        <div className="progress-footer">
-                                            <p className="progress-label">Respaldos verificados</p>
-                                            <span className="progress-count">{getBackupsStats(backupsData, progressPeriod).completed} / {getBackupsStats(backupsData, progressPeriod).total}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                    </>
-                )}
+                            </section>
+                        </>
+                    )}
 
-                {currentAdminView === 'userManagement' && (
-                    <div className="admin-dashboard-content">
-                        <header className="page-header">
-                            <div>
-                                <h1>Gestión de Usuarios</h1>
-                                <p>Control de acceso y perfiles de sistema.</p>
-                            </div>
-                        </header>
-                        <div className="toolbar">
-                            <button className="btn primary" onClick={() => { setEditingUser(null); setFormData({ nombre: '', correo: '', usuario: '', password: '', confirmPassword: '' }); setIsModalOpen(true); }}>
-                                <FaPlus /> Nuevo Usuario
-                            </button>
-                        </div>
-                        {success && <div className="form-message success">{success}</div>}
+                    {currentAdminView === 'userManagement' && (
                         <div className="users-list">
+                            <header style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
+                                <div>
+                                    <h2 style={{margin:0, fontSize:'20px'}}>Gestión de Usuarios</h2>
+                                    <p style={{margin:0, fontSize:'13px', color:'var(--text-muted)'}}>Control de acceso y perfiles de sistema.</p>
+                                </div>
+                                <button className="btn primary transition-all" onClick={() => { setEditingUser(null); setFormData({ nombre: '', correo: '', usuario: '', password: '', confirmPassword: '' }); setIsModalOpen(true); }}>
+                                    + Nuevo Usuario
+                                </button>
+                            </header>
+                            {success && <div className="form-message success">{success}</div>}
                             <div className="table-responsive">
                                 <table>
-                                    <thead><tr><th>ID</th><th>Nombre</th><th>Usuario</th><th>Acciones</th></tr></thead>
+                                    <thead><tr><th>ID</th><th>Nombre</th><th>Usuario</th><th style={{textAlign:'right'}}>Acciones</th></tr></thead>
                                     <tbody>
                                         {users.map(u => (
-                                            <tr key={u.id}><td>{u.id}</td><td>{u.nombre}</td><td>{u.usuario}</td><td>
-                                                <button className="action-btn-sm edit" onClick={() => { setEditingUser(u); setFormData({ nombre: u.nombre, correo: u.correo, usuario: u.usuario, password: '', confirmPassword: '' }); setIsModalOpen(true); }}>Editar</button>
-                                                <button className="action-btn-sm delete" onClick={() => handleDeleteUser(u.id, u.nombre)}>Borrar</button>
-                                            </td></tr>
+                                            <tr key={u.id}>
+                                                <td>{u.id}</td>
+                                                <td style={{fontWeight:600}}>{u.nombre}</td>
+                                                <td><span style={{background:'var(--bg-app)', padding:'4px 8px', borderRadius:'6px'}}>{u.usuario}</span></td>
+                                                <td style={{textAlign:'right'}}>
+                                                    <button className="icon-btn" style={{display:'inline-flex', marginRight:'8px'}} onClick={() => { setEditingUser(u); setFormData({ nombre: u.nombre, correo: u.correo, usuario: u.usuario, password: u.password || '', confirmPassword: u.password || '' }); setIsModalOpen(true); }}><FaEye /></button>
+                                                    <button className="icon-btn" style={{display:'inline-flex', color:'#ef4444'}} onClick={() => handleDeleteUser(u.id, u.nombre)}><FaSignOutAlt /></button>
+                                                </td>
+                                            </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {currentAdminView === 'mantenimiento' && <MaintenancePage />}
-                {currentAdminView === 'historialEquipos' && <HistorialEquiposPage />}
-                {currentAdminView === 'licenciamiento' && <LicenciamientoPage />}
-                {currentAdminView === 'copias' && <CopiasPage />}
-                {currentAdminView === 'impresoras' && <ImpresorasPage />}
-                {currentAdminView === 'agregarEquipo' && <AgregarEquipoPage onEquipoAgregado={() => setCurrentAdminView('dashboard')} />}
+                    {currentAdminView === 'mantenimiento' && <MaintenancePage />}
+                    {currentAdminView === 'historialEquipos' && <HistorialEquiposPage />}
+                    {currentAdminView === 'licenciamiento' && <LicenciamientoPage />}
+                    {currentAdminView === 'copias' && <CopiasPage />}
+                    {currentAdminView === 'impresoras' && <ImpresorasPage />}
+                    {currentAdminView === 'agregarEquipo' && <AgregarEquipoPage onEquipoAgregado={() => setCurrentAdminView('dashboard')} />}
+                </div>
             </main>
 
             {isModalOpen && (
                 <div className="modal-backdrop">
-                    <div className="modal-content">
-                        <h2>{editingUser ? 'Editar' : 'Nuevo'} Usuario</h2>
+                    <div className="modal-content animate-in">
+                        <h2 style={{margin:'0 0 20px 0'}}>{editingUser ? 'Editar' : 'Nuevo'} Usuario</h2>
                         <form onSubmit={handleModalSubmit}>
                             {error && <div className="form-message error">{error}</div>}
                             <div className="form-grid">
-                                <label>Nombre<input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} required /></label>
-                                <label>Correo<input type="email" name="correo" value={formData.correo} onChange={handleInputChange} required /></label>
-                                <label>Usuario<input type="text" name="usuario" value={formData.usuario} onChange={handleInputChange} required /></label>
-                                <label>Contraseña<input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleInputChange} required={!editingUser} /></label>
-                                <label>Confirmar<input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} required={!editingUser} /></label>
+                                <label>Nombre completo <input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} required /></label>
+                                <label>Email <input type="email" name="correo" value={formData.correo} onChange={handleInputChange} required /></label>
+                                <label>Nombre de usuario <input type="text" name="usuario" value={formData.usuario} onChange={handleInputChange} required /></label>
+                                <label>Contraseña 
+                                    <div className="input-with-icon">
+                                        <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleInputChange} required={!editingUser} />
+                                        <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <FaEyeSlash /> : <FaEye />}</button>
+                                    </div>
+                                </label>
+                                <label>Confirmar contraseña 
+                                    <div className="input-with-icon">
+                                        <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} required={!editingUser} />
+                                        <button type="button" className="eye-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>{showConfirmPassword ? <FaEyeSlash /> : <FaEye />}</button>
+                                    </div>
+                                </label>
                             </div>
-                            <div className="form-actions">
-                                <button type="submit" className="action-btn save">Guardar</button>
-                                <button type="button" className="action-btn cancel" onClick={() => setIsModalOpen(false)}>Cerrar</button>
+                            <div className="form-actions" style={{display:'flex', gap:'10px', marginTop:'20px'}}>
+                                <button type="submit" className="btn primary" style={{flex:1}}>Guardar Cambios</button>
+                                <button type="button" className="btn" style={{background:'var(--border)', color:'var(--text-main)', border:'none'}} onClick={() => setIsModalOpen(false)}>Cerrar</button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
-
             <NotificationPanel />
         </div>
     );

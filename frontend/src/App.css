@@ -52,3 +52,76 @@
         opacity: 1;
     }
 }
+
+/* Global Settings Styles */
+
+/* Compact Mode */
+body.compact-mode table td,
+body.compact-mode table th {
+    padding: 8px 10px !important;
+}
+
+body.compact-mode .card,
+body.compact-mode .stats-card,
+body.compact-mode .reminders-widget,
+body.compact-mode .big-card {
+    padding: 16px !important;
+}
+
+/* No Animations */
+body.no-animations *,
+body.no-animations *::before,
+body.no-animations *::after {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Dark Mode (Basic Implementation) 
+   Ideally this should override CSS variables defined in :root
+*/
+body.dark-mode {
+    background-color: #0f172a;
+    color: #f1f5f9;
+}
+
+body.dark-mode .app-container {
+    background-color: #0f172a;
+}
+
+body.dark-mode .card,
+body.dark-mode .stats-card,
+body.dark-mode .sidebar,
+body.dark-mode .top-bar,
+body.dark-mode .reminders-widget,
+body.dark-mode .users-list,
+body.dark-mode .quick-actions-dashboard,
+body.dark-mode .settings-panel,
+body.dark-mode .details-panel {
+    background-color: #1e293b;
+    color: #f8fafc;
+    border-color: #334155;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode th,
+body.dark-mode strong {
+    color: #f8fafc !important;
+}
+
+body.dark-mode .text-muted,
+body.dark-mode .reminder-date,
+body.dark-mode .reminder-notes-preview {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background-color: #334155;
+    color: #fff;
+    border-color: #475569;
+}

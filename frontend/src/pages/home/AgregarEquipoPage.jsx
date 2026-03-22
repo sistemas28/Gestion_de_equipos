@@ -8,7 +8,11 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
         area: '',
         tipo: '',
         marca: '',
-        codigo: '', // Basado en el modelo de la documentación
+        codigo: '',
+        so: '',
+        procesador: '',
+        ram: '',
+        disco_duro: ''
     };
 
     const [formData, setFormData] = useState(initialFormState);
@@ -61,8 +65,25 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
         'Dell', 'HP', 'Lenovo', 'Apple', 'Asus', 'Acer', 'Samsung', 'LG'
     ];
 
+    const sistemasOperativos = [
+        'Windows 10', 'Windows 11', 'macOS Sonoma', 'macOS Ventura', 'Ubuntu 22.04', 'Ubuntu 24.04', 'N/A'
+    ];
+
+    const procesadores = [
+        'Intel Core i3', 'Intel Core i5', 'Intel Core i7', 'Intel Core i9', 
+        'AMD Ryzen 3', 'AMD Ryzen 5', 'AMD Ryzen 7', 'AMD Ryzen 9', 'Apple M1', 'Apple M2', 'Apple M3', 'N/A'
+    ];
+
+    const memoriasRam = [
+        '4GB', '8GB', '12GB', '16GB', '24GB', '32GB', '64GB', '128GB', 'N/A'
+    ];
+
+    const discosDuros = [
+        '256GB SSD', '500GB SSD', '512GB SSD', '1TB SSD', '1TB HDD', '2TB SSD', 'N/A'
+    ];
+
     // Ordenar las listas alfabéticamente para facilitar la búsqueda
-    areas.sort(); tiposDeEquipo.sort(); marcas.sort();
+    areas.sort(); tiposDeEquipo.sort(); marcas.sort(); sistemasOperativos.sort(); procesadores.sort();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -101,6 +122,10 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
             tipo: formData.tipo,
             marca: formData.marca,
             codigo: formData.codigo || null,
+            so: formData.so || 'N/A',
+            procesador: formData.procesador || 'N/A',
+            ram: formData.ram || 'N/A',
+            disco_duro: formData.disco_duro || 'N/A'
         };
 
         const apiCall = editingId
@@ -131,11 +156,18 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
             } */
 
         } catch (err) {
-            console.error("Error al agregar el equipo:", err);
-            // Intentamos obtener el mensaje de error específico del backend.
-            // Si el backend envía { "error": "mensaje..." } o { "message": "mensaje..." }, lo capturaremos.
-            const serverError = err.response?.data?.error || err.response?.data?.message;
-            const errorMessage = serverError || 'Error del servidor. No se pudo completar la operación. Revisa la consola del backend para más detalles.';
+            console.error("Error al agregar/editar el equipo:", err);
+            let errorMessage = 'Error del servidor. No se pudo completar la operación. Revisa la consola del backend para más detalles.';
+            
+            if (err.response?.data) {
+                if (typeof err.response.data.body === 'string') {
+                    errorMessage = err.response.data.body;
+                } else if (typeof err.response.data.message === 'string') {
+                    errorMessage = err.response.data.message;
+                } else if (typeof err.response.data.error === 'string') {
+                    errorMessage = err.response.data.error;
+                }
+            }
             setError(errorMessage);
         } finally {
             setLoading(false);
@@ -151,6 +183,10 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
             tipo: equipo.tipo || '',
             marca: equipo.marca || '',
             codigo: equipo.codigo || '',
+            so: equipo.so || '',
+            procesador: equipo.procesador || '',
+            ram: equipo.ram || '',
+            disco_duro: equipo.disco_duro || ''
         });
         setSuccess(''); // Limpia mensajes anteriores
         setError('');
@@ -220,6 +256,34 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
                                 ))}
                             </select>
                         </label>
+                        <label>
+                            Sistema Operativo (S.O.)
+                            <input type="text" name="so" list="so-opciones" value={formData.so} onChange={handleChange} placeholder="Seleccione o escriba..." />
+                            <datalist id="so-opciones">
+                                {sistemasOperativos.map(op => <option key={op} value={op} />)}
+                            </datalist>
+                        </label>
+                        <label>
+                            Procesador
+                            <input type="text" name="procesador" list="procesador-opciones" value={formData.procesador} onChange={handleChange} placeholder="Seleccione o escriba..." />
+                            <datalist id="procesador-opciones">
+                                {procesadores.map(op => <option key={op} value={op} />)}
+                            </datalist>
+                        </label>
+                        <label>
+                            RAM
+                            <input type="text" name="ram" list="ram-opciones" value={formData.ram} onChange={handleChange} placeholder="Seleccione o escriba..." />
+                            <datalist id="ram-opciones">
+                                {memoriasRam.map(op => <option key={op} value={op} />)}
+                            </datalist>
+                        </label>
+                        <label>
+                            Disco Duro
+                            <input type="text" name="disco_duro" list="dd-opciones" value={formData.disco_duro} onChange={handleChange} placeholder="Seleccione o escriba..." />
+                            <datalist id="dd-opciones">
+                                {discosDuros.map(op => <option key={op} value={op} />)}
+                            </datalist>
+                        </label>
                         <label className="full-width">
                             Código de Inventario (Opcional)
                             <input type="text" name="codigo" value={formData.codigo} onChange={handleChange} placeholder="Ej: EQ-00123" />
@@ -259,6 +323,10 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
                                     <th>Área</th>
                                     <th>Tipo</th>
                                     <th>Marca</th>
+                                    <th>S.O.</th>
+                                    <th>Procesador</th>
+                                    <th>RAM</th>
+                                    <th>Disco Duro</th>
                                     <th>Código</th>
                                     <th>Acciones</th>
                                 </tr>
@@ -274,6 +342,10 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
                                             <td>{equipo.area}</td>
                                             <td>{equipo.tipo}</td>
                                             <td>{equipo.marca}</td>
+                                            <td>{equipo.so || 'N/A'}</td>
+                                            <td>{equipo.procesador || 'N/A'}</td>
+                                            <td>{equipo.ram || 'N/A'}</td>
+                                            <td>{equipo.disco_duro || 'N/A'}</td>
                                             <td>{equipo.codigo || 'N/A'}</td>
                                             <td className="actions-cell">
                                                 <button className="action-btn-sm edit" onClick={() => handleEdit(equipo)}>Editar</button>

@@ -28,7 +28,10 @@ export const NotificationProvider = ({ children }) => {
                     date: item.fecha_actual_de_mantenimiento,
                     realizado: new Date(item.fecha_actual_de_mantenimiento) < new Date(item.fecha_ultimo_mantenimiento),
                     source: 'mantenimiento',
-                    icon: 'maintenance'
+                    icon: 'maintenance',
+                    notas: item.actividades_realizadas
+                        ? (item.observaciones ? `${item.actividades_realizadas}\n\nObservaciones: ${item.observaciones}` : item.actividades_realizadas)
+                        : item.observaciones
                 }));
 
             // Filter out completed ones
@@ -87,7 +90,22 @@ export const NotificationProvider = ({ children }) => {
             closePanel,
             markAsRead,
             clearAll,
-            refresh: fetchNotifications
+            markAsRead,
+            clearAll,
+            refresh: fetchNotifications,
+            logActivity: async (title, details) => {
+                try {
+                    await api.post('/recordatorios', {
+                        title: `Actividad: ${title}`,
+                        date: new Date().toISOString(),
+                        notas: details,
+                        realizado: 0
+                    });
+                    fetchNotifications();
+                } catch (err) {
+                    console.error('Error logging activity:', err);
+                }
+            }
         }}>
             {children}
         </NotificationContext.Provider>

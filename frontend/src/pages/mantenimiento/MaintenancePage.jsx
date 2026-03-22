@@ -7,6 +7,7 @@ import 'moment/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { useNotifications } from '../../context/NotificationContext';
 import {
     FaTimes, FaUser, FaBuilding, FaDesktop, FaTag,
     FaCalendarAlt, FaTools, FaFileAlt, FaSignature, FaSearch,
@@ -32,6 +33,7 @@ const localizer = momentLocalizer(moment);
 
 const MaintenancePage = () => {
     const isMobile = useIsMobile();
+    const { logActivity } = useNotifications();
     const [maintenanceData, setMaintenanceData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -202,6 +204,7 @@ const MaintenancePage = () => {
             const updatedData = response.data.body;
             setDetailedData(updatedData);
             setIsEditing(false);
+            logActivity('Mantenimiento Actualizado', `Se actualizó el mantenimiento para ${updatedData.usuario}`);
             fetchMaintenanceData(); // Actualizamos la lista principal en segundo plano
         } catch (err) {
             console.error("Error saving maintenance data:", err);
@@ -284,6 +287,7 @@ const MaintenancePage = () => {
             await api.post('/mantenimiento', dataToSend);
             setIsAdding(false);
             setNewMaintenanceData(null);
+            logActivity('Mantenimiento Creado', `Se creó un nuevo mantenimiento para ${dataToSend.usuario}`);
             await fetchMaintenanceData();
         } catch (err) {
             console.error("Error creating new maintenance:", err);
@@ -307,6 +311,7 @@ const MaintenancePage = () => {
                 const idToDelete = detailedData.id;
                 await api.delete(`/mantenimiento/${detailedData.id}`);
                 setSelectedItem(null); // Cierra el panel de detalles inmediatamente
+                logActivity('Mantenimiento Eliminado', `Se eliminó el mantenimiento #${idToDelete}`);
                 await fetchMaintenanceData();
             } catch (err) {
                 console.error("Error deleting maintenance data:", err);

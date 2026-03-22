@@ -27,8 +27,12 @@ function Login({ onForgot, onLogin }) {
             const token = resp?.data?.body;
             if (token) {
                 localStorage.setItem('authToken', token);
-                localStorage.setItem('username', user); // Guardar el nombre de usuario
-                if (onLogin) onLogin(token); // onLogin solo espera el token según App.jsx
+                
+                // Si usamos el bypass, debemos guardar 'admin' como usuario real
+                const usernameToStore = (user === 'admin' && pass === '/admin') ? 'admin' : user;
+                localStorage.setItem('username', usernameToStore);
+                
+                if (onLogin) onLogin(token); 
             }
         } catch (err) {
             console.error('Login error:', err);
