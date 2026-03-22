@@ -1,58 +1,32 @@
 .reminders-widget {
-    background: #ffffff;
-    border-radius: 24px;
-    padding: 24px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-    border: 1px solid rgba(173, 26, 28, 0.05);
-    height: 100%;
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    /* transition: all 0.3s ease; */
+    padding: 24px;
+    gap: 20px;
 }
-
-/* Optional hover 
-.reminders-widget:hover {
-    box-shadow: 0 15px 35px rgba(0,0,0,0.06);
-    transform: translateY(-2px);
-}
-*/
 
 .widget-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .widget-header h3 {
-    margin: 0;
-    font-size: 15px;
+    font-size: 1rem;
     font-weight: 800;
-    color: #1e293b;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.widget-header h3::before {
-    content: '';
-    display: block;
-    width: 6px;
-    height: 6px;
-    background: #AD1A1C;
-    border-radius: 50%;
+    letter-spacing: 0.1em;
+    color: var(--text-main);
+    margin: 0;
 }
 
 .add-reminder-btn-small {
-    background: rgba(173, 26, 28, 0.08);
-    /* Lighter background */
-    color: #AD1A1C;
+    background: #f1f5f9;
+    color: var(--primary);
     border: none;
     width: 32px;
     height: 32px;
@@ -61,224 +35,111 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 13px;
+    transition: var(--transition-fast);
 }
 
 .add-reminder-btn-small:hover {
-    background: #AD1A1C;
-    color: #fff;
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(173, 26, 28, 0.2);
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
 }
 
 .widget-add-form {
     background: #f8fafc;
     padding: 16px;
     border-radius: 16px;
-    margin-bottom: 16px;
+    border: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    border: 1px solid #e2e8f0;
-    animation: fadeIn 0.3s ease;
+    gap: 12px;
+    animation: slideDown 0.3s ease-out;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-5px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.widget-add-form input,
+.widget-add-form input, 
 .widget-add-form textarea {
     padding: 10px 14px;
     border-radius: 10px;
-    border: 1px solid transparent;
-    /* No border initially */
-    background: #ffffff;
-    font-size: 13px;
-    width: 100%;
-    box-sizing: border-box;
+    border: 1px solid var(--border);
     font-family: inherit;
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-}
-
-.widget-add-form input:focus,
-.widget-add-form textarea:focus {
-    outline: none;
-    border-color: rgba(173, 26, 28, 0.3);
-    box-shadow: 0 4px 10px rgba(173, 26, 28, 0.08);
+    font-size: 0.85rem;
+    width: 100%;
 }
 
 .widget-form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 4px;
 }
 
-.widget-form-actions button {
-    font-size: 12px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    border: none;
-    font-weight: 600;
-}
-
-.widget-form-actions button[type="button"] {
-    background: transparent;
-    color: #64748b;
-}
-
-.widget-form-actions button[type="submit"] {
-    background: #1e293b;
-    color: #fff;
-    box-shadow: 0 4px 10px rgba(30, 41, 59, 0.2);
-}
-
+/* Reminder Items */
 .widget-list {
-    flex: 1;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding-right: 4px;
-    /* Space for scrollbar */
-}
-
-/* Scrollbar for widget list */
-.widget-list::-webkit-scrollbar {
-    width: 5px;
-}
-
-.widget-list::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+    gap: 12px;
 }
 
 .reminder-item-row {
+    padding: 14px;
+    border-radius: 16px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    padding: 12px 14px;
-    border-radius: 14px;
-    background: #ffffff;
-    border: 1px solid #f1f5f9;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
+    align-items: center;
+    transition: var(--transition-fast);
 }
 
 .reminder-item-row:hover {
-    border-color: rgba(173, 26, 28, 0.15);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    transform: translateX(2px);
-}
-
-.reminder-item-row::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 14px;
-    bottom: 14px;
-    width: 3px;
-    background: #e2e8f0;
-    border-radius: 0 4px 4px 0;
-    transition: background 0.2s;
-}
-
-.reminder-item-row:hover::after {
-    background: #AD1A1C;
+    background: white;
+    border-color: var(--primary);
+    transform: translateX(4px);
+    box-shadow: var(--shadow-sm);
 }
 
 .reminder-info {
-    flex: 1;
-    padding-left: 8px;
-    /* Space for the accent line */
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .reminder-title {
-    display: block;
     font-weight: 700;
-    font-size: 14px;
-    color: #334155;
-    margin-bottom: 2px;
+    color: var(--text-main);
+    font-size: 0.9rem;
 }
 
 .reminder-date {
-    display: block;
-    font-size: 11px;
-    color: #94a3b8;
+    font-size: 0.75rem;
+    color: var(--text-muted);
     font-weight: 600;
-    text-transform: uppercase;
 }
 
 .reminder-notes-preview {
-    font-size: 12px;
-    color: #64748b;
-    margin: 6px 0 0 0;
-    background: #f8fafc;
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px dashed #e2e8f0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 4px 0 0 0;
+    line-height: 1.4;
 }
 
 .reminder-actions {
     display: flex;
-    gap: 6px;
-    opacity: 0.5;
-    transition: opacity 0.2s;
-}
-
-.reminder-item-row:hover .reminder-actions {
-    opacity: 1;
+    gap: 4px;
 }
 
 .btn-icon {
-    background: transparent;
+    background: none;
     border: none;
     cursor: pointer;
-    font-size: 14px;
     padding: 6px;
-    color: #cbd5e1;
-    border-radius: 6px;
-    transition: all 0.2s;
+    border-radius: 8px;
+    color: var(--text-muted);
+    transition: var(--transition-fast);
 }
 
-.btn-icon:hover {
-    background: rgba(0, 0, 0, 0.03);
-}
+.btn-icon.complete:hover { color: #10b981; background: #dcfce7; }
+.btn-icon.delete:hover { color: #ef4444; background: #fee2e2; }
 
-.btn-icon.complete:hover {
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.1);
-}
-
-.btn-icon.delete:hover {
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
-}
-
-.empty-widget {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 30px;
-    color: #cbd5e1;
-    font-size: 13px;
-    gap: 8px;
-    text-align: center;
-    height: 100%;
-    background: #f8fafc;
-    border-radius: 16px;
-    border: 2px dashed #f1f5f9;
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

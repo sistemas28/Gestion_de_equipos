@@ -51,6 +51,7 @@ body,
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid rgba(173, 26, 28, 0.05);
   z-index: 50;
+  height: calc(100vh - 30px);
   overflow: hidden;
 }
 
@@ -77,36 +78,102 @@ body,
   }
 }
 
-.sidebar-brand {
-  font-weight: 900;
-  font-size: 24px;
-  padding: 20px;
-  background: linear-gradient(135deg, #AD1A1C, #8B1517);
-  color: #ffffff;
-  border-radius: 20px;
-  text-align: center;
-  margin-bottom: 30px;
-  box-shadow: 0 8px 25px rgba(173, 26, 28, 0.2);
-  letter-spacing: -0.5px;
-  flex-shrink: 0;
+.sidebar-header {
+  padding: 24px;
+  margin-bottom: 20px;
 }
 
-.sidebar-brand span {
-  color: #FCE821;
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.profile-logout-btn {
+  background: rgba(239, 68, 68, 0.06);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.1);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.profile-logout-btn:hover {
+  background: #ef4444;
+  color: white;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15);
+}
+
+.sidebar-brand-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebar-logo-circle {
+  width: 48px;
+  height: 48px;
+  background: white;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(173, 26, 28, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.sidebar-logo-circle:hover {
+  transform: rotate(5deg) scale(1.1);
+}
+
+.sidebar-mini-logo {
+  max-width: 100%;
+}
+
+.sidebar-brand-text {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #1e293b;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.sidebar-brand-text span {
+  color: #AD1A1C; /* Institutional Red */
+  display: inline-block;
+  background: #FCE821; /* Institutional Yellow background */
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-left: 4px;
 }
 
 .side-nav {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px; /* Más compacto para que quepa todo */
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
 }
 
 .nav-btn {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   color: var(--text-dark);
-  border: none;
-  padding: 16px 20px;
-  border-radius: 16px;
+  padding: 10px 20px; /* Más compacto de altura */
+  border-radius: 12px;
   text-align: left;
   cursor: pointer;
   font-weight: 600;
@@ -115,6 +182,28 @@ body,
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.topbar-logout-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.topbar-logout-btn:hover {
+  background: #ef4444;
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
 }
 
 .nav-btn:hover {
@@ -129,8 +218,39 @@ body,
   box-shadow: 0 8px 20px rgba(173, 26, 28, 0.2);
 }
 
-.nav-btn.active:hover {
-  background: #8B1517;
+.nav-btn:last-child {
+  background: #AD1A1C;
+  color: white;
+  justify-content: center;
+  margin-top: 20px;
+  font-weight: 700;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  margin-top: auto;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.1);
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #ef4444;
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .main-area {
@@ -187,6 +307,31 @@ body,
   width: 100%;
 }
 
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.topbar-brand-mark {
+  display: flex;
+  align-items: center;
+  padding-right: 16px;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.topbar-logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.08));
+}
+
+.topbar-clock {
+  color: #AD1A1C;
+  font-weight: 800;
+}
+
 .logo-row {
   display: flex;
   align-items: center;
@@ -219,7 +364,7 @@ body,
 }
 
 .topbar-logo {
-  height: 44px;
+  height: 50px;
   width: auto;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));

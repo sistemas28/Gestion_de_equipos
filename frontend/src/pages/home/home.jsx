@@ -150,136 +150,173 @@ function DesktopHome({ onBack, username }) {
     const year = now.getFullYear();
 
     return (
-        <div className={`home-shell ${sidebarOpen ? 'sidebar-open' : ''}`}>
-            <aside className="sidebar">
-                <div className="sidebar-brand">GE<span>STIÓN</span></div>
+        <div className={`home-shell ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+            <aside className="sidebar glass">
+                <div className="sidebar-header">
+                    <div className="sidebar-brand-container">
+                        <div className="sidebar-brand-text">
+                            GESTIÓN<span>CORE</span>
+                        </div>
+                    </div>
+                </div>
+                
                 <nav className="side-nav">
-                    <button className={currentView === 'dashboard' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentView('dashboard')}><FaUsers /> DASHBOARD</button>
-                    <button className={currentView === 'mantenimiento' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentView('mantenimiento')}><FaTools /> MANTENIMIENTO</button>
-                    <button className={currentView === 'licenciamiento' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentView('licenciamiento')}><FaFileAlt /> LICENCIAS</button>
-                    <button className={currentView === 'copias' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentView('copias')}><FaDatabase /> COPIAS</button>
-                    <button className={currentView === 'impresoras' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentView('impresoras')}><FaPrint /> IMPRESORAS</button>
-                    <button className={currentView === 'agregarEquipo' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentView('agregarEquipo')}><FaLaptop /> AGREGAR EQUIPO</button>
-                    <button className={currentView === 'historial' ? 'nav-btn active' : 'nav-btn'} onClick={() => setCurrentView('historial')}><FaHistory /> HISTORIAL</button>
+                    {[
+                        { id: 'dashboard', icon: <FaLaptop />, label: 'Dashboard' },
+                        { id: 'mantenimiento', icon: <FaTools />, label: 'Mantenimiento' },
+                        { id: 'licenciamiento', icon: <FaFileAlt />, label: 'Licencias' },
+                        { id: 'copias', icon: <FaDatabase />, label: 'Copias' },
+                        { id: 'impresoras', icon: <FaPrint />, label: 'Impresoras' },
+                        { id: 'agregarEquipo', icon: <FaPlus />, label: 'Nuevo Equipo' },
+                        { id: 'historial', icon: <FaHistory />, label: 'Historial' }
+                    ].map(item => (
+                        <button 
+                            key={item.id} 
+                            className={`nav-btn ${currentView === item.id ? 'active' : ''}`} 
+                            onClick={() => setCurrentView(item.id)}
+                        >
+                            <span className="nav-icon">{item.icon}</span>
+                            <span className="nav-label">{item.label}</span>
+                        </button>
+                    ))}
                 </nav>
+
+                <div className="sidebar-footer">
+                </div>
             </aside>
 
             <main className="main-area">
                 <header className="topbar">
-                    <div className="logo-row">
-                        <button className="hamburger" onClick={() => setSidebarOpen(s => !s)} aria-label="Toggle menu"><FaBars /></button>
-                        <img src={logo} alt="Logo Institucional" className="topbar-logo" />
-                        <div className="org">GESTIÓN DE<br /><span>EQUIPOS</span></div>
+                    <div className="topbar-left">
+                        <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
+                            <FaBars />
+                        </button>
+                        <div className="view-title">
+                            {currentView === 'dashboard' ? 'PANEL DE CONTROL' : currentView.toUpperCase()}
+                        </div>
                     </div>
-                    <div className="topbar-time">{timeStr}</div>
-                    <div className="top-actions">
+                    
+                    <div className="topbar-right">
+                        <div className="topbar-brand-mark">
+                            <img src={logo} alt="Corp Logo" className="topbar-logo-img" />
+                        </div>
+                        <div className="topbar-clock glass">
+                            <span className="clock-time">{timeStr}</span>
+                            <span className="clock-date">{now.toLocaleDateString([], { weekday: 'short' })}</span>
+                        </div>
                         <NotificationBell />
-                        <button className="icon-btn" title="Ajustes de usuario" onClick={() => setShowUserSettings(true)}><FaUser /></button>
-                        <button className="icon-btn" title="Ajustes de la aplicación" onClick={() => setShowAppSettings(true)}><FaCog /></button>
-                        <button className="icon-btn" title="Cerrar sesión" onClick={() => {
-                            localStorage.removeItem('authToken');
-                            localStorage.removeItem('username');
-                            onBack && onBack();
-                        }}><FaSignOutAlt /></button>
+                        <div className="topbar-actions">
+                            <button className="top-action-btn" title="Ajustes de usuario" onClick={() => setShowUserSettings(true)}><FaUser /></button>
+                            <button className="top-action-btn" title="Ajustes de la aplicación" onClick={() => setShowAppSettings(true)}><FaCog /></button>
+                        </div>
+                        <div className="user-profile-mini">
+                            <div className="user-info">
+                                <span className="user-name">{username || 'Usuario'}</span>
+                                <span className="user-role">Personal Técnico</span>
+                            </div>
+                            <div className="user-avatar user-type-normal">
+                                {username?.charAt(0).toUpperCase() || 'U'}
+                            </div>
+                            <button className="profile-logout-btn" title="Cerrar Sesión" onClick={() => {
+                                localStorage.removeItem('authToken');
+                                localStorage.removeItem('username');
+                                onBack && onBack();
+                            }}><FaSignOutAlt /></button>
+                        </div>
                     </div>
                 </header>
 
-                {currentView === 'dashboard' && (
-                    <>
-                        <section className="dashboard-grid-layout">
-                            <div className="hero-left big-card">
-                                <div className="hero-content-flex">
-                                    <div className="hero-greeting">
-                                        <h2>BIENVENIDO,<br /><span className="username">{username || 'USUARIO'}</span></h2>
-                                    </div>
-                                    <div className="quick-actions-dashboard">
-                                        <div className="quick-actions">
-                                            <button className="action-btn" onClick={() => setCurrentView('mantenimiento')}>
-                                                <span className="icon"><FaTools /></span> Mantenimiento
-                                            </button>
-                                            <button className="action-btn" onClick={() => setCurrentView('licenciamiento')}>
-                                                <span className="icon"><FaFileAlt /></span> Licencias
-                                            </button>
-                                            <button className="action-btn" onClick={() => setCurrentView('copias')}>
-                                                <span className="icon"><FaDatabase /></span> Copias
-                                            </button>
-                                        </div>
+                <div className="content-container animate-fade">
+                    {currentView === 'dashboard' && (
+                        <div className="dashboard-content">
+                            <section className="welcome-banner user-banner">
+                                <div className="banner-content">
+                                    <h1>¡Hola, {username}!</h1>
+                                    <p>Bienvenido a tu estación de trabajo. Gestiona tus tareas de mantenimiento y equipos de forma eficiente.</p>
+                                    <div className="banner-actions">
+                                        <button className="btn-banner" onClick={() => setCurrentView('mantenimiento')}>Gestionar Mantenimientos</button>
+                                        <button className="btn-banner secondary" onClick={() => setCurrentView('agregarEquipo')}>Registrar Equipo</button>
                                     </div>
                                 </div>
-                            </div>
-                            <div className="dashboard-widgets-col">
-                                <div className="date-card-mini">
-                                    <div className="day">{day}</div>
-                                    <div>
-                                        <div className="month">{month}</div>
-                                        <div className="year">{year}</div>
-                                    </div>
+                                <div className="banner-illustration">
+                                    <div className="circle circle-1"></div>
+                                    <div className="circle circle-2"></div>
                                 </div>
-                                <RemindersWidget />
-                            </div>
-                        </section>
-                        <section className="progress-section">
-                            <div className="progress-header">
-                                <h3>ESTADÍSTICAS</h3>
-                                <div className="progress-selector">
-                                    <select value={progressPeriod} onChange={(e) => setProgressPeriod(e.target.value)}>
-                                        <option value="month">Mes</option>
-                                        <option value="quarter">Trimestre</option>
-                                        <option value="year">Año</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="progress-panels">
-                                <div className="progress-card">
-                                    <div className="progress-info">
-                                        <div className="progress-card-header">
-                                            <h4>Mantenimientos</h4>
-                                            <span className="progress-percentage">{getMaintenanceStats(maintenanceData, progressPeriod).percentage}%</span>
-                                        </div>
-                                        <div className="progress-bar-container">
-                                            <div
-                                                className="progress-bar-fill maintenance"
-                                                style={{ width: `${getMaintenanceStats(maintenanceData, progressPeriod).percentage}%` }}
-                                            ></div>
-                                        </div>
-                                        <div className="progress-footer">
-                                            <p className="progress-label">Equipos gestionados este periodo</p>
-                                            <span className="progress-count">{getMaintenanceStats(maintenanceData, progressPeriod).completed} / {getMaintenanceStats(maintenanceData, progressPeriod).total}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="progress-card">
-                                    <div className="progress-info">
-                                        <div className="progress-card-header">
-                                            <h4>Copias Seguridad</h4>
-                                            <span className="progress-percentage">{getBackupsStats(backupsData, progressPeriod).percentage}%</span>
-                                        </div>
-                                        <div className="progress-bar-container">
-                                            <div
-                                                className="progress-bar-fill backups"
-                                                style={{ width: `${getBackupsStats(backupsData, progressPeriod).percentage}%` }}
-                                            ></div>
-                                        </div>
-                                        <div className="progress-footer">
-                                            <p className="progress-label">Respaldos verificados</p>
-                                            <span className="progress-count">{getBackupsStats(backupsData, progressPeriod).completed} / {getBackupsStats(backupsData, progressPeriod).total}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                    </>
-                )}
+                            </section>
 
-                {currentView === 'mantenimiento' && <MaintenancePage />}
-                {currentView === 'licenciamiento' && <LicenciamientoPage />}
-                {currentView === 'copias' && <CopiasPage />}
-                {currentView === 'impresoras' && <ImpresorasPage />}
-                {currentView === 'agregarEquipo' && <AgregarEquipoPage onEquipoAgregado={() => setCurrentView('dashboard')} />}
-                {currentView === 'historial' && <HistorialEquiposPage />}
+                            <section className="stats-row">
+                                <div className="stat-card glass hover-lift">
+                                    <div className="stat-header">
+                                        <h3>Progreso Mantenimiento</h3>
+                                        <span className={`stat-badge ${getMaintenanceStats(maintenanceData, progressPeriod).percentage > 50 ? 'success' : 'warning'}`}>
+                                            {getMaintenanceStats(maintenanceData, progressPeriod).percentage}%
+                                        </span>
+                                    </div>
+                                    <div className="stat-body">
+                                        <div className="progress-track">
+                                            <div className="progress-fill maintenance" style={{ width: `${getMaintenanceStats(maintenanceData, progressPeriod).percentage}%` }}></div>
+                                        </div>
+                                        <div className="stat-footer">
+                                            <span>{getMaintenanceStats(maintenanceData, progressPeriod).completed} de {getMaintenanceStats(maintenanceData, progressPeriod).total} completados</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="stat-card glass hover-lift">
+                                    <div className="stat-header">
+                                        <h3>Estado de Backups</h3>
+                                        <span className={`stat-badge ${getBackupsStats(backupsData, progressPeriod).percentage > 80 ? 'success' : 'warning'}`}>
+                                            {getBackupsStats(backupsData, progressPeriod).percentage}%
+                                        </span>
+                                    </div>
+                                    <div className="stat-body">
+                                        <div className="progress-track">
+                                            <div className="progress-fill backups" style={{ width: `${getBackupsStats(backupsData, progressPeriod).percentage}%` }}></div>
+                                        </div>
+                                        <div className="stat-footer">
+                                            <span>{getBackupsStats(backupsData, progressPeriod).completed} backups verificados</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="stat-card date-stat user-date glass">
+                                    <div className="calendar-day">{day}</div>
+                                    <div className="calendar-meta">
+                                        <span className="month">{month}</span>
+                                        <span className="year">{year}</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="dashboard-lower">
+                                <div className="dashboard-grid-footer">
+                                    <RemindersWidget />
+                                    <div className="period-selector-card glass">
+                                        <h4>Vista de Estadísticas</h4>
+                                        <p>Cambia el rango de tiempo de los indicadores.</p>
+                                        <div className="custom-select-wrap">
+                                            <select value={progressPeriod} onChange={(e) => setProgressPeriod(e.target.value)}>
+                                                <option value="month">Este Mes</option>
+                                                <option value="quarter">Este Trimestre</option>
+                                                <option value="year">Este Año</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    )}
+
+                    {currentView === 'mantenimiento' && <MaintenancePage />}
+                    {currentView === 'licenciamiento' && <LicenciamientoPage />}
+                    {currentView === 'copias' && <CopiasPage />}
+                    {currentView === 'impresoras' && <ImpresorasPage />}
+                    {currentView === 'agregarEquipo' && <AgregarEquipoPage onEquipoAgregado={() => setCurrentView('dashboard')} />}
+                    {currentView === 'historial' && <HistorialEquiposPage />}
+                </div>
             </main>
 
-            {(showUserSettings || showAppSettings) && <div className="backdrop" onClick={() => { setShowUserSettings(false); setShowAppSettings(false); }} />}
+            {(showUserSettings || showAppSettings) && <div className="modal-overlay glass" onClick={() => { setShowUserSettings(false); setShowAppSettings(false); }} />}
 
             <NotificationPanel />
 
@@ -288,5 +325,6 @@ function DesktopHome({ onBack, username }) {
         </div>
     );
 }
+
 
 export default Home;

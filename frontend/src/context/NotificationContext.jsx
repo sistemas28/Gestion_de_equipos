@@ -90,8 +90,6 @@ export const NotificationProvider = ({ children }) => {
             closePanel,
             markAsRead,
             clearAll,
-            markAsRead,
-            clearAll,
             refresh: fetchNotifications,
             logActivity: async (title, details) => {
                 try {

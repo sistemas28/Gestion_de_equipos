@@ -184,131 +184,186 @@ function DesktopAdminHome({ onBack, username }) {
 
     return (
         <div className={`home-shell ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-            <aside className="sidebar">
-                <div className="sidebar-brand">AD<span>MIN</span></div>
+            <aside className="sidebar glass">
+                <div className="sidebar-header">
+                    <div className="sidebar-brand-container">
+                        <div className="sidebar-brand-text">
+                            ADMIN<span>CORE</span>
+                        </div>
+                    </div>
+                </div>
+                
                 <nav className="side-nav">
                     {[
-                        { id: 'dashboard', icon: <FaLaptop />, label: 'DASHBOARD' },
-                        { id: 'userManagement', icon: <FaUsers />, label: 'USUARIOS' },
-                        { id: 'mantenimiento', icon: <FaTools />, label: 'MANTENIMIENTO' },
-                        { id: 'historialEquipos', icon: <FaHistory />, label: 'HISTORIAL' },
-                        { id: 'licenciamiento', icon: <FaFileAlt />, label: 'LICENCIAMIENTO' },
-                        { id: 'copias', icon: <FaDatabase />, label: 'COPIAS SEGURIDAD' },
-                        { id: 'impresoras', icon: <FaPrint />, label: 'IMPRESORAS' },
-                        { id: 'agregarEquipo', icon: <FaPlus />, label: 'AGREGAR EQUIPO' }
+                        { id: 'dashboard', icon: <FaLaptop />, label: 'Dashboard' },
+                        { id: 'userManagement', icon: <FaUsers />, label: 'Usuarios' },
+                        { id: 'mantenimiento', icon: <FaTools />, label: 'Mantenimiento' },
+                        { id: 'historialEquipos', icon: <FaHistory />, label: 'Historial' },
+                        { id: 'licenciamiento', icon: <FaFileAlt />, label: 'Licencias' },
+                        { id: 'copias', icon: <FaDatabase />, label: 'Backups' },
+                        { id: 'impresoras', icon: <FaPrint />, label: 'Impresoras' },
+                        { id: 'agregarEquipo', icon: <FaPlus />, label: 'Nuevo Equipo' }
                     ].map(item => (
-                        <button key={item.id} className={`nav-btn ${currentAdminView === item.id ? 'active' : ''}`} onClick={() => setCurrentAdminView(item.id)}>
-                            {item.icon} {item.label}
+                        <button 
+                            key={item.id} 
+                            className={`nav-btn ${currentAdminView === item.id ? 'active' : ''}`} 
+                            onClick={() => setCurrentAdminView(item.id)}
+                        >
+                            <span className="nav-icon">{item.icon}</span>
+                            <span className="nav-label">{item.label}</span>
                         </button>
                     ))}
                 </nav>
+
+                <div className="sidebar-footer">
+                </div>
             </aside>
 
-            <main className="main-area transition-all">
-                <header className="topbar animate-in">
-                    <div className="logo-row">
-                        <button className="icon-btn" onClick={() => setSidebarOpen(!sidebarOpen)} title="Menu"><FaBars /></button>
-                        <img src={logo} alt="Logo" className="topbar-logo" />
-                        <div className="org">ADMINISTRACIÓN<br /><span>EQUIPOS</span></div>
+            <main className="main-area">
+                <header className="topbar">
+                    <div className="topbar-left">
+                        <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
+                            <FaBars />
+                        </button>
+                        <div className="view-title">
+                            {currentAdminView === 'dashboard' ? 'Resumen Principal' : currentAdminView.toUpperCase()}
+                        </div>
                     </div>
-                    <div className="top-actions">
-                        <div className="topbar-time" style={{fontWeight: 700, fontSize: '13px', color: 'var(--text-muted)'}}>{now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+                    
+                    <div className="topbar-right">
+                        <div className="topbar-brand-mark">
+                            <img src={logo} alt="Corp Logo" className="topbar-logo-img" />
+                        </div>
+                        <div className="topbar-clock glass">
+                            <span className="clock-time">{now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}</span>
+                            <span className="clock-date">{now.toLocaleDateString([], { weekday: 'short' })}</span>
+                        </div>
                         <NotificationBell />
-                        <button className="icon-btn" title="Cerrar sesión" onClick={handleLogout}><FaSignOutAlt /></button>
+                        <div className="user-profile-mini">
+                            <div className="user-info">
+                                <span className="user-name">{username || 'Admin'}</span>
+                                <span className="user-role">Super Administrador</span>
+                            </div>
+                            <div className="user-avatar-circle">
+                                {username ? username.charAt(0).toUpperCase() : 'A'}
+                            </div>
+                            <button className="profile-logout-btn" onClick={handleLogout} title="Cerrar Sesión">
+                                <FaSignOutAlt />
+                            </button>
+                        </div>
                     </div>
                 </header>
 
-                <div className="animate-in" style={{ animationDelay: '0.1s' }}>
+                <div className="content-container animate-fade">
                     {currentAdminView === 'dashboard' && (
-                        <>
-                            <section className="dashboard-grid-layout">
-                                <div className="hero-left hover-lift">
-                                    <div className="hero-greeting">
-                                        <h2>BIENVENIDO,<br /><span style={{color: 'var(--accent)'}}>ADMIN</span></h2>
-                                        <p>Centro de control para la infraestructura técnica.</p>
-                                        <div className="quick-actions">
-                                            <button className="action-btn transition-all" onClick={() => setCurrentAdminView('userManagement')}>USUARIOS</button>
-                                            <button className="action-btn transition-all" onClick={() => setCurrentAdminView('mantenimiento')}>MANTENIMIENTO</button>
-                                            <button className="action-btn transition-all" onClick={() => setCurrentAdminView('licenciamiento')}>LICENCIAS</button>
-                                            <button className="action-btn transition-all" onClick={() => setCurrentAdminView('agregarEquipo')}>+ EQUIPO</button>
-                                        </div>
+                        <div className="dashboard-view">
+                            <section className="welcome-banner">
+                                <div className="banner-content">
+                                    <h1>¡Hola, {username}!</h1>
+                                    <p>Aquí tienes el estado actual de tu infraestructura y equipos gestionados.</p>
+                                    <div className="banner-actions">
+                                        <button className="btn-banner" onClick={() => setCurrentAdminView('agregarEquipo')}>+ Agregar Equipo</button>
+                                        <button className="btn-banner secondary" onClick={() => setCurrentAdminView('mantenimiento')}>Ver Mantenimientos</button>
                                     </div>
                                 </div>
-                                <div style={{display:'flex', flexDirection:'column', gap:'15px'}}>
-                                    <div className="progress-card" style={{background:'#0f172a', color:'white'}}>
-                                        <span style={{fontSize:'12px', fontWeight:700, opacity:0.6}}>FECHA ACTUAL</span>
-                                        <div style={{fontSize:'28px', fontWeight:800, color:'var(--accent)'}}>{now.getDate()}</div>
-                                        <div style={{fontSize:'14px', fontWeight:700}}>{now.toLocaleDateString([], { month: 'long', year: 'numeric' }).toUpperCase()}</div>
-                                    </div>
-                                    <RemindersWidget />
+                                <div className="banner-illustration">
+                                    <div className="circle circle-1"></div>
+                                    <div className="circle circle-2"></div>
                                 </div>
                             </section>
 
-                            <section className="progress-section">
-                                <div style={{display:'flex', justifyContent:'space-between', marginBottom:'15px', alignItems:'center'}}>
-                                    <h3 style={{margin:0, fontSize:'14px', fontWeight: 800, letterSpacing: '1px'}}>ESTADÍSTICAS DEL PERIODO</h3>
-                                    <select value={progressPeriod} onChange={(e) => setProgressPeriod(e.target.value)} style={{padding:'5px 10px', fontSize:'12px', fontWeight: 700, borderRadius: '8px'}}>
-                                        <option value="month">ESTE MES</option>
-                                        <option value="quarter">TRIMESTRE</option>
-                                        <option value="year">AÑO COMPLETO</option>
-                                    </select>
-                                </div>
-                                <div className="progress-panels">
-                                    <div className="progress-card hover-lift">
-                                        <div style={{display:'flex', justifyContent:'space-between', fontWeight:800, marginBottom: '10px'}}>
-                                            <span style={{fontSize:'13px'}}>MANTENIMIENTOS</span>
-                                            <span style={{color:'var(--primary)'}}>{mStats.percentage}%</span>
+                            <section className="stats-row">
+                                <div className="stat-card glass hover-lift">
+                                    <div className="stat-header">
+                                        <h3>Mantenimientos</h3>
+                                        <span className={`stat-badge ${mStats.percentage > 70 ? 'success' : 'warning'}`}>{mStats.percentage}%</span>
+                                    </div>
+                                    <div className="stat-body">
+                                        <div className="progress-track">
+                                            <div className="progress-fill maintenance" style={{ width: `${mStats.percentage}%` }}></div>
                                         </div>
-                                        <div className="progress-bar-container">
-                                            <div className="progress-bar-fill maintenance" style={{ width: `${mStats.percentage}%` }}></div>
-                                        </div>
-                                        <div style={{display:'flex', justifyContent:'space-between', fontSize:'11px', fontWeight: 600, color:'var(--text-muted)'}}>
-                                            <span>EQUIPOS GESTIONADOS</span>
-                                            <span>{mStats.completed} / {mStats.total}</span>
+                                        <div className="stat-footer">
+                                            <span>{mStats.completed} completados de {mStats.total}</span>
                                         </div>
                                     </div>
-                                    <div className="progress-card hover-lift">
-                                        <div style={{display:'flex', justifyContent:'space-between', fontWeight:800, marginBottom: '10px'}}>
-                                            <span style={{fontSize:'13px'}}>COPIAS SEGURIDAD</span>
-                                            <span style={{color:'#10b981'}}>{bStats.percentage}%</span>
+                                </div>
+
+                                <div className="stat-card glass hover-lift">
+                                    <div className="stat-header">
+                                        <h3>Copias de Seguridad</h3>
+                                        <span className={`stat-badge ${bStats.percentage > 90 ? 'success' : 'warning'}`}>{bStats.percentage}%</span>
+                                    </div>
+                                    <div className="stat-body">
+                                        <div className="progress-track">
+                                            <div className="progress-fill backups" style={{ width: `${bStats.percentage}%` }}></div>
                                         </div>
-                                        <div className="progress-bar-container">
-                                            <div className="progress-bar-fill backups" style={{ width: `${bStats.percentage}%` }}></div>
+                                        <div className="stat-footer">
+                                            <span>{bStats.completed} exitosas de {bStats.total}</span>
                                         </div>
-                                        <div style={{display:'flex', justifyContent:'space-between', fontSize:'11px', fontWeight: 600, color:'var(--text-muted)'}}>
-                                            <span>RESPALDOS VERIFICADOS</span>
-                                            <span>{bStats.completed} / {bStats.total}</span>
-                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="stat-card date-stat glass">
+                                    <div className="calendar-day">{now.getDate()}</div>
+                                    <div className="calendar-meta">
+                                        <span className="month">{now.toLocaleDateString([], { month: 'long' }).toUpperCase()}</span>
+                                        <span className="year">{now.getFullYear()}</span>
                                     </div>
                                 </div>
                             </section>
-                        </>
+
+                            <section className="dashboard-lower">
+                                <RemindersWidget />
+                            </section>
+                        </div>
                     )}
 
                     {currentAdminView === 'userManagement' && (
-                        <div className="users-list">
-                            <header style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
-                                <div>
-                                    <h2 style={{margin:0, fontSize:'20px'}}>Gestión de Usuarios</h2>
-                                    <p style={{margin:0, fontSize:'13px', color:'var(--text-muted)'}}>Control de acceso y perfiles de sistema.</p>
+                        <div className="view-card card-premium">
+                            <header className="view-card-header">
+                                <div className="header-info">
+                                    <h2>Gestión de Usuarios</h2>
+                                    <p>Control de acceso y perfiles del sistema administrativo.</p>
                                 </div>
-                                <button className="btn primary transition-all" onClick={() => { setEditingUser(null); setFormData({ nombre: '', correo: '', usuario: '', password: '', confirmPassword: '' }); setIsModalOpen(true); }}>
-                                    + Nuevo Usuario
+                                <button className="btn-primary" onClick={() => { setEditingUser(null); setFormData({ nombre: '', correo: '', usuario: '', password: '', confirmPassword: '' }); setIsModalOpen(true); }}>
+                                    <FaPlus /> Nuevo Usuario
                                 </button>
                             </header>
-                            {success && <div className="form-message success">{success}</div>}
-                            <div className="table-responsive">
-                                <table>
-                                    <thead><tr><th>ID</th><th>Nombre</th><th>Usuario</th><th style={{textAlign:'right'}}>Acciones</th></tr></thead>
+                            
+                            {success && (
+                                <div className="alert success animate-slide-up">
+                                    <FaCheck /> {success}
+                                </div>
+                            )}
+
+                            <div className="table-wrapper">
+                                <table className="modern-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nombre Completo</th>
+                                            <th>Usuario</th>
+                                            <th>Estado</th>
+                                            <th className="actions-col">Acciones</th>
+                                        </tr>
+                                    </thead>
                                     <tbody>
                                         {users.map(u => (
                                             <tr key={u.id}>
-                                                <td>{u.id}</td>
-                                                <td style={{fontWeight:600}}>{u.nombre}</td>
-                                                <td><span style={{background:'var(--bg-app)', padding:'4px 8px', borderRadius:'6px'}}>{u.usuario}</span></td>
-                                                <td style={{textAlign:'right'}}>
-                                                    <button className="icon-btn" style={{display:'inline-flex', marginRight:'8px'}} onClick={() => { setEditingUser(u); setFormData({ nombre: u.nombre, correo: u.correo, usuario: u.usuario, password: u.password || '', confirmPassword: u.password || '' }); setIsModalOpen(true); }}><FaEye /></button>
-                                                    <button className="icon-btn" style={{display:'inline-flex', color:'#ef4444'}} onClick={() => handleDeleteUser(u.id, u.nombre)}><FaSignOutAlt /></button>
+                                                <td><span className="id-pill">#{u.id}</span></td>
+                                                <td>
+                                                    <div className="user-cell">
+                                                        <div className="user-circle">{u.nombre.charAt(0)}</div>
+                                                        <span className="user-name-text">{u.nombre}</span>
+                                                    </div>
+                                                </td>
+                                                <td><code className="user-tag">@{u.usuario}</code></td>
+                                                <td><span className="status-pill active">Activo</span></td>
+                                                <td className="actions-col">
+                                                    <div className="action-btns">
+                                                        <button className="action-btn-mini edit" title="Editar" onClick={() => { setEditingUser(u); setFormData({ nombre: u.nombre, correo: u.correo, usuario: u.usuario, password: u.password || '', confirmPassword: u.password || '' }); setIsModalOpen(true); }}><FaEye /></button>
+                                                        <button className="action-btn-mini delete" title="Eliminar" onClick={() => handleDeleteUser(u.id, u.nombre)}><FaSignOutAlt /></button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -328,32 +383,46 @@ function DesktopAdminHome({ onBack, username }) {
             </main>
 
             {isModalOpen && (
-                <div className="modal-backdrop">
-                    <div className="modal-content animate-in">
-                        <h2 style={{margin:'0 0 20px 0'}}>{editingUser ? 'Editar' : 'Nuevo'} Usuario</h2>
-                        <form onSubmit={handleModalSubmit}>
-                            {error && <div className="form-message error">{error}</div>}
-                            <div className="form-grid">
-                                <label>Nombre completo <input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} required /></label>
-                                <label>Email <input type="email" name="correo" value={formData.correo} onChange={handleInputChange} required /></label>
-                                <label>Nombre de usuario <input type="text" name="usuario" value={formData.usuario} onChange={handleInputChange} required /></label>
-                                <label>Contraseña 
-                                    <div className="input-with-icon">
-                                        <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleInputChange} required={!editingUser} />
-                                        <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <FaEyeSlash /> : <FaEye />}</button>
+                <div className="modal-overlay glass">
+                    <div className="modal-container card-premium animate-slide-up">
+                        <header className="modal-header">
+                            <h2>{editingUser ? 'Editar Perfil de Usuario' : 'Crear Nuevo Usuario'}</h2>
+                            <button className="close-modal" onClick={() => setIsModalOpen(false)}>×</button>
+                        </header>
+                        <form onSubmit={handleModalSubmit} className="modal-form">
+                            {error && <div className="alert error">{error}</div>}
+                            <div className="form-grid-modern">
+                                <div className="input-group">
+                                    <label>Nombre Completo</label>
+                                    <input type="text" name="nombre" value={formData.nombre} onChange={handleInputChange} required placeholder="Nombre Apellido" />
+                                </div>
+                                <div className="input-group">
+                                    <label>Email Institucional</label>
+                                    <input type="email" name="correo" value={formData.correo} onChange={handleInputChange} required placeholder="usuario@institucion.com" />
+                                </div>
+                                <div className="input-group full-width">
+                                    <label>Nombre de Usuario</label>
+                                    <input type="text" name="usuario" value={formData.usuario} onChange={handleInputChange} required placeholder="ej. jdoe01" />
+                                </div>
+                                <div className="input-group">
+                                    <label>Contraseña</label>
+                                    <div className="input-icon-wrap">
+                                        <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleInputChange} required={!editingUser} placeholder="••••••••" />
+                                        <button type="button" className="icon-toggle" onClick={() => setShowPassword(!showPassword)}>{showPassword ? <FaEyeSlash /> : <FaEye />}</button>
                                     </div>
-                                </label>
-                                <label>Confirmar contraseña 
-                                    <div className="input-with-icon">
-                                        <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} required={!editingUser} />
-                                        <button type="button" className="eye-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>{showConfirmPassword ? <FaEyeSlash /> : <FaEye />}</button>
+                                </div>
+                                <div className="input-group">
+                                    <label>Confirmar Contraseña</label>
+                                    <div className="input-icon-wrap">
+                                        <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} required={!editingUser} placeholder="••••••••" />
+                                        <button type="button" className="icon-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>{showConfirmPassword ? <FaEyeSlash /> : <FaEye />}</button>
                                     </div>
-                                </label>
+                                </div>
                             </div>
-                            <div className="form-actions" style={{display:'flex', gap:'10px', marginTop:'20px'}}>
-                                <button type="submit" className="btn primary" style={{flex:1}}>Guardar Cambios</button>
-                                <button type="button" className="btn" style={{background:'var(--border)', color:'var(--text-main)', border:'none'}} onClick={() => setIsModalOpen(false)}>Cerrar</button>
-                            </div>
+                            <footer className="modal-footer">
+                                <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>Cancelar</button>
+                                <button type="submit" className="btn-primary">Guardar Cambios</button>
+                            </footer>
                         </form>
                     </div>
                 </div>
@@ -362,5 +431,6 @@ function DesktopAdminHome({ onBack, username }) {
         </div>
     );
 }
+
 
 export default AdminHome;

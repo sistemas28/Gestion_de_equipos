@@ -42,83 +42,97 @@ function Login({ onForgot, onLogin }) {
     };
 
     return (
-        <main className="page login-page">
-            <section className="login-wrapper" aria-labelledby="login-heading">
-                <div className="brand">
-                    <img src={logo} alt="Logo Institucional" className="login-logo" />
-                    <h1 id="login-heading">Gestión de equipos</h1>
-                    <p className="subtitle">Accede a tu panel</p>
+        <main className="login-page animate-fade">
+            <div className="login-background-blobs">
+                <div className="blob blob-1"></div>
+                <div className="blob blob-2"></div>
+            </div>
+            
+            <section className="login-container glass">
+                <div className="login-sidebar">
+                    <div className="sidebar-content">
+                        <div className="sidebar-logo-container">
+                            <img src={logo} alt="Logo Institucional" className="sidebar-logo" />
+                        </div>
+                        <div className="sidebar-text">
+                            <h1>Gestión de Equipos</h1>
+                            <p>Sistema centralizado de inventario y mantenimiento institucional.</p>
+                        </div>
+                    </div>
+                    <div className="sidebar-footer">
+                        <small>© {new Date().getFullYear()} Gestión Informática</small>
+                    </div>
                 </div>
 
-                <form className="login-card" onSubmit={onSubmit} aria-describedby="desc">
-                    {error && <div className="form-message error">{error}</div>} {/* Muestra el mensaje de error */}
-
-                    <p id="desc" className="sr-only">Ingresa tu usuario y contraseña para acceder</p>
-
-                    <div className="field">
-                        <label htmlFor="input-user" className="label-text">Usuario</label>
-                        <div className="input-wrap">
-                            <input
-                                id="input-user"
-                                value={user}
-                                onChange={(e) => setUser(e.target.value)}
-                                type="text"
-                                placeholder="Nombre de usuario"
-                                required
-                                autoComplete="username"
-                            />
-                        </div>
+                <div className="login-form-side">
+                    <div className="form-header">
+                        <h2>¡Bienvenido de nuevo!</h2>
+                        <p>Ingresa tus credenciales para continuar</p>
                     </div>
 
-                    <div className="field">
-                        <label htmlFor="input-pass" className="label-text">Contraseña</label>
-                        <div className="input-wrap" style={{ position: 'relative' }}>
-                            <input
-                                id="input-pass"
-                                value={pass}
-                                onChange={(e) => setPass(e.target.value)}
-                                type={showPassword ? "text" : "password"}
-                                placeholder="********"
-                                required
-                                autoComplete="current-password"
-                                style={{ paddingRight: '1rem' }}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                style={{
-                                    position: 'absolute',
-                                    right: '10px',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    fontSize: '1.2rem',
-                                    color: '#666',
-                                    display: 'flex',
-                                    alignItems: 'center'
-                                }}
-                                title={showPassword ? "Ocultar contraseña" : "Ver contraseña"}
-                            >
-                                {showPassword ? <FaEyeSlash /> : <FaEye />}
-                            </button>
-                        </div>
-                    </div>
+                    <form className="login-form" onSubmit={onSubmit}>
+                        {error && (
+                            <div className="form-alert error animate-slide-up">
+                                <span className="alert-icon">⚠️</span>
+                                <p>{error}</p>
+                            </div>
+                        )}
 
-                    <div className="actions">
-                        <button className="btn primary" type="submit">
-                            Iniciar sesión
+                        <div className="form-group">
+                            <label htmlFor="input-user">Usuario</label>
+                            <div className="input-with-icon">
+                                <input
+                                    id="input-user"
+                                    value={user}
+                                    onChange={(e) => setUser(e.target.value)}
+                                    type="text"
+                                    placeholder="ej. admin_user"
+                                    required
+                                    autoComplete="username"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="input-pass">Contraseña</label>
+                            <div className="input-with-icon">
+                                <input
+                                    id="input-pass"
+                                    value={pass}
+                                    onChange={(e) => setPass(e.target.value)}
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    required
+                                    autoComplete="current-password"
+                                />
+                                <button
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    title={showPassword ? "Ocultar contraseña" : "Ver contraseña"}
+                                >
+                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="form-options">
+                            <label className="checkbox-container">
+                                <input type="checkbox" />
+                                <span className="checkmark"></span>
+                                Recordarme
+                            </label>
+                        </div>
+
+                        <button className="btn-primary login-submit" type="submit">
+                            Iniciar Sesión
                         </button>
-                    </div>
-                </form>
-
-                <footer className="login-footer">
-                    <small>© {new Date().getFullYear()} Gestión Informática</small><div className='Logoinstitucional'></div>
-                </footer>
+                    </form>
+                </div>
             </section>
         </main>
     );
 }
+
 
 export default Login;

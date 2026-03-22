@@ -1,102 +1,206 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
 :root {
+  /* Core Palette - Premium Red & Yellow */
   --primary: #AD1A1C;
-  --primary-light: rgba(173, 26, 28, 0.1);
+  --primary-rgb: 173, 26, 28;
+  --primary-light: #C52A2C;
   --primary-dark: #8B1517;
   --accent: #FCE821;
+  --accent-rgb: 252, 232, 33;
+  --accent-light: #FFF15E;
   --accent-dark: #D4C11C;
+
+  /* Neutral Scale */
   --surface: #ffffff;
-  --bg-app: #f8fafc;
-  --text-main: #1e293b;
+  --bg-app: #f1f5f9;
+  --text-main: #0f172a;
   --text-muted: #64748b;
+  --text-inverse: #ffffff;
   --border: #e2e8f0;
+  --border-focus: #cbd5e1;
+
+  /* Functional Colors */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+
+  /* Elevation & Effects */
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 20px;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 15px 30px rgba(173, 26, 28, 0.08);
-  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+  
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-premium: 0 25px 50px -12px rgba(173, 26, 28, 0.15);
+
+  --font-main: 'Outfit', 'Inter', -apple-system, system-ui, sans-serif;
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-blur: blur(12px);
 }
+
+
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  padding: 0;
   font-family: var(--font-main);
   background-color: var(--bg-app);
   color: var(--text-main);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
   min-height: 100vh;
 }
 
-/* Specific Transitions for UI performance */
-.transition-all {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-button, a {
-  transition: all 0.2s ease;
-  text-decoration: none;
-}
-
-button:active {
-  transform: scale(0.96);
-}
-
-/* Custom Scrollbar (Light) */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg-app);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--bg-app);
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
 
-/* Animations (Minimalist) */
+/* Shared UI Utilities */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+}
+
+.card-premium {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  transition: var(--transition-base);
+}
+
+.card-premium:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--text-inverse);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px 0 rgba(173, 26, 28, 0.3);
+}
+
+.btn-primary:hover {
+  background: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(173, 26, 28, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--primary);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  border: 2px solid var(--primary);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.btn-secondary:hover {
+  background: var(--primary-light);
+  color: var(--text-inverse);
+  border-color: var(--primary-light);
+}
+
+/* Link animations */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-light);
+}
+
+/* Inputs */
+input, select, textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: var(--transition-fast);
+  background: var(--surface);
+  color: var(--text-main);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(173, 26, 28, 0.1);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-in {
-  animation: slideUp 0.4s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+.animate-fade {
+  animation: fadeIn var(--transition-base) ease-out forwards;
 }
 
-/* Forms */
-input, select, textarea {
-  font-family: inherit;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-  border-radius: var(--radius-md);
-  padding: 10px 14px;
-  font-size: 14px;
-  color: var(--text-main);
-  outline: none;
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-input:focus, select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-light);
-}
-
+/* Accessibility */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -105,5 +209,6 @@ input:focus, select:focus {
   margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
-  border: 0;
+  white-space: nowrap;
+  border-width: 0;
 }

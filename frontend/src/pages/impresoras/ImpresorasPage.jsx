@@ -107,10 +107,10 @@ function ImpresorasPage() {
 
     return (
         <div className="impresoras-page">
-            <header className="page-header">
-                <h1>Gestión de Impresoras</h1>
+            <div className="page-header">
+                <h2>Gestión de Impresoras</h2>
                 <button className="action-btn save" onClick={() => handleOpenModal()}>Agregar Impresora</button>
-            </header>
+            </div>
 
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
