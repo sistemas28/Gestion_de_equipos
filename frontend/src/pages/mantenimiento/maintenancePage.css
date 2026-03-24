@@ -309,10 +309,10 @@
 
 .details-panel {
     background: #ffffff;
-    border-radius: 32px;
-    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.2);
-    max-width: 1000px;
-    width: 100%;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    max-width: 98vw;
+    width: 98vw;
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
@@ -1350,4 +1350,747 @@
 
 .p-4 {
     padding: 16px;
+}
+
+/* ===============================================
+   NUEVOS ESTILOS PARA EL MODAL REDISEÑADO
+   =============================================== */
+
+/* Encabezado premium */
+.details-header-premium {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    border-bottom: 2px solid rgba(173, 26, 28, 0.1);
+    padding: 24px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.maintenance-header-info {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.maintenance-id-badge {
+    background: linear-gradient(135deg, #AD1A1C, #8B1517);
+    color: #FCE821;
+    padding: 12px 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: 0 4px 15px rgba(173, 26, 28, 0.3);
+}
+
+.id-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+}
+
+.id-value {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+}
+
+.maintenance-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.user-name {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.user-area {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.maintenance-status {
+    margin-left: auto;
+}
+
+.status-badge-modal {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge-modal.pendiente {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.status-badge-modal.en-ejecución {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+}
+
+.status-badge-modal.terminado {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #22c55e;
+}
+
+/* Acciones premium */
+.details-actions-premium {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.action-btn-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn-premium.edit {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.action-btn-premium.edit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+.action-btn-premium.delete {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.action-btn-premium.delete:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+}
+
+.action-btn-premium.download {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.action-btn-premium.download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.action-btn-premium.save {
+    background: linear-gradient(135deg, #8B1517, #AD1A1C);
+    color: #FCE821;
+}
+
+.action-btn-premium.save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(173, 26, 28, 0.4);
+}
+
+.action-btn-premium.cancel {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+}
+
+.action-btn-premium.cancel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(107, 114, 128, 0.4);
+}
+
+/* Contenido principal premium */
+.details-content-premium {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    padding: 20px 24px;
+}
+
+.details-main {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Secciones de información premium */
+.info-section-premium {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid rgba(173, 26, 28, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+}
+
+.info-section-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(173, 26, 28, 0.08);
+}
+
+.section-header-premium {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.section-icon-premium {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.section-header-premium h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1a202c;
+    letter-spacing: -0.5px;
+}
+
+/* Grilla de información premium */
+.info-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.info-card-premium {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    border: 1px solid rgba(173, 26, 28, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.info-card-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(173, 26, 28, 0.08);
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #AD1A1C, #8B1517);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #6B1012;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #000000;
+}
+
+/* Formularios premium */
+.form-section-premium {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-row-premium {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+.form-label-premium {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.form-label-premium input {
+    padding: 12px 16px;
+    border: 2px solid rgba(173, 26, 28, 0.1);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    background: white;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.form-label-premium input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(173, 26, 28, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Formulario de servicio premium */
+.service-form-premium {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group-premium {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group-premium label {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.form-group-premium textarea {
+    padding: 14px 16px;
+    border: 2px solid rgba(173, 26, 28, 0.1);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    background: white;
+    resize: vertical;
+    min-height: 100px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.form-group-premium textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(173, 26, 28, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Detalles del servicio premium */
+.service-details-premium {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.service-item-premium {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    border: 1px solid rgba(173, 26, 28, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.service-item-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(173, 26, 28, 0.08);
+}
+
+.service-label {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #AD1A1C;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.service-content {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #000000;
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 4px solid #AD1A1C;
+}
+
+.service-content.obs {
+    border-left-color: var(--accent-color);
+    background: #fffcf0;
+    border-right: 1px solid rgba(252, 232, 33, 0.5);
+}
+
+/* Formulario de fechas premium */
+.dates-form-premium {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Grilla de fechas premium */
+.dates-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+}
+
+.date-card-premium {
+    background: white;
+    border: 1px solid rgba(173, 26, 28, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.date-card-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(173, 26, 28, 0.08);
+}
+
+.date-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #AD1A1C, #8B1517);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    margin: 0 auto 8px auto;
+}
+
+.date-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.date-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #6B1012;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.date-value {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #000000;
+}
+
+.date-card-premium.elaboration {
+    border-color: #AD1A1C;
+    background: #ffffff;
+}
+
+.date-card-premium.execution {
+    border-color: #8B1517;
+    background: #AD1A1C;
+    color: #FFFFFF;
+}
+
+.date-card-premium.execution .date-label,
+.date-card-premium.execution .date-value {
+    color: #FFFFFF;
+}
+
+.date-card-premium.last {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.date-card-premium.next {
+    border-color: #E6D41E;
+    background: #FCE821;
+    color: #AD1A1C;
+}
+
+/* Barra lateral premium */
+.details-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.sidebar-section-premium {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid rgba(173, 26, 28, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+}
+
+.sidebar-section-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(173, 26, 28, 0.08);
+}
+
+.calendar-container-premium {
+    padding: 16px;
+    border: 2px solid #AD1A1C;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.calendar-container-premium:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* Formulario de firmas premium */
+.signatures-form-premium {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.signature-options-premium {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.signature-options-premium label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: #1e293b;
+    cursor: pointer;
+}
+
+.signature-inputs-premium {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.signature-inputs-premium input {
+    padding: 12px 16px;
+    border: 2px solid rgba(173, 26, 28, 0.1);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.signature-inputs-premium input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(173, 26, 28, 0.1);
+    transform: translateY(-1px);
+}
+
+.signature-upload-premium {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.upload-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.upload-group label {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.upload-group input[type="file"] {
+    padding: 8px;
+    border: 2px solid rgba(173, 26, 28, 0.1);
+    border-radius: 8px;
+    background: white;
+    font-size: 0.9rem;
+}
+
+/* Grilla de firmas premium */
+.signatures-grid-premium {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.signature-card-premium {
+    background: white;
+    border: 1px solid rgba(173, 26, 28, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.signature-card-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(173, 26, 28, 0.08);
+}
+
+.signature-header-premium {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.signature-icon-premium {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+.signature-header-premium span {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #AD1A1C;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.signature-box-premium {
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 2px dashed #cbd5e1;
+    padding: 10px;
+    background: #fafafa;
+    border-radius: 4px;
+}
+
+.signature-display-premium {
+    max-height: 60px;
+    max-width: 100%;
+    object-fit: contain;
+    filter: contrast(1.1) brightness(0.9);
+}
+
+.signature-text-premium {
+    font-family: 'Georgia', cursive, serif;
+    font-size: 1.3rem;
+    color: #0f172a;
+    font-weight: 600;
+    margin: 0;
+}
+
+.muted-premium {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Mensaje de error premium */
+.error-message-premium {
+    padding: 24px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 1rem;
+    margin: 24px 0;
+    font-weight: 500;
+    background: linear-gradient(135deg, #AD1A1C, #8B1517);
+    color: #FCE821;
+    border: 1px solid #FCE821;
+    box-shadow: 0 8px 24px rgba(173, 26, 28, 0.3);
+}
+
+/* ===============================================
+   RESPONSIVE DEL MODAL REDISEÑADO
+   =============================================== */
+
+@media (max-width: 900px) {
+    .details-content-premium {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 16px;
+    }
+    
+    .maintenance-header-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .maintenance-status {
+        margin-left: 0;
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 768px) {
+    .details-header-premium {
+        padding: 16px;
+    }
+    
+    .details-actions-premium {
+        justify-content: center;
+    }
+    
+    .info-grid-premium {
+        grid-template-columns: 1fr;
+    }
+    
+    .dates-grid-premium {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+    
+    .signature-card-premium {
+        margin-bottom: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .maintenance-id-badge {
+        padding: 8px 16px;
+    }
+    
+    .id-value {
+        font-size: 1.1rem;
+    }
+    
+    .action-btn-premium {
+        width: 100%;
+        justify-content: center;
+    }
 }

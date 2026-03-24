@@ -8,6 +8,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaTimes } from 'react-icons/fa';
 import { FaCalendarAlt, FaHistory, FaDownload, FaTrash, FaPlus, FaSearch, FaSync, FaShieldAlt } from 'react-icons/fa';
 import useIsMobile from '../../hooks/useIsMobile';
+import CopiaDetailsModal from '../../components/copiasDeSeguridad/CopiaDetailsModal';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -422,7 +423,7 @@ const CopiasPage = () => {
                             <tr>
                                 {historialView ? (
                                     <>
-                                        <th>ID</th>
+                                        <th>Código</th>
                                         <th>Usuario</th>
                                         {!isMobile && <th>Área</th>}
                                         <th>Estado</th>
@@ -435,7 +436,7 @@ const CopiasPage = () => {
                                     </>
                                 ) : (
                                     <>
-                                        <th>ID</th>
+                                        <th>Código</th>
                                         <th>Usuario</th>
                                         {!isMobile && <th>Área</th>}
                                         <th>Estado</th>
@@ -527,270 +528,34 @@ const CopiasPage = () => {
 
 
 
-            {(selectedItem || isAdding || isEditing) && (
-                <div className="details-modal" onClick={(e) => {
-                    if (e.target === e.currentTarget) {
-                        setSelectedItem(null);
-                        setIsAdding(false);
-                        setIsEditing(false);
-                    }
-                }}>
-                    <div className="details-panel card" onClick={(e) => e.stopPropagation()}>
-                        <div className="details-header">
-                            <h3>
-                                {detailedData && !isEditing && !isAdding
-                                    ? `Detalles de la Copia de Seguridad #${detailedData.id}`
-                                    : isAdding
-                                        ? 'Agregar Nueva Copia de Seguridad'
-                                        : `Editar Copia de Seguridad #${editCopiaData?.id}`
-                                }
-                            </h3>
-                            <div className="details-actions">
-                                {detailedData && !isEditing && !isAdding ? (
-                                    <>
-                                        <button type="button" className="action-btn edit" onClick={() => handleEdit(detailedData)}>
-                                            ✏️ Editar
-                                        </button>
-                                        <button type="button" className="action-btn delete" onClick={() => handleDelete(detailedData)}>
-                                            🗑️ Eliminar
-                                        </button>
-                                        <button type="button" className="action-btn download" onClick={handleDownloadPdf}>
-                                            📄 Descargar PDF
-                                        </button>
-                                    </>
-                                ) : isAdding ? (
-                                    <>
-                                        <button type="button" className="action-btn save" onClick={handleSaveNew}>Guardar</button>
-                                        <button type="button" className="action-btn cancel" onClick={() => setIsAdding(false)}>Cancelar</button>
-                                    </>
-                                ) : isEditing ? (
-                                    <>
-                                        <button type="button" className="action-btn save" onClick={handleSaveEdit}>Guardar Cambios</button>
-                                        <button type="button" className="action-btn cancel" onClick={() => setIsEditing(false)}>Cancelar</button>
-                                    </>
-                                ) : null}
-                                <button className="close-details-btn" onClick={() => {
-                                    setSelectedItem(null);
-                                    setIsAdding(false);
-                                    setIsEditing(false);
-                                }}><FaTimes /></button>
-                            </div>
-                        </div>
-
-                        <div className="details-content">
-                            {detailedData && !isEditing && !isAdding ? (
-                                <div className="details-content-grid">
-                                    <div className="details-list">
-                                        <h4>📋 Información Principal</h4>
-                                        <div className="detail-item"><span>ID Copia:</span><p>#{detailedData.id}</p></div>
-                                        <div className="detail-item"><span>Usuario:</span><p>{detailedData.usuario || 'N/A'}</p></div>
-                                        <div className="detail-item"><span>Área:</span><p>{detailedData.area}</p></div>
-                                        <div className="detail-item"><span>Equipo:</span><p>{detailedData.tipo} - {detailedData.marca}</p></div>
-
-                                        <h4>📅 Fecha y Estado</h4>
-                                        <div className="detail-item"><span>Fecha de Copia:</span><p>{formatDate(detailedData.fecha)}</p></div>
-                                        <div className="detail-item">
-                                            <span>Estado:</span>
-                                            <span className={`status-badge status-${(detailedData.estado_copia || '').toLowerCase().replace(' ', '-')}`}>
-                                                {detailedData.estado_copia || 'N/A'}
-                                            </span>
-                                        </div>
-                                        <div className="detail-item"><span>Tipo de Copia:</span><p>{detailedData.tipo_copia || 'N/A'}</p></div>
-
-                                        <h4>⏱️ Tiempos y Responsable</h4>
-                                        <div className="detail-item"><span>Responsable:</span><p>{detailedData.responsable || 'N/A'}</p></div>
-                                        <div className="detail-item"><span>Hora Inicio:</span><p>{detailedData.hora_inicio || 'N/A'}</p></div>
-                                        <div className="detail-item"><span>Hora Fin:</span><p>{detailedData.hora_fin || 'N/A'}</p></div>
-                                        <div className="detail-item"><span>Duración:</span><p>{detailedData.tiempo_duracion || 'N/A'}</p></div>
-
-                                        <h4>💾 Detalles del Respaldo</h4>
-                                        <div className="detail-item"><span>Ubicación:</span><p>{detailedData.ubicacion_almacenamiento || 'N/A'}</p></div>
-                                        <div className="detail-item"><span>Tamaño:</span><p>{detailedData.tamaño_datos || 'N/A'}</p></div>
-
-                                        {detailedData.observaciones && (
-                                            <div className="detail-item full-width">
-                                                <span>📝 Observaciones:</span>
-                                                <p>{detailedData.observaciones}</p>
-                                            </div>
-                                        )}
-
-                                        <div className="calendar-container">
-                                            <Calendar
-                                                localizer={localizer}
-                                                events={calendarEvents}
-                                                startAccessor="start"
-                                                endAccessor="end"
-                                                style={{ height: 200 }}
-                                                toolbar={true}
-                                                date={calendarDate}
-                                                onNavigate={(date) => setCalendarDate(date)}
-                                                views={['month']}
-                                                messages={{ next: "Siguiente", previous: "Anterior", today: "Hoy", month: "Mes" }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (isAdding && newCopiaData) ? (
-                                <form onSubmit={handleSaveNew}>
-                                    <div className="details-grid">
-                                        <label className="full-width">
-                                            Seleccionar Equipo Existente:
-                                            <select name="equipoId" value={selectedEquipoId} onChange={handleNewFormChange} required>
-                                                <option value="">-- Seleccionar un equipo --</option>
-                                                {equipos.map(eq => (
-                                                    <option key={eq.id} value={eq.id}>
-                                                        {eq.usuario} ({eq.tipo} - {eq.codigo})
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        <hr className="full-width" />
-                                        <label>Usuario <input name="usuario" value={newCopiaData.usuario} readOnly placeholder="Se autocompleta" /></label>
-                                        <label>Área <input name="area" value={newCopiaData.area} readOnly placeholder="Se autocompleta" /></label>
-                                        <label>Tipo <input name="tipo" value={newCopiaData.tipo} readOnly placeholder="Se autocompleta" /></label>
-                                        <label>Marca <input name="marca" value={newCopiaData.marca} readOnly placeholder="Se autocompleta" /></label>
-                                        <label>Código Inventario <input name="codigo" value={newCopiaData.codigo} readOnly placeholder="Se autocompleta" /></label>
-
-                                        <h4 className="full-width">Información de la Copia</h4>
-                                        <label>
-                                            Fecha de la Copia
-                                            <input type="date" name="fecha" value={newCopiaData.fecha} onChange={handleNewFormChange} required />
-                                        </label>
-                                        <label>
-                                            Estado
-                                            <select name="estado_copia" value={newCopiaData.estado_copia} onChange={handleNewFormChange}>
-                                                <option value="Pendiente">Pendiente</option>
-                                                <option value="En Progreso">En Progreso</option>
-                                                <option value="Exitosa">Exitosa</option>
-                                                <option value="Fallida">Fallida</option>
-                                            </select>
-                                        </label>
-                                        <label>
-                                            Tipo de Copia
-                                            <select name="tipo_copia" value={newCopiaData.tipo_copia} onChange={handleNewFormChange}>
-                                                <option value="Completa">Completa</option>
-                                                <option value="Incremental">Incremental</option>
-                                                <option value="Diferencial">Diferencial</option>
-                                            </select>
-                                        </label>
-                                        <label>
-                                            Responsable
-                                            <input name="responsable" value={newCopiaData.responsable} onChange={handleNewFormChange} placeholder="Persona que realizó la copia" />
-                                        </label>
-
-                                        <h4 className="full-width">Tiempos</h4>
-                                        <label>
-                                            Hora Inicio
-                                            <input type="time" name="hora_inicio" value={newCopiaData.hora_inicio} onChange={handleNewFormChange} />
-                                        </label>
-                                        <label>
-                                            Hora Fin
-                                            <input type="time" name="hora_fin" value={newCopiaData.hora_fin} onChange={handleNewFormChange} />
-                                        </label>
-                                        <label>
-                                            Tiempo de Duración
-                                            <input name="tiempo_duracion" value={newCopiaData.tiempo_duracion} onChange={handleNewFormChange} placeholder="Ej: 2h 30min" />
-                                        </label>
-
-                                        <h4 className="full-width">Detalles del Respaldo</h4>
-                                        <label>
-                                            Ubicación de Almacenamiento
-                                            <input name="ubicacion_almacenamiento" value={newCopiaData.ubicacion_almacenamiento} onChange={handleNewFormChange} placeholder="Disco externo, servidor, nube..." />
-                                        </label>
-                                        <label>
-                                            Tamaño de Datos
-                                            <input name="tamaño_datos" value={newCopiaData.tamaño_datos} onChange={handleNewFormChange} placeholder="Ej: 500GB, 1.2TB" />
-                                        </label>
-                                        <label className="full-width">
-                                            Observaciones
-                                            <textarea name="observaciones" value={newCopiaData.observaciones} onChange={handleNewFormChange} rows="3" placeholder="Notas adicionales sobre el proceso de copia"></textarea>
-                                        </label>
-                                    </div>
-                                </form>
-                            ) : (isEditing && editCopiaData) ? (
-                                <form onSubmit={handleSaveEdit}>
-                                    <div className="details-grid">
-                                        <label className="full-width">
-                                            Seleccionar Equipo:
-                                            <select name="equipoId" value={selectedEquipoId} onChange={handleEditFormChange}>
-                                                <option value="">-- Seleccionar un equipo --</option>
-                                                {equipos.map(eq => (
-                                                    <option key={eq.id} value={eq.id}>
-                                                        {eq.usuario} ({eq.tipo} - {eq.codigo})
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        <hr className="full-width" />
-                                        <label>Usuario <input name="usuario" value={editCopiaData.usuario || ''} readOnly placeholder="Se autocompleta" /></label>
-                                        <label>Área <input name="area" value={editCopiaData.area || ''} readOnly placeholder="Se autocompleta" /></label>
-                                        <label>Tipo <input name="tipo" value={editCopiaData.tipo || ''} readOnly placeholder="Se autocompleta" /></label>
-                                        <label>Marca <input name="marca" value={editCopiaData.marca || ''} readOnly placeholder="Se autocompleta" /></label>
-                                        <label>Código Inventario <input name="codigo" value={editCopiaData.codigo || ''} readOnly placeholder="Se autocompleta" /></label>
-
-                                        <h4 className="full-width">Información de la Copia</h4>
-                                        <label>
-                                            Fecha de la Copia
-                                            <input type="date" name="fecha" value={editCopiaData.fecha ? editCopiaData.fecha.split('T')[0] : ''} onChange={handleEditFormChange} required />
-                                        </label>
-                                        <label>
-                                            Estado
-                                            <select name="estado_copia" value={editCopiaData.estado_copia || 'Pendiente'} onChange={handleEditFormChange}>
-                                                <option value="Pendiente">Pendiente</option>
-                                                <option value="En Progreso">En Progreso</option>
-                                                <option value="Exitosa">Exitosa</option>
-                                                <option value="Fallida">Fallida</option>
-                                            </select>
-                                        </label>
-                                        <label>
-                                            Tipo de Copia
-                                            <select name="tipo_copia" value={editCopiaData.tipo_copia || 'Completa'} onChange={handleEditFormChange}>
-                                                <option value="Completa">Completa</option>
-                                                <option value="Incremental">Incremental</option>
-                                                <option value="Diferencial">Diferencial</option>
-                                            </select>
-                                        </label>
-                                        <label>
-                                            Responsable
-                                            <input name="responsable" value={editCopiaData.responsable || ''} onChange={handleEditFormChange} placeholder="Persona que realizó la copia" />
-                                        </label>
-
-                                        <h4 className="full-width">Tiempos</h4>
-                                        <label>
-                                            Hora Inicio
-                                            <input type="time" name="hora_inicio" value={editCopiaData.hora_inicio || ''} onChange={handleEditFormChange} />
-                                        </label>
-                                        <label>
-                                            Hora Fin
-                                            <input type="time" name="hora_fin" value={editCopiaData.hora_fin || ''} onChange={handleEditFormChange} />
-                                        </label>
-                                        <label>
-                                            Tiempo de Duración
-                                            <input name="tiempo_duracion" value={editCopiaData.tiempo_duracion || ''} onChange={handleEditFormChange} placeholder="Ej: 2h 30min" />
-                                        </label>
-
-                                        <h4 className="full-width">Detalles del Respaldo</h4>
-                                        <label>
-                                            Ubicación de Almacenamiento
-                                            <input name="ubicacion_almacenamiento" value={editCopiaData.ubicacion_almacenamiento || ''} onChange={handleEditFormChange} placeholder="Disco externo, servidor, nube..." />
-                                        </label>
-                                        <label>
-                                            Tamaño de Datos
-                                            <input name="tamaño_datos" value={editCopiaData.tamaño_datos || ''} onChange={handleEditFormChange} placeholder="Ej: 500GB, 1.2TB" />
-                                        </label>
-                                        <label className="full-width">
-                                            Observaciones
-                                            <textarea name="observaciones" value={editCopiaData.observaciones || ''} onChange={handleEditFormChange} rows="3" placeholder="Notas adicionales sobre el proceso de copia"></textarea>
-                                        </label>
-                                    </div>
-                                </form>
-                            ) : (
-                                <div className="loading-message">Cargando...</div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            <CopiaDetailsModal
+                isOpen={selectedItem || isAdding || isEditing}
+                onClose={() => {
+                    setSelectedItem(null);
+                    setIsAdding(false);
+                    setIsEditing(false);
+                }}
+                detailedData={detailedData}
+                loadingDetails={false}
+                handleDownloadPdf={handleDownloadPdf}
+                handleEdit={() => handleEdit(detailedData)}
+                handleDelete={() => handleDelete(detailedData)}
+                isEditing={isEditing}
+                handleSave={isAdding ? handleSaveNew : handleSaveEdit}
+                handleCancel={() => {
+                    setIsAdding(false);
+                    setIsEditing(false);
+                }}
+                editFormData={isAdding ? newCopiaData : editCopiaData}
+                handleFormChange={isAdding ? handleNewFormChange : handleEditFormChange}
+                equipos={equipos}
+                selectedEquipoId={selectedEquipoId}
+                setSelectedEquipoId={setSelectedEquipoId}
+                formatDate={formatDate}
+                calendarEvents={calendarEvents}
+                calendarDate={calendarDate}
+                setCalendarDate={setCalendarDate}
+            />
         </div>
     );
 }

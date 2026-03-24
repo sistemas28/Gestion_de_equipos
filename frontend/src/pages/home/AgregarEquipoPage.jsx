@@ -319,6 +319,7 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
                         <table>
                             <thead>
                                 <tr>
+                                    <th>Código</th>
                                     <th>Usuario</th>
                                     <th>Área</th>
                                     <th>Tipo</th>
@@ -327,7 +328,6 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
                                     <th>Procesador</th>
                                     <th>RAM</th>
                                     <th>Disco Duro</th>
-                                    <th>Código</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -338,6 +338,7 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
                                         (String(equipo.codigo || '').toLowerCase().includes(searchTerm.toLowerCase()))
                                     ).map(equipo => (
                                         <tr key={equipo.id}>
+                                            <td><strong>{equipo.codigo || 'N/A'}</strong></td>
                                             <td>{equipo.usuario}</td>
                                             <td>{equipo.area}</td>
                                             <td>{equipo.tipo}</td>
@@ -346,7 +347,6 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
                                             <td>{equipo.procesador || 'N/A'}</td>
                                             <td>{equipo.ram || 'N/A'}</td>
                                             <td>{equipo.disco_duro || 'N/A'}</td>
-                                            <td>{equipo.codigo || 'N/A'}</td>
                                             <td className="actions-cell">
                                                 <button className="action-btn-sm edit" onClick={() => handleEdit(equipo)}>Editar</button>
                                                 <button className="action-btn-sm delete" onClick={() => handleDelete(equipo.id)}>Eliminar</button>

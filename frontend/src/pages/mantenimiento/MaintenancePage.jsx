@@ -12,9 +12,11 @@ import {
     FaTimes, FaUser, FaBuilding, FaDesktop, FaTag,
     FaCalendarAlt, FaTools, FaFileAlt, FaSignature, FaSearch,
     FaPlus, FaTrash, FaCheckCircle, FaExclamationTriangle,
-    FaDownload, FaSync
+    FaDownload, FaSync, FaInfoCircle
 } from 'react-icons/fa';
 import useIsMobile from '../../hooks/useIsMobile';
+import MaintenanceDetailsModal from '../../components/mantenimiento/MaintenanceDetailsModal';
+import CreateMaintenanceModal from '../../components/mantenimiento/CreateMaintenanceModal';
 
 import { generateReport } from '../../utils/reportGenerator';
 
@@ -284,13 +286,18 @@ const MaintenancePage = () => {
             if (!dataToSend.fecha_de_elaboracion) {
                 dataToSend.fecha_de_elaboracion = moment().format('YYYY-MM-DD');
             }
+            
+            // Enviar solicitud al backend
             await api.post('/mantenimiento', dataToSend);
+            
+            // Limpiar modal y actualizar datos
             setIsAdding(false);
             setNewMaintenanceData(null);
             logActivity('Mantenimiento Creado', `Se creó un nuevo mantenimiento para ${dataToSend.usuario}`);
             await fetchMaintenanceData();
         } catch (err) {
             console.error("Error creating new maintenance:", err);
+            console.error("Error details:", err.response);
 
             // Manejar errores específicos
             if (err.response?.status === 409) {
@@ -548,7 +555,7 @@ const MaintenancePage = () => {
                     <table>
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>Código</th>
                                 <th>Usuario</th>
                                 {!isMobile && <th>Área</th>}
                                 {!isMobile && <th>Tipo</th>}
@@ -586,377 +593,46 @@ const MaintenancePage = () => {
                 </div>
             )}
 
-            {(selectedItem || isAdding) && (
-                <div className="details-modal" onClick={(e) => { if (e.target === e.currentTarget) { setSelectedItem(null); setIsAdding(false); } }}>
-                    <div className="details-panel card" onClick={(e) => e.stopPropagation()}>
-                        <button className="close-details-btn" onClick={() => setSelectedItem(null)}><FaTimes /></button>
-                        {loadingDetails ? (
-                            <div className="loading-message">Cargando detalles...</div>
-                        ) : detailedData ? (
-                            <>
-                                <div className="details-header">
-                                    <h3>{isEditing ? `Editando Mantenimiento #${detailedData.id}` : `Detalles del Mantenimiento #${detailedData.id}`}</h3>
-                                    <div className="details-actions" onClick={(e) => e.stopPropagation()}>
-                                        {isEditing ? (
-                                            <>
-                                                <button type="button" className="action-btn save" onClick={handleSave}>Guardar</button>
-                                                <button type="button" className="action-btn cancel" onClick={handleCancel}>Cancelar</button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <button type="button" className="action-btn" onClick={handleEdit}>Editar</button>
-                                                <button type="button" className="action-btn delete" onClick={handleDelete}>Eliminar</button>
-                                                <button type="button" className="action-btn download" onClick={handleDownloadPdf}>Descargar PDF</button>
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
+            <MaintenanceDetailsModal
+                isOpen={selectedItem !== null}
+                onClose={() => setSelectedItem(null)}
+                detailedData={detailedData}
+                loadingDetails={loadingDetails}
+                handleDownloadPdf={handleDownloadPdf}
+                handleEdit={handleEdit}
+                handleDelete={handleDelete}
+                isEditing={isEditing}
+                handleSave={handleSave}
+                handleCancel={handleCancel}
+                editFormData={editFormData}
+                handleFormChange={handleFormChange}
+                signatureType={signatureType}
+                setSignatureType={setSignatureType}
+                handleSignatureImageChange={handleSignatureImageChange}
+                handleNewSignatureImageChange={handleNewSignatureImageChange}
+                equipos={equipos}
+                selectedEquipoId={selectedEquipoId}
+                setSelectedEquipoId={setSelectedEquipoId}
+                formatDate={formatDate}
+                calendarEvents={calendarEvents}
+                calendarDate={calendarDate}
+                setCalendarDate={setCalendarDate}
+            />
 
-                                <div className="details-grid">
-                                    <div className="details-list">
-                                        <h4>Información del Equipo</h4>
-                                        {isEditing ? (
-                                            <div className="form-section">
-                                                <label>
-                                                    Seleccionar Equipo:
-                                                    <select name="equipoId" value={selectedEquipoId} onChange={handleFormChange}>
-                                                        <option value="">-- Seleccionar un equipo --</option>
-                                                        {equipos.length > 0 && equipos.map(eq => (
-                                                            <option key={eq.id} value={eq.id}>
-                                                                {eq.usuario} ({eq.tipo} - {eq.marca})
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </label>
-                                                <div className="form-grid-inner">
-                                                    <label>Usuario: <input name="usuario" value={editFormData.usuario || ''} onChange={handleFormChange} placeholder="Usuario del equipo" /></label>
-                                                    <label>Área: <input name="area" value={editFormData.area || ''} onChange={handleFormChange} placeholder="Área del equipo" /></label>
-                                                    <label>Tipo: <input name="tipo" value={editFormData.tipo || ''} onChange={handleFormChange} placeholder="Tipo de equipo" /></label>
-                                                    <label>Marca: <input name="marca" value={editFormData.marca || ''} onChange={handleFormChange} placeholder="Marca del equipo" /></label>
-                                                </div>
-                                                <hr />
-                                                <h4>Detalles del Mantenimiento</h4>
-                                                <label>Actividades Realizadas: <textarea name="actividades_realizadas" value={editFormData.actividades_realizadas || ''} onChange={handleFormChange} rows="4"></textarea></label>
-                                                <label>Observaciones: <textarea name="observaciones" value={editFormData.observaciones || ''} onChange={handleFormChange} rows="3"></textarea></label>
-                                                <label>
-                                                    Estado:
-                                                    <select name="estado" value={editFormData.estado || 'Pendiente'} onChange={handleFormChange}>
-                                                        <option value="Pendiente">Pendiente</option>
-                                                        <option value="En ejecución">En ejecución</option>
-                                                        <option value="Terminado">Terminado</option>
-                                                    </select>
-                                                </label>
-                                                <hr />
-                                                <h4>Fechas Clave</h4>
-                                                <div className="form-grid-inner">
-                                                    <label>Fecha de Elaboración: <input type="date" name="fecha_de_elaboracion" value={editFormData.fecha_de_elaboracion && moment(editFormData.fecha_de_elaboracion).isValid() ? moment(editFormData.fecha_de_elaboracion).format('YYYY-MM-DD') : ''} onChange={handleFormChange} /></label>
-                                                    <label>Fecha de Ejecución: <input type="date" name="fecha_de_ejecucion" value={editFormData.fecha_de_ejecucion && moment(editFormData.fecha_de_ejecucion).isValid() ? moment(editFormData.fecha_de_ejecucion).format('YYYY-MM-DD') : ''} onChange={handleFormChange} /></label>
-                                                    <label>Fecha Último Mantenimiento: <input type="date" name="fecha_ultimo_mantenimiento" value={editFormData.fecha_ultimo_mantenimiento && moment(editFormData.fecha_ultimo_mantenimiento).isValid() ? moment(editFormData.fecha_ultimo_mantenimiento).format('YYYY-MM-DD') : ''} onChange={handleFormChange} /></label>
-                                                    <label>Fecha Próximo Mantenimiento: <input type="date" name="fecha_actual_de_mantenimiento" value={editFormData.fecha_actual_de_mantenimiento && moment(editFormData.fecha_actual_de_mantenimiento).isValid() ? moment(editFormData.fecha_actual_de_mantenimiento).format('YYYY-MM-DD') : ''} onChange={handleFormChange} /></label>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="details-view-premium">
-                                                <div className="details-section-card">
-                                                    <div className="section-header">
-                                                        <FaDesktop className="section-icon" />
-                                                        <h4>Información del Equipo</h4>
-                                                    </div>
-                                                    <div className="details-grid-mini">
-                                                        <div className="detail-pill">
-                                                            <FaUser className="pill-icon" />
-                                                            <div className="pill-content">
-                                                                <span>Usuario</span>
-                                                                <p>{detailedData.usuario}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="detail-pill">
-                                                            <FaBuilding className="pill-icon" />
-                                                            <div className="pill-content">
-                                                                <span>Área</span>
-                                                                <p>{detailedData.area}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="detail-pill">
-                                                            <FaTag className="pill-icon" />
-                                                            <div className="pill-content">
-                                                                <span>Marca</span>
-                                                                <p>{detailedData.marca || 'N/A'}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="detail-pill">
-                                                            <FaTools className="pill-icon" />
-                                                            <div className="pill-content">
-                                                                <span>Tipo</span>
-                                                                <p>{detailedData.tipo}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="detail-pill">
-                                                            <FaDesktop className="pill-icon" />
-                                                            <div className="pill-content">
-                                                                <span>S.O.</span>
-                                                                <p>{detailedData.sistema_operativo || detailedData.os || 'N/A'}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="detail-pill">
-                                                            <FaTag className="pill-icon" />
-                                                            <div className="pill-content">
-                                                                <span>Procesador</span>
-                                                                <p>{detailedData.procesador || 'N/A'}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="detail-pill">
-                                                            <FaTag className="pill-icon" />
-                                                            <div className="pill-content">
-                                                                <span>RAM</span>
-                                                                <p>{detailedData.memoria_ram || detailedData.ram || 'N/A'}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="detail-pill">
-                                                            <FaTag className="pill-icon" />
-                                                            <div className="pill-content">
-                                                                <span>Disco Duro</span>
-                                                                <p>{detailedData.disco_duro || 'N/A'}</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="details-section-card">
-                                                    <div className="section-header">
-                                                        <FaFileAlt className="section-icon" />
-                                                        <h4>Detalles del Servicio</h4>
-                                                    </div>
-                                                    <div className="service-details">
-                                                        <div className="service-item">
-                                                            <span>Actividades Realizadas</span>
-                                                            <div className="service-text-box">
-                                                                {detailedData.actividades_realizadas || 'No se registraron actividades.'}
-                                                            </div>
-                                                        </div>
-                                                        <div className="service-item">
-                                                            <span>Observaciones</span>
-                                                            <div className="service-text-box obs">
-                                                                {detailedData.observaciones || 'Sin observaciones.'}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="details-section-card">
-                                                    <div className="section-header">
-                                                        <FaCalendarAlt className="section-icon" />
-                                                        <h4>Cronograma de Mantenimiento</h4>
-                                                    </div>
-                                                    <div className="dates-grid-premium">
-                                                        <div className="date-box elaboration">
-                                                            <span>Elaboración</span>
-                                                            <p>{formatDate(detailedData.fecha_de_elaboracion)}</p>
-                                                        </div>
-                                                        <div className="date-box execution">
-                                                            <span>Ejecución</span>
-                                                            <p>{formatDate(detailedData.fecha_de_ejecucion)}</p>
-                                                        </div>
-                                                        <div className="date-box last">
-                                                            <span>Último Mant.</span>
-                                                            <p>{formatDate(detailedData.fecha_ultimo_mantenimiento)}</p>
-                                                        </div>
-                                                        <div className="date-box next">
-                                                            <span>Próximo Mant.</span>
-                                                            <p>{formatDate(detailedData.fecha_actual_de_mantenimiento)}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="details-meta">
-                                        <div className="calendar-container">
-                                            <Calendar
-                                                localizer={localizer}
-                                                events={calendarEvents}
-                                                startAccessor="start"
-                                                endAccessor="end"
-                                                style={{ height: 300 }}
-                                                toolbar={true}
-                                                date={calendarDate}
-                                                onNavigate={(date) => setCalendarDate(date)}
-                                                views={['month']}
-                                                messages={{ next: "Siguiente", previous: "Anterior", today: "Hoy", month: "Mes" }}
-                                            />
-                                        </div>
-                                        <div className="signature-container">
-                                            <h4>Firmas</h4>
-                                            {isEditing ? (
-                                                <div className="signature-edit">
-                                                    <div className="signature-options">
-                                                        <label><input type="radio" name="signatureType" value="text" checked={signatureType === 'text'} onChange={() => setSignatureType('text')} /> Escribir nombre</label>
-                                                        <label><input type="radio" name="signatureType" value="image" checked={signatureType === 'image'} onChange={() => setSignatureType('image')} /> Subir firma</label>
-                                                    </div>
-                                                    {signatureType === 'text' ? (
-                                                        <>
-                                                            <input name="firmas_tecnico" placeholder="Escriba el nombre del técnico" value={editFormData.firmas_tecnico || ''} onChange={handleFormChange} />
-                                                            <input name="firmas_aprobo" placeholder="Escriba el nombre de quien aprueba" value={editFormData.firmas_aprobo || ''} onChange={handleFormChange} />
-                                                            <input name="firmas_reviso" placeholder="Escriba el nombre de quien revisa" value={editFormData.firmas_reviso || ''} onChange={handleFormChange} />
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <div>
-                                                                <label>Firma Técnico:</label>
-                                                                <input type="file" accept="image/*" onChange={(e) => handleSignatureImageChange(e, 'firmas_tecnico')} />
-                                                                {editFormData.firmas_tecnico && <img src={editFormData.firmas_tecnico} alt="Vista previa de la firma" className="signature-display" />}
-                                                            </div>
-                                                            <div>
-                                                                <label>Firma Aprobó:</label>
-                                                                <input type="file" accept="image/*" onChange={(e) => handleSignatureImageChange(e, 'firmas_aprobo')} />
-                                                                {editFormData.firmas_aprobo && <img src={editFormData.firmas_aprobo} alt="Vista previa de la firma" className="signature-display" />}
-                                                            </div>
-                                                            <div>
-                                                                <label>Firma Revisó:</label>
-                                                                <input type="file" accept="image/*" onChange={(e) => handleSignatureImageChange(e, 'firmas_reviso')} />
-                                                                {editFormData.firmas_reviso && <img src={editFormData.firmas_reviso} alt="Vista previa de la firma" className="signature-display" />}
-                                                            </div>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <div className="signatures-flex-grid">
-                                                        <div className="signature-item">
-                                                            <span><FaSignature className="pill-icon" /> Técnico</span>
-                                                            <div className="signature-box">
-                                                                {detailedData.firmas_tecnico ? (
-                                                                    detailedData.firmas_tecnico.startsWith('data:image')
-                                                                        ? <img src={detailedData.firmas_tecnico} alt="Firma del técnico" className="signature-display" />
-                                                                        : <p className="signature-text">{detailedData.firmas_tecnico}</p>
-                                                                ) : <p className="muted">Sin firma</p>}
-                                                            </div>
-                                                        </div>
-                                                        <div className="signature-item">
-                                                            <span><FaSignature className="pill-icon" /> Aprobó</span>
-                                                            <div className="signature-box">
-                                                                {detailedData.firmas_aprobo ? (
-                                                                    detailedData.firmas_aprobo.startsWith('data:image')
-                                                                        ? <img src={detailedData.firmas_aprobo} alt="Firma de quien aprueba" className="signature-display" />
-                                                                        : <p className="signature-text">{detailedData.firmas_aprobo}</p>
-                                                                ) : <p className="muted">Sin firma</p>}
-                                                            </div>
-                                                        </div>
-                                                        <div className="signature-item">
-                                                            <span><FaSignature className="pill-icon" /> Revisó</span>
-                                                            <div className="signature-box">
-                                                                {detailedData.firmas_reviso ? (
-                                                                    detailedData.firmas_reviso.startsWith('data:image')
-                                                                        ? <img src={detailedData.firmas_reviso} alt="Firma de quien revisa" className="signature-display" />
-                                                                        : <p className="signature-text">{detailedData.firmas_reviso}</p>
-                                                                ) : <p className="muted">Sin firma</p>}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="error-message">No se pudieron cargar los detalles.</div>
-                        )}
-                        {isAdding && newMaintenanceData && (
-                            <>
-                                <div className="details-header">
-                                    <h3>Crear Nuevo Mantenimiento</h3>
-                                    <div className="details-actions">
-                                        <button type="button" className="action-btn save" onClick={handleSaveNew}>Guardar</button>
-                                        <button type="button" className="action-btn cancel" onClick={() => setIsAdding(false)}>Cancelar</button>
-                                    </div>
-                                </div>
-                                <div className="details-grid">
-                                    <div className="details-list">
-                                        <form onSubmit={handleSaveNew}>
-                                            <div className="form-section">
-                                                <h4>Información del Equipo</h4>
-                                                <div className="equipment-selection-container">
-                                                    <label>Buscar y Seleccionar Equipo:</label>
-                                                    <select
-                                                        name="equipoId"
-                                                        value={selectedEquipoId}
-                                                        onChange={handleFormChange}
-                                                        required
-                                                        className="equipment-select-pro"
-                                                    >
-                                                        <option value="">-- Seleccionar un equipo --</option>
-                                                        {equipos.map(eq => (
-                                                            <option key={eq.id} value={eq.id}>
-                                                                {eq.codigo} - {eq.usuario} ({eq.tipo})
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                                <div className="form-grid-inner info-card-grid">
-                                                    <div className="info-field"><span>Usuario:</span><input name="usuario" value={newMaintenanceData.usuario} readOnly /></div>
-                                                    <div className="info-field"><span>Área:</span><input name="area" value={newMaintenanceData.area} readOnly /></div>
-                                                    <div className="info-field"><span>Tipo:</span><input name="tipo" value={newMaintenanceData.tipo} readOnly /></div>
-                                                    <div className="info-field"><span>Marca:</span><input name="marca" value={newMaintenanceData.marca} readOnly /></div>
-                                                    <div className="info-field"><span>Código:</span><input name="codigo" value={newMaintenanceData.codigo} readOnly /></div>
-                                                </div>
-                                                <hr />
-                                                <h4>Detalles del Mantenimiento</h4>
-                                                <label>Actividades Realizadas: <textarea name="actividades_realizadas" value={newMaintenanceData.actividades_realizadas} onChange={handleFormChange} rows="4"></textarea></label>
-                                                <label>Observaciones: <textarea name="observaciones" value={newMaintenanceData.observaciones} onChange={handleFormChange} rows="3"></textarea></label>
-                                                <hr />
-                                                <h4>Fechas Clave</h4>
-                                                <div className="form-grid-inner">
-                                                    <label>Fecha de Elaboración: <input type="date" name="fecha_de_elaboracion" value={moment(newMaintenanceData.fecha_de_elaboracion).format('YYYY-MM-DD')} onChange={handleFormChange} /></label>
-                                                    <label>Fecha de Ejecución: <input type="date" name="fecha_de_ejecucion" value={newMaintenanceData.fecha_de_ejecucion ? moment(newMaintenanceData.fecha_de_ejecucion).format('YYYY-MM-DD') : ''} onChange={handleFormChange} /></label>
-                                                    <label>Fecha Último Mantenimiento: <input type="date" name="fecha_ultimo_mantenimiento" value={newMaintenanceData.fecha_ultimo_mantenimiento ? moment(newMaintenanceData.fecha_ultimo_mantenimiento).format('YYYY-MM-DD') : ''} onChange={handleFormChange} /></label>
-                                                    <label>Fecha Próximo Mantenimiento: <input type="date" name="fecha_actual_de_mantenimiento" value={newMaintenanceData.fecha_actual_de_mantenimiento ? moment(newMaintenanceData.fecha_actual_de_mantenimiento).format('YYYY-MM-DD') : ''} onChange={handleFormChange} /></label>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div className="details-meta">
-                                        <div className="signature-container">
-                                            <h4>Firmas</h4>
-                                            <div className="signature-edit">
-                                                <div className="signature-options">
-                                                    <label><input type="radio" name="newSignatureType" value="text" checked={signatureType === 'text'} onChange={() => setSignatureType('text')} /> Escribir nombre</label>
-                                                    <label><input type="radio" name="newSignatureType" value="image" checked={signatureType === 'image'} onChange={() => setSignatureType('image')} /> Subir firma</label>
-                                                </div>
-                                                {signatureType === 'text' ? (
-                                                    <>
-                                                        <input name="firmas_tecnico" placeholder="Escriba el nombre del técnico" value={newMaintenanceData.firmas_tecnico || ''} onChange={handleFormChange} />
-                                                        <input name="firmas_aprobo" placeholder="Escriba el nombre de quien aprueba" value={newMaintenanceData.firmas_aprobo || ''} onChange={handleFormChange} />
-                                                        <input name="firmas_reviso" placeholder="Escriba el nombre de quien revisa" value={newMaintenanceData.firmas_reviso || ''} onChange={handleFormChange} />
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <div>
-                                                            <label>Firma Técnico:</label>
-                                                            <input type="file" accept="image/*" onChange={(e) => handleNewSignatureImageChange(e, 'firmas_tecnico')} />
-                                                            {newMaintenanceData.firmas_tecnico && <img src={newMaintenanceData.firmas_tecnico} alt="Vista previa de la firma" className="signature-display" />}
-                                                        </div>
-                                                        <div>
-                                                            <label>Firma Aprobó:</label>
-                                                            <input type="file" accept="image/*" onChange={(e) => handleNewSignatureImageChange(e, 'firmas_aprobo')} />
-                                                            {newMaintenanceData.firmas_aprobo && <img src={newMaintenanceData.firmas_aprobo} alt="Vista previa de la firma" className="signature-display" />}
-                                                        </div>
-                                                        <div>
-                                                            <label>Firma Revisó:</label>
-                                                            <input type="file" accept="image/*" onChange={(e) => handleNewSignatureImageChange(e, 'firmas_reviso')} />
-                                                            {newMaintenanceData.firmas_reviso && <img src={newMaintenanceData.firmas_reviso} alt="Vista previa de la firma" className="signature-display" />}
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div >
-            )}
+            <CreateMaintenanceModal
+                isOpen={isAdding}
+                onClose={() => setIsAdding(false)}
+                newMaintenanceData={newMaintenanceData}
+                equipos={equipos}
+                selectedEquipoId={selectedEquipoId}
+                setSelectedEquipoId={setSelectedEquipoId}
+                handleFormChange={handleFormChange}
+                handleNewSignatureImageChange={handleNewSignatureImageChange}
+                handleSaveNew={handleSaveNew}
+                handleCancel={handleCancel}
+                signatureType={signatureType}
+                setSignatureType={setSignatureType}
+            />
         </div >
     );
 }

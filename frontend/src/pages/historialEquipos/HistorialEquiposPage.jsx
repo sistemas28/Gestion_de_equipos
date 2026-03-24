@@ -213,7 +213,7 @@ function HistorialEquiposPage() {
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Código Inventario</th>
+                                        <th>Código</th>
                                         <th>Usuario Anterior</th>
                                         <th>Usuario Nuevo</th>
                                         <th>Área Anterior</th>
@@ -235,11 +235,12 @@ function HistorialEquiposPage() {
                                             <td>{(item.motivo_cambio && item.motivo_cambio.trim()) ? item.motivo_cambio : 'Sin especificar'}</td>
                                             <td className="actions-cell">
                                                 <button
-                                                    className="action-btn-sm edit"
+                                                    className="pdf-btn"
                                                     onClick={() => handleDownloadPDFByCodigo(item.codigo_inventario)}
                                                     title="Descargar PDF de este equipo"
                                                 >
-                                                    PDF
+                                                    <span className="pdf-icon">📄</span>
+                                                    <span className="pdf-text">PDF</span>
                                                 </button>
                                             </td>
                                         </tr>

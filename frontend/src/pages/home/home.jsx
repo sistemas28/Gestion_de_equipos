@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import './home.css';
+import './AdminHome.css';
 import api from '../../api/axios.js';
 import MaintenancePage from '../mantenimiento/MaintenancePage.jsx';
 import LicenciamientoPage from '../licenciamiento/LicenciamientoPage.jsx';
@@ -145,8 +146,8 @@ function DesktopHome({ onBack, username }) {
 
     const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
 
-    const day = now.toLocaleDateString([], { day: '2-digit' });
-    const month = now.toLocaleDateString([], { month: 'long' }).toUpperCase();
+    const day = now.toLocaleDateString([], { day: 'numeric', locale: 'es-ES' });
+    const month = now.toLocaleDateString([], { month: 'short', locale: 'es-ES' }).toUpperCase();
     const year = now.getFullYear();
 
     return (
@@ -155,7 +156,7 @@ function DesktopHome({ onBack, username }) {
                 <div className="sidebar-header">
                     <div className="sidebar-brand-container">
                         <div className="sidebar-brand-text">
-                            GESTIÓN<span>CORE</span>
+                            GESTIÓN<span>EQUIPOS</span>
                         </div>
                     </div>
                 </div>
@@ -164,11 +165,11 @@ function DesktopHome({ onBack, username }) {
                     {[
                         { id: 'dashboard', icon: <FaLaptop />, label: 'Dashboard' },
                         { id: 'mantenimiento', icon: <FaTools />, label: 'Mantenimiento' },
+                        { id: 'historialEquipos', icon: <FaHistory />, label: 'Historial' },
                         { id: 'licenciamiento', icon: <FaFileAlt />, label: 'Licencias' },
-                        { id: 'copias', icon: <FaDatabase />, label: 'Copias' },
+                        { id: 'copias', icon: <FaDatabase />, label: 'Backups' },
                         { id: 'impresoras', icon: <FaPrint />, label: 'Impresoras' },
-                        { id: 'agregarEquipo', icon: <FaPlus />, label: 'Nuevo Equipo' },
-                        { id: 'historial', icon: <FaHistory />, label: 'Historial' }
+                        { id: 'agregarEquipo', icon: <FaPlus />, label: 'Nuevo Equipo' }
                     ].map(item => (
                         <button 
                             key={item.id} 
@@ -192,7 +193,7 @@ function DesktopHome({ onBack, username }) {
                             <FaBars />
                         </button>
                         <div className="view-title">
-                            {currentView === 'dashboard' ? 'PANEL DE CONTROL' : currentView.toUpperCase()}
+                            {currentView === 'dashboard' ? 'Resumen Principal' : currentView.toUpperCase()}
                         </div>
                     </div>
                     
@@ -200,14 +201,23 @@ function DesktopHome({ onBack, username }) {
                         <div className="topbar-brand-mark">
                             <img src={logo} alt="Corp Logo" className="topbar-logo-img" />
                         </div>
-                        <div className="topbar-clock glass">
-                            <span className="clock-time">{timeStr}</span>
-                            <span className="clock-date">{now.toLocaleDateString([], { weekday: 'short' })}</span>
+                        <div className="topbar-clock premium">
+                            <div className="clock-container">
+                                <div className="clock-time">{timeStr}</div>
+                                <div className="clock-date">{now.toLocaleDateString([], { weekday: 'short' }).toUpperCase()}</div>
+                            </div>
+                            <div className="clock-glow"></div>
                         </div>
                         <NotificationBell />
                         <div className="topbar-actions">
-                            <button className="top-action-btn" title="Ajustes de usuario" onClick={() => setShowUserSettings(true)}><FaUser /></button>
-                            <button className="top-action-btn" title="Ajustes de la aplicación" onClick={() => setShowAppSettings(true)}><FaCog /></button>
+                            <button className="top-action-btn user-settings-btn" title="Ajustes de usuario" onClick={() => setShowUserSettings(true)}>
+                                <FaUser className="action-icon" />
+                                <span className="action-label">Usuario</span>
+                            </button>
+                            <button className="top-action-btn app-settings-btn" title="Ajustes de la aplicación" onClick={() => setShowAppSettings(true)}>
+                                <FaCog className="action-icon" />
+                                <span className="action-label">App</span>
+                            </button>
                         </div>
                         <div className="user-profile-mini">
                             <div className="user-info">
@@ -228,14 +238,14 @@ function DesktopHome({ onBack, username }) {
 
                 <div className="content-container animate-fade">
                     {currentView === 'dashboard' && (
-                        <div className="dashboard-content">
-                            <section className="welcome-banner user-banner">
+                        <div className="dashboard-view">
+                            <section className="welcome-banner">
                                 <div className="banner-content">
                                     <h1>¡Hola, {username}!</h1>
-                                    <p>Bienvenido a tu estación de trabajo. Gestiona tus tareas de mantenimiento y equipos de forma eficiente.</p>
+                                    <p>Aquí tienes el estado actual de tu infraestructura y equipos gestionados.</p>
                                     <div className="banner-actions">
-                                        <button className="btn-banner" onClick={() => setCurrentView('mantenimiento')}>Gestionar Mantenimientos</button>
-                                        <button className="btn-banner secondary" onClick={() => setCurrentView('agregarEquipo')}>Registrar Equipo</button>
+                                        <button className="btn-banner" onClick={() => setCurrentView('agregarEquipo')}>+ Agregar Equipo</button>
+                                        <button className="btn-banner secondary" onClick={() => setCurrentView('mantenimiento')}>Ver Mantenimientos</button>
                                     </div>
                                 </div>
                                 <div className="banner-illustration">
@@ -247,8 +257,8 @@ function DesktopHome({ onBack, username }) {
                             <section className="stats-row">
                                 <div className="stat-card glass hover-lift">
                                     <div className="stat-header">
-                                        <h3>Progreso Mantenimiento</h3>
-                                        <span className={`stat-badge ${getMaintenanceStats(maintenanceData, progressPeriod).percentage > 50 ? 'success' : 'warning'}`}>
+                                        <h3>Mantenimientos</h3>
+                                        <span className={`stat-badge ${getMaintenanceStats(maintenanceData, progressPeriod).percentage > 70 ? 'success' : 'warning'}`}>
                                             {getMaintenanceStats(maintenanceData, progressPeriod).percentage}%
                                         </span>
                                     </div>
@@ -257,15 +267,15 @@ function DesktopHome({ onBack, username }) {
                                             <div className="progress-fill maintenance" style={{ width: `${getMaintenanceStats(maintenanceData, progressPeriod).percentage}%` }}></div>
                                         </div>
                                         <div className="stat-footer">
-                                            <span>{getMaintenanceStats(maintenanceData, progressPeriod).completed} de {getMaintenanceStats(maintenanceData, progressPeriod).total} completados</span>
+                                            <span>{getMaintenanceStats(maintenanceData, progressPeriod).completed} completados de {getMaintenanceStats(maintenanceData, progressPeriod).total}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="stat-card glass hover-lift">
                                     <div className="stat-header">
-                                        <h3>Estado de Backups</h3>
-                                        <span className={`stat-badge ${getBackupsStats(backupsData, progressPeriod).percentage > 80 ? 'success' : 'warning'}`}>
+                                        <h3>Copias de Seguridad</h3>
+                                        <span className={`stat-badge ${getBackupsStats(backupsData, progressPeriod).percentage > 90 ? 'success' : 'warning'}`}>
                                             {getBackupsStats(backupsData, progressPeriod).percentage}%
                                         </span>
                                     </div>
@@ -274,12 +284,12 @@ function DesktopHome({ onBack, username }) {
                                             <div className="progress-fill backups" style={{ width: `${getBackupsStats(backupsData, progressPeriod).percentage}%` }}></div>
                                         </div>
                                         <div className="stat-footer">
-                                            <span>{getBackupsStats(backupsData, progressPeriod).completed} backups verificados</span>
+                                            <span>{getBackupsStats(backupsData, progressPeriod).completed} exitosas de {getBackupsStats(backupsData, progressPeriod).total}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="stat-card date-stat user-date glass">
+                                <div className="stat-card date-stat glass">
                                     <div className="calendar-day">{day}</div>
                                     <div className="calendar-meta">
                                         <span className="month">{month}</span>
@@ -289,20 +299,7 @@ function DesktopHome({ onBack, username }) {
                             </section>
 
                             <section className="dashboard-lower">
-                                <div className="dashboard-grid-footer">
-                                    <RemindersWidget />
-                                    <div className="period-selector-card glass">
-                                        <h4>Vista de Estadísticas</h4>
-                                        <p>Cambia el rango de tiempo de los indicadores.</p>
-                                        <div className="custom-select-wrap">
-                                            <select value={progressPeriod} onChange={(e) => setProgressPeriod(e.target.value)}>
-                                                <option value="month">Este Mes</option>
-                                                <option value="quarter">Este Trimestre</option>
-                                                <option value="year">Este Año</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
+                                <RemindersWidget />
                             </section>
                         </div>
                     )}
@@ -312,7 +309,7 @@ function DesktopHome({ onBack, username }) {
                     {currentView === 'copias' && <CopiasPage />}
                     {currentView === 'impresoras' && <ImpresorasPage />}
                     {currentView === 'agregarEquipo' && <AgregarEquipoPage onEquipoAgregado={() => setCurrentView('dashboard')} />}
-                    {currentView === 'historial' && <HistorialEquiposPage />}
+                    {currentView === 'historialEquipos' && <HistorialEquiposPage />}
                 </div>
             </main>
 

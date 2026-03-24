@@ -188,7 +188,7 @@ function DesktopAdminHome({ onBack, username }) {
                 <div className="sidebar-header">
                     <div className="sidebar-brand-container">
                         <div className="sidebar-brand-text">
-                            ADMIN<span>CORE</span>
+                            GESTION<span>ADMIN</span>
                         </div>
                     </div>
                 </div>
@@ -234,9 +234,12 @@ function DesktopAdminHome({ onBack, username }) {
                         <div className="topbar-brand-mark">
                             <img src={logo} alt="Corp Logo" className="topbar-logo-img" />
                         </div>
-                        <div className="topbar-clock glass">
-                            <span className="clock-time">{now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}</span>
-                            <span className="clock-date">{now.toLocaleDateString([], { weekday: 'short' })}</span>
+                        <div className="topbar-clock premium">
+                            <div className="clock-container">
+                                <div className="clock-time">{now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}</div>
+                                <div className="clock-date">{now.toLocaleDateString([], { weekday: 'short' }).toUpperCase()}</div>
+                            </div>
+                            <div className="clock-glow"></div>
                         </div>
                         <NotificationBell />
                         <div className="user-profile-mini">
@@ -244,10 +247,10 @@ function DesktopAdminHome({ onBack, username }) {
                                 <span className="user-name">{username || 'Admin'}</span>
                                 <span className="user-role">Super Administrador</span>
                             </div>
-                            <div className="user-avatar-circle">
-                                {username ? username.charAt(0).toUpperCase() : 'A'}
+                            <div className="user-avatar user-type-normal">
+                                {username?.charAt(0).toUpperCase() || 'A'}
                             </div>
-                            <button className="profile-logout-btn" onClick={handleLogout} title="Cerrar Sesión">
+                            <button className="profile-logout-btn" title="Cerrar Sesión" onClick={handleLogout}>
                                 <FaSignOutAlt />
                             </button>
                         </div>

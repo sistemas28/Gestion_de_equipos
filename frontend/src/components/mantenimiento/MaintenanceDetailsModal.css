@@ -1,0 +1,1305 @@
+/* Variables CSS - Paleta Institucional */
+:root {
+    --primary-color: #AD1A1C;
+    --primary-hover: #8B1517;
+    --accent-color: #FCE821;
+    --success-color: #AD1A1C;
+    --warning-color: #FCE821;
+    --danger-color: #000000;
+    --info-color: #AD1A1C;
+    --bg-color-light: #f8fafc;
+    --bg-color-dark: #1e293b;
+    --card-bg-color: #ffffff;
+    --border-color: #e2e8f0;
+    --text-color-dark: #1e293b;
+    --text-color-light: #64748b;
+    --hover-bg-color: #f1f5f9;
+    --selected-bg-color: rgba(173, 26, 28, 0.1);
+    --shadow-sm: 0 4px 12px rgba(173, 26, 28, 0.1);
+    --shadow-md: 0 8px 24px rgba(173, 26, 28, 0.15);
+    --shadow-lg: 0 12px 48px rgba(173, 26, 28, 0.25);
+    --radius: 16px;
+}
+
+/* ===============================================
+   MODAL PRINCIPAL
+   =============================================== */
+
+.maintenance-details-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.maintenance-details-panel {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 25px 75px rgba(0, 0, 0, 0.3);
+    max-width: 98vw;
+    width: 98vw;
+    max-height: 90vh;
+    overflow: hidden;
+    position: relative;
+    animation: modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 2px solid rgba(173, 26, 28, 0.15);
+    
+    /* Decoración superior */
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+@keyframes modalSlideUp {
+    from {
+        transform: translateY(-50px) scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Banda decorativa superior */
+.maintenance-details-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    border-radius: 24px 24px 0 0;
+}
+
+/* ===============================================
+   BOTÓN DE CIERRE
+   =============================================== */
+
+.close-maintenance-modal-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    color: var(--text-color-light);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(173, 26, 28, 0.1);
+}
+
+.close-maintenance-modal-btn:hover {
+    background: linear-gradient(135deg, var(--danger-color), #dc2626);
+    color: white;
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: var(--shadow-md);
+}
+
+/* ===============================================
+   ENCABEZADO DEL MODAL
+   =============================================== */
+
+.maintenance-modal-header {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    border-bottom: 2px solid rgba(173, 26, 28, 0.1);
+    padding: 24px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.maintenance-header-info {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+/* Badge de ID */
+.maintenance-id-badge {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: var(--accent-color);
+    padding: 14px 22px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    box-shadow: 0 8px 25px rgba(173, 26, 28, 0.4);
+    border: 2px solid rgba(252, 232, 33, 0.3);
+    min-width: 160px;
+}
+
+.id-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+    color: rgba(252, 232, 33, 0.9);
+}
+
+.id-value {
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Información del usuario */
+.maintenance-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 16px;
+    background: rgba(173, 26, 28, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(173, 26, 28, 0.1);
+}
+
+.user-name {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-color-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-area {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-color-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Estado del mantenimiento */
+.maintenance-status {
+    margin-left: auto;
+}
+
+.status-badge-modal {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 2px solid transparent;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.status-badge-modal.pendiente {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    color: #475569;
+    border-color: #cbd5e1;
+}
+
+.status-badge-modal.en-ejecución {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    border-color: #f59e0b;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.status-badge-modal.terminado {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #166534;
+    border-color: #22c55e;
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+}
+
+/* ===============================================
+   ACCIONES DEL MODAL
+   =============================================== */
+
+.maintenance-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.action-btn-modal {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 22px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    box-shadow: var(--shadow-sm);
+    border: 2px solid transparent;
+}
+
+.action-btn-modal.edit {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.action-btn-modal.edit:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.6);
+}
+
+.action-btn-modal.delete {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.action-btn-modal.delete:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(239, 68, 68, 0.6);
+}
+
+.action-btn-modal.download {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.action-btn-modal.download:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(16, 185, 129, 0.6);
+}
+
+.action-btn-modal.save {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: var(--accent-color);
+    box-shadow: 0 6px 20px rgba(173, 26, 28, 0.4);
+    border: 2px solid rgba(252, 232, 33, 0.4);
+}
+
+.action-btn-modal.save:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(173, 26, 28, 0.6);
+}
+
+.action-btn-modal.cancel {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+    box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+}
+
+.action-btn-modal.cancel:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(107, 114, 128, 0.6);
+}
+
+/* ===============================================
+   CONTENIDO PRINCIPAL
+   =============================================== */
+
+.maintenance-content {
+    display: grid;
+    grid-template-columns: 2.2fr 1fr;
+    gap: 24px;
+    padding: 24px 32px;
+    height: calc(90vh - 140px);
+    overflow-y: auto;
+}
+
+.maintenance-main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-right: 8px;
+}
+
+.maintenance-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-right: 8px;
+}
+
+/* Scrollbar personalizado */
+.maintenance-main-content::-webkit-scrollbar,
+.maintenance-sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.maintenance-main-content::-webkit-scrollbar-track,
+.maintenance-sidebar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.maintenance-main-content::-webkit-scrollbar-thumb,
+.maintenance-sidebar::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+    border: 2px solid #f1f5f9;
+}
+
+.maintenance-main-content::-webkit-scrollbar-thumb:hover,
+.maintenance-sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-hover);
+}
+
+/* ===============================================
+   SECCIONES DE INFORMACIÓN
+   =============================================== */
+
+.info-section-modal {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(173, 26, 28, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.info-section-modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.info-section-modal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(173, 26, 28, 0.12);
+}
+
+.info-section-modal:hover::before {
+    opacity: 1;
+}
+
+.section-header-modal {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(173, 26, 28, 0.1);
+}
+
+.section-icon-modal {
+    font-size: 1.6rem;
+    color: var(--primary-color);
+    background: rgba(173, 26, 28, 0.1);
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.section-title-modal {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text-color-dark);
+    letter-spacing: -0.5px;
+}
+
+/* ===============================================
+   GRILLA DE INFORMACIÓN
+   =============================================== */
+
+.info-grid-modal {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.info-card-modal {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    border: 1px solid rgba(173, 26, 28, 0.1);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.info-card-modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.info-card-modal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(173, 26, 28, 0.12);
+}
+
+.info-card-modal:hover::before {
+    opacity: 1;
+}
+
+.info-icon-modal {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    box-shadow: 0 6px 16px rgba(173, 26, 28, 0.3);
+    border: 2px solid rgba(252, 232, 33, 0.3);
+}
+
+.info-content-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.info-label-modal {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #6B1012;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.info-value-modal {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #000000;
+    line-height: 1.3;
+}
+
+/* ===============================================
+   FORMULARIOS DE EDICIÓN
+   =============================================== */
+
+.form-section-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-row-modal {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+}
+
+.form-label-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--text-color-dark);
+}
+
+.form-label-modal input,
+.form-label-modal textarea,
+.form-label-modal select {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid rgba(173, 26, 28, 0.15);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    background: #ffffff;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+    box-shadow: var(--shadow-sm);
+}
+
+.form-label-modal input:focus,
+.form-label-modal textarea:focus,
+.form-label-modal select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(173, 26, 28, 0.1), var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.form-label-modal textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.6;
+}
+
+/* ===============================================
+   DETALLES DEL SERVICIO
+   =============================================== */
+
+.service-details-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.service-item-modal {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    border: 1px solid rgba(173, 26, 28, 0.1);
+    border-radius: 14px;
+    padding: 18px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.service-item-modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.service-item-modal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(173, 26, 28, 0.12);
+}
+
+.service-item-modal:hover::before {
+    opacity: 1;
+}
+
+.service-label-modal {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #AD1A1C;
+    margin-bottom: 8px;
+    display: block;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.service-content-modal {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #000000;
+    background: #ffffff;
+    padding: 14px;
+    border-radius: 10px;
+    border-left: 5px solid var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.service-content-modal.obs {
+    border-left-color: var(--accent-color);
+    background: #fffcf0;
+    border-right: 1px solid rgba(252, 232, 33, 0.5);
+    box-shadow: 0 4px 12px rgba(252, 232, 33, 0.1);
+}
+
+/* ===============================================
+   GRILLA DE FECHAS
+   =============================================== */
+
+.dates-grid-modal {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+}
+
+.date-card-modal {
+    background: #ffffff;
+    border: 1px solid rgba(173, 26, 28, 0.1);
+    border-radius: 14px;
+    padding: 18px;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.date-card-modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--primary-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.date-card-modal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(173, 26, 28, 0.12);
+}
+
+.date-card-modal:hover::before {
+    opacity: 1;
+}
+
+.date-icon-modal {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    margin: 0 auto 10px auto;
+    box-shadow: 0 6px 16px rgba(173, 26, 28, 0.3);
+    border: 2px solid rgba(252, 232, 33, 0.3);
+}
+
+.date-content-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.date-label-modal {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #6B1012;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.date-value-modal {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #000000;
+}
+
+/* Estados específicos de fechas */
+.date-card-modal.elaboration {
+    border-color: var(--primary-color);
+    background: #ffffff;
+}
+
+.date-card-modal.execution {
+    border-color: var(--primary-hover);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: #FFFFFF;
+}
+
+.date-card-modal.execution .date-label-modal,
+.date-card-modal.execution .date-value-modal {
+    color: #FFFFFF;
+}
+
+.date-card-modal.execution .date-icon-modal {
+    background: #ffffff;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.date-card-modal.last {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.date-card-modal.next {
+    border-color: #E6D41E;
+    background: linear-gradient(135deg, var(--accent-color), #fde047);
+    color: #AD1A1C;
+}
+
+.date-card-modal.next .date-icon-modal {
+    background: #ffffff;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+/* ===============================================
+   BARRA LATERAL - CALENDARIO Y FIRMAS
+   =============================================== */
+
+.sidebar-section-modal {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(173, 26, 28, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-section-modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-section-modal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(173, 26, 28, 0.12);
+}
+
+.sidebar-section-modal:hover::before {
+    opacity: 1;
+}
+
+/* Calendario */
+.calendar-container-modal {
+    padding: 16px;
+    border: 2px solid var(--primary-color);
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    margin-top: 12px;
+}
+
+.calendar-container-modal:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* Formulario de firmas */
+.signatures-form-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.signature-options-modal {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.signature-options-modal label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--text-color-dark);
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.signature-options-modal label:hover {
+    background: rgba(173, 26, 28, 0.05);
+}
+
+.signature-inputs-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.signature-inputs-modal input {
+    padding: 14px 18px;
+    border: 2px solid rgba(173, 26, 28, 0.15);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    background: #ffffff;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+}
+
+.signature-inputs-modal input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(173, 26, 28, 0.1), var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.signature-upload-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.upload-group-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.upload-group-modal label {
+    font-weight: 700;
+    color: var(--text-color-dark);
+}
+
+.upload-group-modal input[type="file"] {
+    padding: 10px;
+    border: 2px solid rgba(173, 26, 28, 0.15);
+    border-radius: 10px;
+    background: #ffffff;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Grilla de firmas */
+.signatures-grid-modal {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.signature-card-modal {
+    background: #ffffff;
+    border: 1px solid rgba(173, 26, 28, 0.1);
+    border-radius: 14px;
+    padding: 18px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.signature-card-modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.signature-card-modal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(173, 26, 28, 0.12);
+}
+
+.signature-card-modal:hover::before {
+    opacity: 1;
+}
+
+.signature-header-modal {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(173, 26, 28, 0.1);
+}
+
+.signature-icon-modal {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+}
+
+.signature-header-modal span {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #AD1A1C;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.signature-box-modal {
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 2px dashed #cbd5e1;
+    padding: 12px;
+    background: #fafafa;
+    border-radius: 6px;
+}
+
+.signature-display-modal {
+    max-height: 60px;
+    max-width: 100%;
+    object-fit: contain;
+    filter: contrast(1.1) brightness(0.9);
+    border-radius: 4px;
+}
+
+.signature-text-modal {
+    font-family: 'Georgia', cursive, serif;
+    font-size: 1.3rem;
+    color: #0f172a;
+    font-weight: 600;
+    margin: 0;
+}
+
+.muted-modal {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* ===============================================
+   ESTADOS DE CARGA Y ERROR
+   =============================================== */
+
+.loading-message-modal {
+    padding: 28px;
+    border-radius: 16px;
+    text-align: center;
+    font-size: 1.1rem;
+    margin: 24px 0;
+    font-weight: 600;
+    background: linear-gradient(135deg, rgba(173, 26, 28, 0.1), rgba(173, 26, 28, 0.05));
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+    box-shadow: var(--shadow-md);
+    animation: pulse 2s infinite;
+}
+
+.error-message-modal {
+    padding: 28px;
+    border-radius: 16px;
+    text-align: center;
+    font-size: 1.1rem;
+    margin: 24px 0;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 12px 40px rgba(173, 26, 28, 0.4);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+/* ===============================================
+   RESPONSIVE DESIGN
+   =============================================== */
+
+@media (max-width: 1200px) {
+    .maintenance-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 20px 24px;
+        height: auto;
+        max-height: calc(90vh - 140px);
+        overflow-y: auto;
+    }
+    
+    .maintenance-main-content,
+    .maintenance-sidebar {
+        overflow-y: visible;
+    }
+}
+
+@media (max-width: 900px) {
+    .maintenance-details-panel {
+        max-width: 95vw;
+        width: 95vw;
+        max-height: 88vh;
+    }
+    
+    .maintenance-modal-header {
+        padding: 20px 24px;
+    }
+    
+    .maintenance-content {
+        padding: 20px 24px;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .maintenance-header-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .maintenance-status {
+        margin-left: 0;
+        align-self: flex-end;
+    }
+    
+    .maintenance-actions {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .maintenance-details-modal {
+        padding: 15px;
+    }
+    
+    .maintenance-details-panel {
+        max-width: 100vw;
+        width: 100vw;
+        max-height: 85vh;
+        border-radius: 16px;
+    }
+    
+    .maintenance-modal-header {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .maintenance-id-badge {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .maintenance-content {
+        padding: 16px 20px;
+        gap: 16px;
+    }
+    
+    .info-grid-modal {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row-modal {
+        grid-template-columns: 1fr;
+    }
+    
+    .dates-grid-modal {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
+    
+    .signature-card-modal {
+        margin-bottom: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .maintenance-details-modal {
+        padding: 10px;
+    }
+    
+    .maintenance-details-panel {
+        max-height: 80vh;
+        border-radius: 12px;
+    }
+    
+    .maintenance-modal-header {
+        padding: 12px 16px;
+    }
+    
+    .maintenance-id-badge {
+        padding: 10px 16px;
+    }
+    
+    .id-value {
+        font-size: 1.2rem;
+    }
+    
+    .maintenance-content {
+        padding: 12px 16px;
+        gap: 12px;
+    }
+    
+    .action-btn-modal {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .info-card-modal {
+        padding: 14px;
+    }
+    
+    .service-item-modal {
+        padding: 14px;
+    }
+    
+    .sidebar-section-modal {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 360px) {
+    .maintenance-details-panel {
+        max-height: 75vh;
+        border-radius: 10px;
+    }
+    
+    .maintenance-modal-header {
+        padding: 10px 12px;
+    }
+    
+    .maintenance-content {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+    
+    .maintenance-id-badge {
+        padding: 8px 12px;
+    }
+    
+    .id-value {
+        font-size: 1.1rem;
+    }
+    
+    .info-card-modal {
+        padding: 12px;
+    }
+    
+    .service-item-modal {
+        padding: 12px;
+    }
+}
+
+/* ===============================================
+   ANIMACIONES ADICIONALES
+   =============================================== */
+
+.maintenance-details-panel {
+    animation: modalEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalEntrance {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.02) translateY(-5px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Efecto hover mejorado para cards */
+.info-card-modal,
+.service-item-modal,
+.date-card-modal,
+.signature-card-modal {
+    will-change: transform;
+}
+
+.info-card-modal:hover,
+.service-item-modal:hover,
+.date-card-modal:hover,
+.signature-card-modal:hover {
+    will-change: auto;
+}
+
+/* ===============================================
+   ESTILOS ESPECIALES PARA REACT BIG CALENDAR
+   =============================================== */
+
+/* Overrides para React Big Calendar */
+.rbc-event {
+    background-color: var(--primary-color) !important;
+    border-radius: 6px !important;
+    border: none !important;
+}
+
+.rbc-today {
+    background-color: rgba(252, 232, 33, 0.1) !important;
+    border: 2px solid var(--accent-color) !important;
+}
+
+.rbc-toolbar button {
+    color: var(--primary-color) !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(173, 26, 28, 0.2) !important;
+    font-weight: 700 !important;
+    background: #ffffff !important;
+    transition: all 0.3s ease !important;
+}
+
+.rbc-toolbar button:hover {
+    background-color: #fef3c7 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(173, 26, 28, 0.2) !important;
+}
+
+.rbc-toolbar button.rbc-active {
+    background-color: var(--primary-color) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 20px rgba(173, 26, 28, 0.4) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.rbc-month-view {
+    border: 1px solid rgba(173, 26, 28, 0.1) !important;
+    border-radius: 8px !important;
+}
+
+.rbc-header {
+    background: linear-gradient(135deg, #ffffff, #f8fafc) !important;
+    border-bottom: 1px solid rgba(173, 26, 28, 0.1) !important;
+    font-weight: 700 !important;
+    color: var(--text-color-dark) !important;
+    padding: 8px !important;
+}
+
+.rbc-day-bg {
+    transition: background-color 0.3s ease !important;
+}
+
+.rbc-day-bg:hover {
+    background-color: rgba(173, 26, 28, 0.03) !important;
+}
+
+.rbc-row-content {
+    transition: all 0.3s ease !important;
+}
+
+.rbc-row-content:hover {
+    transform: translateY(-1px) !important;
+}

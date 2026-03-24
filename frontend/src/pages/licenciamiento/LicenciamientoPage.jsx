@@ -8,6 +8,9 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 import { generateReport } from '../../utils/reportGenerator';
+import LicenciamientoDetailsModal from '../../components/licenciamiento/LicenciamientoDetailsModal';
+import CreateLicenciamientoModal from '../../components/licenciamiento/CreateLicenciamientoModal';
+
 function LicenciamientoPage() {
     const [licenciamientoData, setLicenciamientoData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -296,7 +299,7 @@ function LicenciamientoPage() {
                     <table>
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>Código</th>
                                 <th>Usuario</th>
                                 <th>Área</th>
                                 <th>Tipo</th>
@@ -322,111 +325,39 @@ function LicenciamientoPage() {
                 </div>
             )}
 
-            {(selectedItem || isAdding) && (
-                <div className="details-modal" onClick={(e) => { if (e.target === e.currentTarget) { setSelectedItem(null); setIsAdding(false); } }}>
-                    <div className="details-panel card" onClick={(e) => e.stopPropagation()}> {/* Eliminar el botón de cerrar */}
-                        <button className="close-details-btn" onClick={() => setSelectedItem(null)}><FaTimes /></button>
-                        {loadingDetails ? (
-                            <div className="loading-message">Cargando detalles...</div>
-                        ) : detailedData ? (
-                            <form onSubmit={handleSave}>
-                                <div className="details-header">
-                                    <h3>Detalles del Licenciamiento #{detailedData.id}</h3>
-                                    <div className="details-actions">
-                                        {isEditing ? (
-                                            <>
-                                                <button type="submit" className="action-btn save">Guardar</button>
-                                                <button type="button" className="action-btn cancel" onClick={handleCancel}>Cancelar</button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <button type="button" className="action-btn" onClick={handleEdit}>Editar</button>
-                                                <button type="button" className="action-btn delete" onClick={handleDelete}>Eliminar</button>
-                                                <button type="button" className="action-btn download" onClick={handleDownloadPdf}>Descargar PDF</button>
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
+            <LicenciamientoDetailsModal
+                isOpen={selectedItem !== null}
+                onClose={() => setSelectedItem(null)}
+                detailedData={detailedData}
+                loadingDetails={loadingDetails}
+                handleDownloadPdf={handleDownloadPdf}
+                handleEdit={handleEdit}
+                handleDelete={handleDelete}
+                isEditing={isEditing}
+                handleSave={handleSave}
+                handleCancel={handleCancel}
+                editFormData={editFormData}
+                handleFormChange={handleFormChange}
+                equipos={equipos}
+                selectedEquipoId={selectedEquipoId}
+                setSelectedEquipoId={setSelectedEquipoId}
+                formatDate={(dateString) => {
+                    if (!dateString) return 'N/A';
+                    return moment(dateString).format('LL');
+                }}
+            />
 
-                                <div className="details-grid">
-                                    {isEditing ? (
-                                        <>
-                                            <label>
-                                                Seleccionar Equipo:
-                                                <select name="equipoId" value={selectedEquipoId} onChange={handleFormChange}>
-                                                    <option value="">-- Seleccionar un equipo --</option>
-                                                    {equipos.map(eq => (
-                                                        <option key={eq.id} value={eq.id}>
-                                                            {eq.usuario} ({eq.tipo} - {eq.marca})
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </label><hr />
-                                            <label>Usuario <input name="usuario" value={editFormData.usuario || ''} onChange={handleFormChange} placeholder="Usuario del equipo" /></label>
-                                            <label>Área <input name="area" value={editFormData.area || ''} onChange={handleFormChange} placeholder="Área del equipo" /></label>
-                                            <label>Tipo <input name="tipo" value={editFormData.tipo || ''} onChange={handleFormChange} placeholder="Tipo de equipo" /></label>
-                                            <label>Sistema Operativo <input name="sistema_operativo" value={editFormData.sistema_operativo || ''} onChange={handleFormChange} placeholder="Sistema Operativo" /></label>
-                                            <label>Software de Oficina <input name="software_de_oficina" value={editFormData.software_de_oficina || ''} onChange={handleFormChange} /></label>
-                                            <label>Otro Software <input name="otro_software" value={editFormData.otro_software || ''} onChange={handleFormChange} /></label>
-                                            <label className="full-width">Descripción <textarea name="descripcion" value={editFormData.descripcion || ''} onChange={handleFormChange} rows="3"></textarea></label>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="detail-item"><span>Usuario:</span><p>{detailedData.usuario}</p></div>
-                                            <div className="detail-item"><span>Área:</span><p>{detailedData.area}</p></div>
-                                            <div className="detail-item"><span>Tipo de Equipo:</span><p>{detailedData.tipo}</p></div>
-                                            <div className="detail-item full-width"><span>Descripción:</span><p>{detailedData.descripcion}</p></div>
-                                            <div className="detail-item"><span>Sistema Operativo:</span><p>{detailedData.sistema_operativo || 'N/A'}</p></div>
-                                            <div className="detail-item"><span>Software de Oficina:</span><p>{detailedData.software_de_oficina || 'N/A'}</p></div>
-                                            <div className="detail-item"><span>Otro Software:</span><p>{detailedData.otro_software || 'N/A'}</p></div>
-                                        </>
-                                    )}
-                                </div>
-                            </form>
-                        ) : (
-                            <div className="error-message">No se pudieron cargar los detalles.</div>
-                        )}
-                        {isAdding && newLicenciamientoData && (
-                            <>
-                                <div className="details-header">
-                                    <h3>Crear Nuevo Licenciamiento</h3>
-                                    <div className="details-actions">
-                                        <button type="button" className="action-btn save" onClick={handleSaveNew}>Guardar</button>
-                                        <button type="button" className="action-btn cancel" onClick={() => setIsAdding(false)}>Cancelar</button>
-                                    </div>
-                                </div>
-                                <form onSubmit={handleSaveNew}>
-                                    <div className="details-grid">
-                                        <label>
-                                            Seleccionar Equipo Existente:
-                                            <select name="equipoId" value={selectedEquipoId} onChange={handleNewFormChange} required>
-                                                <option value="">-- Seleccionar un equipo --</option>
-                                                {equipos.map(eq => (
-                                                    <option key={eq.id} value={eq.id}>
-                                                        {eq.usuario} ({eq.tipo} - {eq.marca})
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        <hr className="full-width" />
-                                        <label>Usuario <input name="usuario" value={newLicenciamientoData.usuario} readOnly placeholder="Se autocompleta" /></label>
-                                        <label>Área <input name="area" value={newLicenciamientoData.area} readOnly placeholder="Se autocompleta" /></label>
-                                        <label>Tipo <input name="tipo" value={newLicenciamientoData.tipo} readOnly placeholder="Se autocompleta" /></label>
-                                        <label>Código Inventario <input name="codigo" value={newLicenciamientoData.codigo} readOnly placeholder="Se autocompleta" /></label>
-                                        <label>Sistema Operativo <input name="sistema_operativo" value={newLicenciamientoData.sistema_operativo} onChange={handleNewFormChange} placeholder="Ej: Windows 11 Pro" /></label>
-                                        <label>Software de Oficina <input name="software_de_oficina" value={newLicenciamientoData.software_de_oficina} onChange={handleNewFormChange} placeholder="Ej: Microsoft Office 2021" /></label>
-                                        <label>Otro Software <input name="otro_software" value={newLicenciamientoData.otro_software} onChange={handleNewFormChange} placeholder="Ej: Adobe Photoshop" /></label>
-                                        <label className="full-width">
-                                            Descripción
-                                            <textarea name="descripcion" value={newLicenciamientoData.descripcion} onChange={handleNewFormChange} rows="3" placeholder="Detalles adicionales del licenciamiento"></textarea>
-                                        </label>
-                                    </div>
-                                </form>
-                            </>
-                        )}
-                    </div>
-                </div>
-            )}
+            <CreateLicenciamientoModal
+                isOpen={isAdding}
+                onClose={() => setIsAdding(false)}
+                newLicenciamientoData={newLicenciamientoData}
+                equipos={equipos}
+                selectedEquipoId={selectedEquipoId}
+                setSelectedEquipoId={setSelectedEquipoId}
+                handleFormChange={handleNewFormChange}
+                handleSaveNew={handleSaveNew}
+                handleCancel={handleCancel}
+            />
         </div>
     );
 }

@@ -21,7 +21,10 @@ module.exports = function (dbInyectada) {
                 so: equipo.sistema_operativo,
                 procesador: equipo.procesador,
                 ram: equipo.ram,
-                disco_duro: equipo.disco_duro
+                disco_duro: equipo.disco_duro,
+                modelo: equipo.modelo || '',
+                serial: equipo.serial || '',
+                licencia: equipo.licencia || ''
             }));
         });
     }
@@ -42,7 +45,10 @@ module.exports = function (dbInyectada) {
                 so: equipo.sistema_operativo,
                 procesador: equipo.procesador,
                 ram: equipo.ram,
-                disco_duro: equipo.disco_duro
+                disco_duro: equipo.disco_duro,
+                modelo: equipo.modelo || '',
+                serial: equipo.serial || '',
+                licencia: equipo.licencia || ''
             };
         });
     }
@@ -64,10 +70,14 @@ module.exports = function (dbInyectada) {
             tipo: body.tipo,
             marca: body.marca,
             codigo_de_equipo: body.codigo,
-            sistema_operativo: body.so,
+            sistema_operativo: body.sistema_operativo || body.so,
             procesador: body.procesador,
-            ram: body.ram,
-            disco_duro: body.disco_duro
+            ram: body.memoria_ram || body.ram,
+            disco_duro: body.disco_duro,
+            modelo: body.modelo || '',
+            serial: body.serial || '',
+            licencia: body.licencia || '',
+            caracteristicas_especificas: body.caracteristicas_especificas || ''
         };
 
         const resultado = await db.agregar(TABLA, equipo);
@@ -111,10 +121,14 @@ module.exports = function (dbInyectada) {
             tipo: body.tipo,
             marca: body.marca,
             codigo_de_equipo: body.codigo,
-            sistema_operativo: body.so,
+            sistema_operativo: body.sistema_operativo || body.so,
             procesador: body.procesador,
-            ram: body.ram,
-            disco_duro: body.disco_duro
+            ram: body.memoria_ram || body.ram,
+            disco_duro: body.disco_duro,
+            modelo: body.modelo || '',
+            serial: body.serial || '',
+            licencia: body.licencia || '',
+            caracteristicas_especificas: body.caracteristicas_especificas || ''
         };
 
         // Verificar si hubo cambio de usuario o área
