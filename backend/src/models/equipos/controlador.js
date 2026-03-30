@@ -17,7 +17,7 @@ module.exports = function (dbInyectada) {
                 area: equipo.Area,
                 tipo: equipo.tipo,
                 marca: equipo.marca,
-                codigo: String(equipo.codigo_de_equipo || ''),
+                codigo: String(equipo.id), // Usamos el ID como código de inventario
                 so: equipo.sistema_operativo,
                 procesador: equipo.procesador,
                 ram: equipo.ram,
@@ -41,7 +41,7 @@ module.exports = function (dbInyectada) {
                 area: equipo.Area,
                 tipo: equipo.tipo,
                 marca: equipo.marca,
-                codigo: String(equipo.codigo_de_equipo || ''),
+                codigo: String(equipo.id), // Usamos el ID como código de inventario
                 so: equipo.sistema_operativo,
                 procesador: equipo.procesador,
                 ram: equipo.ram,
@@ -54,22 +54,14 @@ module.exports = function (dbInyectada) {
     }
 
     async function agregar(body) {
-        if (body.codigo) {
-            const existe = await db.query(TABLA, { codigo_de_equipo: body.codigo });
-            if (existe) {
-                const error = new Error(`El código de inventario '${body.codigo}' ya está asignado a otro equipo.`);
-                error.statusCode = 400;
-                throw error;
-            }
-        }
-
         // Mapeamos los datos del frontend a los nombres de columna de la BD
+        // No validamos el código ya que será el ID auto-generado
         const equipo = {
             nombre_de_usuario_asignado: body.usuario,
             Area: body.area,
             tipo: body.tipo,
             marca: body.marca,
-            codigo_de_equipo: body.codigo,
+            // No guardamos codigo_de_equipo, usaremos el ID como código de inventario
             sistema_operativo: body.sistema_operativo || body.so,
             procesador: body.procesador,
             ram: body.memoria_ram || body.ram,
@@ -86,7 +78,7 @@ module.exports = function (dbInyectada) {
         if (resultado && resultado.insertId) {
             const historial = {
                 equipo_id: resultado.insertId,
-                codigo_inventario: String(body.codigo || ''),
+                codigo_inventario: String(resultado.insertId), // Usamos el ID como código de inventario
                 usuario_anterior: 'Sistema',
                 usuario_nuevo: body.usuario,
                 area_anterior: 'Sin asignar',
@@ -105,22 +97,14 @@ module.exports = function (dbInyectada) {
         // Primero obtenemos el equipo actual para comparar
         const equipoActual = await uno(id);
 
-        if (body.codigo && String(body.codigo) !== String(equipoActual.codigo)) {
-            const existe = await db.query(TABLA, { codigo_de_equipo: body.codigo });
-            if (existe) {
-                const error = new Error(`El código de inventario '${body.codigo}' ya está asignado a otro equipo.`);
-                error.statusCode = 400;
-                throw error;
-            }
-        }
-
+        // No validamos el código ya que será el ID auto-generado
         // La función de modificar también necesita mapear los campos
         const equipo = {
             nombre_de_usuario_asignado: body.usuario,
             Area: body.area,
             tipo: body.tipo,
             marca: body.marca,
-            codigo_de_equipo: body.codigo,
+            // No actualizamos codigo_de_equipo, usaremos el ID como código de inventario
             sistema_operativo: body.sistema_operativo || body.so,
             procesador: body.procesador,
             ram: body.memoria_ram || body.ram,
@@ -136,7 +120,7 @@ module.exports = function (dbInyectada) {
             // Registrar en el historial
             const historial = {
                 equipo_id: id,
-                codigo_inventario: body.codigo || equipoActual.codigo,
+                codigo_inventario: String(id), // Usamos el ID como código de inventario
                 usuario_anterior: equipoActual.usuario,
                 usuario_nuevo: body.usuario,
                 area_anterior: equipoActual.area,

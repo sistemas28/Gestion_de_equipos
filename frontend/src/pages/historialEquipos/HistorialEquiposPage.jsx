@@ -22,7 +22,7 @@ function HistorialEquiposPage() {
     useEffect(() => {
         if (searchTerm) {
             const filtered = historial.filter(item =>
-                (String(item.codigo_inventario || '').toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (String(item.id || '').toLowerCase().includes(searchTerm.toLowerCase())) ||
                 (String(item.usuario_anterior || '').toLowerCase().includes(searchTerm.toLowerCase())) ||
                 (String(item.usuario_nuevo || '').toLowerCase().includes(searchTerm.toLowerCase()))
             );
@@ -73,7 +73,7 @@ function HistorialEquiposPage() {
                 type: 'table',
                 headers: ['Código', 'Usuario Anterior', 'Usuario Nuevo', 'Área Anterior', 'Área Nueva', 'Fecha', 'Motivo'],
                 body: filteredHistorial.map(item => [
-                    getDisplayValue(item.codigo_inventario),
+                    getDisplayValue(item.id),
                     getDisplayValue(item.usuario_anterior),
                     getDisplayValue(item.usuario_nuevo),
                     getDisplayValue(item.area_anterior),
@@ -104,7 +104,7 @@ function HistorialEquiposPage() {
     };
 
     const handleDownloadPDFByCodigo = (codigo) => {
-        const historialCodigo = filteredHistorial.filter(item => item.codigo_inventario === codigo);
+        const historialCodigo = filteredHistorial.filter(item => item.id === codigo);
 
         if (historialCodigo.length === 0) {
             alert('No hay historial para este código de inventario');
@@ -118,7 +118,7 @@ function HistorialEquiposPage() {
                 type: 'info',
                 title: 'INFORMACIÓN DEL EQUIPO',
                 data: [
-                    { label: 'CÓDIGO DE INVENTARIO', value: codigo },
+                    { label: 'CÓDIGO DE INVENTARIO', value: codigo || 'N/A' },
                     { label: 'TIPO DE EQUIPO', value: getDisplayValue(primerRegistro.tipo) },
                     { label: 'MARCA', value: getDisplayValue(primerRegistro.marca) },
                     { label: 'TOTAL DE CAMBIOS', value: String(historialCodigo.length) },
@@ -150,11 +150,11 @@ function HistorialEquiposPage() {
 
         generateReport(
             'PROCESO DE GESTIÓN DE INFORMÁTICA',
-            `HISTORIAL DEL EQUIPO - ${codigo}`,
-            `FT-HIST-${codigo}`,
+            `HISTORIAL DEL EQUIPO - ${codigo || 'N/A'}`,
+            `FT-HIST-${codigo || 'N/A'}`,
             '1.0',
             sections,
-            `Historial_${codigo}_${moment().format('YYYY-MM-DD')}.pdf`
+            `Historial_${codigo || 'N/A'}_${moment().format('YYYY-MM-DD')}.pdf`
         );
     };
 
@@ -226,7 +226,7 @@ function HistorialEquiposPage() {
                                 <tbody>
                                     {filteredHistorial.map((item) => (
                                         <tr key={item.id}>
-                                            <td><strong>{item.codigo_inventario || 'N/A'}</strong></td>
+                                            <td><strong>{item.id || 'N/A'}</strong></td>
                                             <td>{(item.usuario_anterior && item.usuario_anterior.trim()) ? item.usuario_anterior : 'N/A'}</td>
                                             <td>{(item.usuario_nuevo && item.usuario_nuevo.trim()) ? item.usuario_nuevo : 'N/A'}</td>
                                             <td>{(item.area_anterior && item.area_anterior.trim()) ? item.area_anterior : 'N/A'}</td>
@@ -236,7 +236,7 @@ function HistorialEquiposPage() {
                                             <td className="actions-cell">
                                                 <button
                                                     className="pdf-btn"
-                                                    onClick={() => handleDownloadPDFByCodigo(item.codigo_inventario)}
+                                                    onClick={() => handleDownloadPDFByCodigo(item.id)}
                                                     title="Descargar PDF de este equipo"
                                                 >
                                                     <span className="pdf-icon">📄</span>

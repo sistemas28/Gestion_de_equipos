@@ -885,13 +885,13 @@
 }
 
 /* Grilla de firmas */
-.signatures-grid-modal {
+.signatures-grid-premium {
     display: grid;
     grid-template-columns: 1fr;
     gap: 16px;
 }
 
-.signature-card-modal {
+.signature-card-premium {
     background: #ffffff;
     border: 1px solid rgba(173, 26, 28, 0.1);
     border-radius: 14px;
@@ -902,7 +902,7 @@
     overflow: hidden;
 }
 
-.signature-card-modal::before {
+.signature-card-premium::before {
     content: '';
     position: absolute;
     top: 0;
@@ -914,16 +914,16 @@
     transition: opacity 0.3s ease;
 }
 
-.signature-card-modal:hover {
+.signature-card-premium:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(173, 26, 28, 0.12);
 }
 
-.signature-card-modal:hover::before {
+.signature-card-premium:hover::before {
     opacity: 1;
 }
 
-.signature-header-modal {
+.signature-header-premium {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -932,12 +932,12 @@
     border-bottom: 1px solid rgba(173, 26, 28, 0.1);
 }
 
-.signature-icon-modal {
+.signature-icon-premium {
     font-size: 1.2rem;
     color: var(--primary-color);
 }
 
-.signature-header-modal span {
+.signature-header-premium span {
     font-size: 0.85rem;
     font-weight: 800;
     color: #AD1A1C;
@@ -945,7 +945,7 @@
     letter-spacing: 0.5px;
 }
 
-.signature-box-modal {
+.signature-box-premium {
     min-height: 80px;
     display: flex;
     align-items: center;
@@ -956,7 +956,7 @@
     border-radius: 6px;
 }
 
-.signature-display-modal {
+.signature-display-premium {
     max-height: 60px;
     max-width: 100%;
     object-fit: contain;
@@ -964,7 +964,7 @@
     border-radius: 4px;
 }
 
-.signature-text-modal {
+.signature-text-premium {
     font-family: 'Georgia', cursive, serif;
     font-size: 1.3rem;
     color: #0f172a;
@@ -972,7 +972,7 @@
     margin: 0;
 }
 
-.muted-modal {
+.muted-premium {
     color: #94a3b8;
     font-style: italic;
 }
@@ -1107,7 +1107,7 @@
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     }
     
-    .signature-card-modal {
+    .signature-card-premium {
         margin-bottom: 12px;
     }
 }
@@ -1216,14 +1216,14 @@
 .info-card-modal,
 .service-item-modal,
 .date-card-modal,
-.signature-card-modal {
+.signature-card-premium {
     will-change: transform;
 }
 
 .info-card-modal:hover,
 .service-item-modal:hover,
 .date-card-modal:hover,
-.signature-card-modal:hover {
+.signature-card-premium:hover {
     will-change: auto;
 }
 

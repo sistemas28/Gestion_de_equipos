@@ -285,8 +285,8 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
                             </datalist>
                         </label>
                         <label className="full-width">
-                            Código de Inventario (Opcional)
-                            <input type="text" name="codigo" value={formData.codigo} onChange={handleChange} placeholder="Ej: EQ-00123" />
+                            Código de Inventario (Auto-generado)
+                            <input type="text" name="codigo" value={formData.codigo || 'Auto-generado'} readOnly />
                         </label>
                     </div>
 
@@ -335,10 +335,10 @@ function AgregarEquipoPage({ onEquipoAgregado }) {
                                 {equipos
                                     .filter(equipo =>
                                         (String(equipo.usuario || '').toLowerCase().includes(searchTerm.toLowerCase())) ||
-                                        (String(equipo.codigo || '').toLowerCase().includes(searchTerm.toLowerCase()))
+                                        (String(equipo.id || '').toLowerCase().includes(searchTerm.toLowerCase()))
                                     ).map(equipo => (
                                         <tr key={equipo.id}>
-                                            <td><strong>{equipo.codigo || 'N/A'}</strong></td>
+                                            <td><strong>{equipo.id}</strong></td>
                                             <td>{equipo.usuario}</td>
                                             <td>{equipo.area}</td>
                                             <td>{equipo.tipo}</td>

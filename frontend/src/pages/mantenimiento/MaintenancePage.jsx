@@ -162,8 +162,8 @@ const MaintenancePage = () => {
     const handleEdit = () => {
         setEditFormData({ ...detailedData });
         setSignatureType(detailedData.firmas_tecnico?.startsWith('data:image') ? 'image' : 'text');
-        // Pre-seleccionar el equipo que coincide por código (el ID del mantenimiento es el código del equipo)
-        setSelectedEquipoId(equipos.find(eq => eq.codigo === detailedData.id.toString())?.id || '');
+        // Pre-seleccionar el equipo que coincide por ID (el ID del mantenimiento es el ID del equipo)
+        setSelectedEquipoId(detailedData.id || '');
         setIsEditing(true);
     };
 
@@ -226,19 +226,19 @@ const MaintenancePage = () => {
         }
         // Buscamos el equipo completo para obtener su código de inventario
         const selectedEquipo = equipos.find(eq => eq.id === parseInt(selectedEquipoId, 10));
-        if (!selectedEquipo || (selectedEquipo.codigo === undefined || selectedEquipo.codigo === null || selectedEquipo.codigo === '')) {
-            console.error("Error: Equipo no válido o sin código", selectedEquipo);
+        if (!selectedEquipo) {
+            console.error("Error: Equipo no válido", selectedEquipo);
             setError("El equipo seleccionado no tiene un código de inventario válido. No se puede crear el mantenimiento.");
             return;
         }
 
         // Verificar si ya existe un mantenimiento con el código de equipo (el ID será el código del equipo)
         const existingMaintenance = maintenanceData.find(maint =>
-            maint.id?.toString() === selectedEquipo.codigo.toString()
+            maint.id?.toString() === selectedEquipo.id.toString()
         );
 
         if (existingMaintenance) {
-            if (window.confirm(`Ya existe un mantenimiento para el equipo "${selectedEquipo.usuario}" con código "${selectedEquipo.codigo}". ¿Deseas actualizar la información existente con los nuevos datos ingresados?`)) {
+            if (window.confirm(`Ya existe un mantenimiento para el equipo "${selectedEquipo.usuario}" con ID "${selectedEquipo.id}". ¿Deseas actualizar la información existente con los nuevos datos ingresados?`)) {
                 try {
                     const dataToUpdate = { ...newMaintenanceData };
 
@@ -272,8 +272,8 @@ const MaintenancePage = () => {
             // Creamos el objeto a enviar con los datos del formulario
             const dataToSend = {
                 ...newMaintenanceData,
-                // El ID del mantenimiento será igual al código del equipo (sin equipo_id separado)
-                id: selectedEquipo.codigo,
+                // El ID del mantenimiento será igual al ID del equipo (sin equipo_id separado)
+                id: selectedEquipo.id,
             };
 
             // Aseguramos que las fechas vacías se envíen como null para evitar errores en la BD
@@ -301,7 +301,7 @@ const MaintenancePage = () => {
 
             // Manejar errores específicos
             if (err.response?.status === 409) {
-                setError(`Ya existe un mantenimiento para el equipo "${selectedEquipo.usuario}" con código "${selectedEquipo.codigo}". Cada equipo solo puede tener un mantenimiento.`);
+                setError(`Ya existe un mantenimiento para el equipo "${selectedEquipo.usuario}" con ID "${selectedEquipo.id}". Cada equipo solo puede tener un mantenimiento.`);
             } else if (err.response?.status === 500) {
                 setError("Error interno del servidor. Por favor, contacta al administrador.");
             } else if (err.response?.status === 400) {
@@ -355,7 +355,7 @@ const MaintenancePage = () => {
                     area: selectedEquipo.area,
                     tipo: selectedEquipo.tipo,
                     marca: selectedEquipo.marca,
-                    codigo: selectedEquipo.codigo
+                    codigo: selectedEquipo.id
                 }));
             } else {
                 // Si no se selecciona ningún equipo, limpiar los campos relacionados
@@ -414,7 +414,7 @@ const MaintenancePage = () => {
                 type: 'info',
                 title: 'INFORMACIÓN DEL EQUIPO',
                 data: [
-                    { label: 'CÓDIGO INVENTARIO', value: detailedData.codigo || detailedData.id || 'N/A' },
+                    { label: 'CÓDIGO INVENTARIO', value: detailedData.id || 'N/A' },
                     { label: 'USUARIO', value: detailedData.usuario || 'N/A' },
                     { label: 'ÁREA', value: detailedData.area || 'N/A' },
                     { label: 'TIPO DE EQUIPO', value: detailedData.tipo || 'N/A' },

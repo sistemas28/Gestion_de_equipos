@@ -1,116 +1,7 @@
-.licenciamiento-page {
-    animation: fadeIn 0.4s ease-out;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
+/* ===============================================
+   MODAL DE CREAR LICENCIAMIENTO - ESTILOS INSTITUCIONALES
+   =============================================== */
 
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 0;
-}
-
-.page-title {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--text-main);
-    letter-spacing: -0.02em;
-}
-
-/* Table Card */
-.licenciamiento-table-container {
-    background: white;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-}
-
-.licenciamiento-table-container table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.licenciamiento-table-container th {
-    background: #f8fafc;
-    padding: 16px 24px;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border);
-}
-
-.licenciamiento-table-container td {
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.95rem;
-    color: var(--text-main);
-}
-
-.licenciamiento-table-container tr:last-child td {
-    border-bottom: none;
-}
-
-.licenciamiento-table-container tr:hover td {
-    background: #f1f5f9;
-}
-
-/* Modals */
-.details-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    padding: 20px;
-    overflow: hidden;
-}
-
-.details-panel {
-    background: #ffffff;
-    border-radius: 24px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-    width: 90vw;
-    max-width: 90vw;
-    max-height: 85vh;
-    overflow-y: auto;
-    position: relative;
-    animation: slideInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    border: 1px solid rgba(173, 26, 28, 0.1);
-}
-
-.details-panel::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #AD1A1C, #FCE821);
-}
-
-@keyframes slideInDown {
-    from {
-        transform: translateY(-30px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-/* Create Modal Styles */
 .create-licenciamiento-modal-overlay {
     position: fixed;
     top: 0;
@@ -150,7 +41,11 @@
     background: linear-gradient(90deg, #AD1A1C, #FCE821);
 }
 
-.details-header {
+/* ===============================================
+   ENCABEZADO DEL MODAL
+   =============================================== */
+
+.modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -162,7 +57,7 @@
     z-index: 50;
 }
 
-.details-header h3 {
+.modal-header h3 {
     margin: 0;
     font-size: 24px;
     font-weight: 800;
@@ -172,7 +67,7 @@
     gap: 12px;
 }
 
-.details-header h3::before {
+.modal-header h3::before {
     content: '';
     width: 5px;
     height: 32px;
@@ -181,12 +76,47 @@
     box-shadow: 0 0 10px rgba(173, 26, 28, 0.3);
 }
 
-.details-grid {
+.close-modal-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.close-modal-btn:hover {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+}
+
+/* ===============================================
+   CUERPO DEL MODAL
+   =============================================== */
+
+.modal-body {
     padding: 24px 32px 20px 32px;
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 24px;
 }
+
+/* ===============================================
+   FORMULARIO PRINCIPAL
+   =============================================== */
 
 .form-section {
     background: white;
@@ -299,7 +229,16 @@
     font-size: 14px;
 }
 
-/* Sidebar section */
+/* ===============================================
+   BARRA LATERAL - FIRMAS
+   =============================================== */
+
+.modal-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
 .sidebar-section {
     background: white;
     border-radius: 16px;
@@ -404,7 +343,10 @@
     object-fit: contain;
 }
 
-/* Modal footer */
+/* ===============================================
+   PIE DE PÁGINA DEL MODAL
+   =============================================== */
+
 .modal-footer {
     display: flex;
     gap: 12px;
@@ -455,67 +397,92 @@
     box-shadow: 0 8px 20px rgba(107, 114, 128, 0.4);
 }
 
-.close-modal-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-    color: #64748b;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    transition: all 0.2s ease;
-    z-index: 10;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+/* ===============================================
+   ANIMACIONES
+   =============================================== */
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
-.close-modal-btn:hover {
-    background: linear-gradient(135deg, #dc2626, #ef4444);
-    color: white;
-    transform: scale(1.1);
-    box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
-}
+/* ===============================================
+   RESPONSIVE DESIGN
+   =============================================== */
 
-/* Form in Modal */
-.details-grid label {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    font-size: 0.85rem;
-    font-weight: 700;
-}
-
-.details-grid input, 
-.details-grid select, 
-.details-grid textarea {
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: white;
-    font-family: inherit;
-    font-size: 0.95rem;
-}
-
-.details-grid input:focus, 
-.details-grid textarea:focus {
-    border-color: var(--primary);
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(173, 26, 28, 0.1);
-}
-
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+@media (max-width: 900px) {
+    .modal-body {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 16px;
+    }
+    
+    .modal-footer {
+        padding: 16px;
+    }
 }
 
 @media (max-width: 768px) {
-    .details-grid { grid-template-columns: 1fr; }
-    .full-width { grid-column: span 1; }
-    .page-header { flex-direction: column; gap: 16px; align-items: flex-start; }
+    .create-licenciamiento-modal-content {
+        margin: 10px;
+        max-height: 90vh;
+    }
+    
+    .modal-header {
+        padding: 16px;
+    }
+    
+    .modal-body {
+        padding: 16px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .signature-inputs,
+    .signature-upload {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .create-licenciamiento-modal-content {
+        margin: 5px;
+        max-height: 95vh;
+    }
+    
+    .modal-header {
+        padding: 12px;
+    }
+    
+    .modal-body {
+        padding: 12px;
+    }
+    
+    .modal-footer {
+        padding: 12px;
+    }
+}
+
+/* ===============================================
+   FOCUS STYLES FOR ACCESSIBILITY
+   =============================================== */
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    outline: 2px solid #AD1A1C;
+    outline-offset: 2px;
 }

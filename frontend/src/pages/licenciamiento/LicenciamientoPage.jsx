@@ -10,6 +10,10 @@ import autoTable from 'jspdf-autotable';
 import { generateReport } from '../../utils/reportGenerator';
 import LicenciamientoDetailsModal from '../../components/licenciamiento/LicenciamientoDetailsModal';
 import CreateLicenciamientoModal from '../../components/licenciamiento/CreateLicenciamientoModal';
+import EditLicenciamientoModal from '../../components/licenciamiento/EditLicenciamientoModal';
+
+// Importar estilos del modal de edición
+import '../../components/licenciamiento/EditLicenciamientoModal.css';
 
 function LicenciamientoPage() {
     const [licenciamientoData, setLicenciamientoData] = useState([]);
@@ -182,7 +186,7 @@ function LicenciamientoPage() {
             return;
         }
         const selectedEquipo = equipos.find(eq => eq.id === parseInt(selectedEquipoId, 10));
-        if (!selectedEquipo || !selectedEquipo.codigo) {
+        if (!selectedEquipo) {
             setError("El equipo seleccionado no tiene un código de inventario válido. No se puede crear el licenciamiento.");
             return;
         }
@@ -224,7 +228,7 @@ function LicenciamientoPage() {
                 type: 'info',
                 title: 'INFORMACIÓN DEL EQUIPO',
                 data: [
-                    { label: 'CÓDIGO INVENTARIO', value: detailedData.codigo || detailedData.id || 'N/A' },
+                    { label: 'CÓDIGO INVENTARIO', value: detailedData.id || 'N/A' },
                     { label: 'USUARIO', value: detailedData.usuario || 'N/A' },
                     { label: 'ÁREA', value: detailedData.area || 'N/A' },
                     { label: 'TIPO DE EQUIPO', value: detailedData.tipo || 'N/A' },
@@ -325,7 +329,7 @@ function LicenciamientoPage() {
                 </div>
             )}
 
-            <LicenciamientoDetailsModal
+<LicenciamientoDetailsModal
                 isOpen={selectedItem !== null}
                 onClose={() => setSelectedItem(null)}
                 detailedData={detailedData}
@@ -356,6 +360,18 @@ function LicenciamientoPage() {
                 setSelectedEquipoId={setSelectedEquipoId}
                 handleFormChange={handleNewFormChange}
                 handleSaveNew={handleSaveNew}
+                handleCancel={handleCancel}
+            />
+
+            <EditLicenciamientoModal
+                isOpen={isEditing}
+                onClose={() => setIsEditing(false)}
+                editFormData={editFormData}
+                equipos={equipos}
+                selectedEquipoId={selectedEquipoId}
+                setSelectedEquipoId={setSelectedEquipoId}
+                handleFormChange={handleFormChange}
+                handleSave={handleSave}
                 handleCancel={handleCancel}
             />
         </div>
